@@ -1,7 +1,24 @@
 /* XCOFF definitions.  These are needed in dbxout.c, final.c,
-   and xcoffout.h.  */
+   and xcoffout.h.
+   Copyright (C) 1998, 2000, 2002, 2003, 2004, 2007
+   Free Software Foundation, Inc.
 
-#define ASM_STABS_OP ".stabx"
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
 
 /* Tags and typedefs are C_DECL in XCOFF, not C_LSYM.  */
 
@@ -9,15 +26,8 @@
 
 /* Use the XCOFF predefined type numbers.  */
 
-/* ??? According to metin, typedef stabx must go in text control section,
-   but he did not make this changes everywhere where such typedef stabx
-   can be emitted, so it is really needed or not?  */
-
-#define DBX_OUTPUT_STANDARD_TYPES(SYMS)		\
-{						\
-  text_section ();				\
-  xcoff_output_standard_types (SYMS);		\
-}
+#define DBX_ASSIGN_FUNDAMENTAL_TYPE_NUMBER(TYPE) \
+  xcoff_assign_fundamental_type_number (TYPE)
 
 /* Any type with a negative type index has already been output.  */
 
@@ -35,15 +45,15 @@
   if ((CODE) == N_STSYM)						\
     fprintf ((ASMFILE), "\t.bs\t%s[RW]\n", xcoff_private_data_section_name);\
   else if ((CODE) == N_LCSYM)						\
-    fprintf ((ASMFILE), "\t.bs\t%s\n", xcoff_bss_section_name);		\
+    fprintf ((ASMFILE), "\t.bs\t%s\n", xcoff_bss_section_name);	\
 }
 
 /* For static variables, output code to define the end of a static block.  */
 
 #define DBX_STATIC_BLOCK_END(ASMFILE,CODE)				\
 {									\
-  if (current_sym_code == N_STSYM || current_sym_code == N_LCSYM)	\
-    fprintf (asmfile, "\t.es\n");					\
+  if ((CODE) == N_STSYM || (CODE) == N_LCSYM)				\
+    fputs ("\t.es\n", (ASMFILE));					\
 }
 
 /* We must use N_RPYSM instead of N_RSYM for register parameters.  */
@@ -57,29 +67,40 @@
 /* Define our own finish symbol function, since xcoff stabs have their
    own different format.  */
 
-#define DBX_FINISH_SYMBOL(SYM)					\
-{								\
-  if (current_sym_addr && current_sym_code == N_FUN)		\
-    fprintf (asmfile, "\",.");					\
-  else								\
-    fprintf (asmfile, "\",");					\
-  /* If we are writing a function name, we must ensure that	\
-     there is no storage-class suffix on the name.  */		\
-  if (current_sym_addr && current_sym_code == N_FUN		\
-      && GET_CODE (current_sym_addr) == SYMBOL_REF)		\
-    {								\
-      char *_p;							\
-      for (_p = XSTR (current_sym_addr, 0); *_p != '[' && *_p; _p++) \
-	fprintf (asmfile, "%c", *_p);				\
-    }								\
-  else if (current_sym_addr)					\
-    output_addr_const (asmfile, current_sym_addr);		\
-  else if (current_sym_code == N_GSYM)				\
-    fprintf (asmfile, "%s", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (SYM))); \
-  else								\
-    fprintf (asmfile, "%d", current_sym_value);			\
-  fprintf (asmfile, ",%d,0\n", stab_to_sclass (current_sym_code)); \
-}
+#define DBX_FINISH_STABS(SYM, CODE, LINE, ADDR, LABEL, NUMBER) do {	\
+  if (ADDR)								\
+    {									\
+      /* If we are writing a function name, we must emit a dot in	\
+	 order to refer to the function code, not its descriptor.  */	\
+      if (CODE == N_FUN)						\
+	putc ('.', asm_out_file);					\
+									\
+      /* If we are writing a function name, we must ensure that		\
+	 there is no storage-class suffix on the name.  */		\
+      if (CODE == N_FUN && GET_CODE (ADDR) == SYMBOL_REF)		\
+	{								\
+	  const char *_p = XSTR (ADDR, 0);				\
+	  if (*_p == '*')						\
+	    fputs (_p+1, asm_out_file);					\
+	  else								\
+	    for (; *_p != '[' && *_p; _p++)				\
+	      putc (*_p, asm_out_file);					\
+	}								\
+      else								\
+	output_addr_const (asm_out_file, ADDR);				\
+    }									\
+  /* Another special case: N_GSYM always gets the symbol name,		\
+     whether or not LABEL or NUMBER are set.  */			\
+  else if (CODE == N_GSYM)						\
+    assemble_name (asm_out_file, XSTR (XEXP (DECL_RTL (SYM), 0), 0));	\
+  else if (LABEL)							\
+    assemble_name (asm_out_file, LABEL);				\
+  else									\
+    dbxout_int (NUMBER);						\
+  putc (',', asm_out_file);						\
+  dbxout_int (stab_to_sclass (CODE));					\
+  fputs (",0\n", asm_out_file);						\
+} while (0)
 
 /* These are IBM XCOFF extensions we need to reference in dbxout.c
    and xcoffout.c.  */
@@ -96,21 +117,9 @@
 #define N_RPSYM 0x8e
 #endif
 
-/* The line number of the beginning of the current function.
-   xcoffout.c needs this so that it can output relative linenumbers.  */
-
-extern int xcoff_begin_function_line;
-
 /* Name of the current include file.  */
 
-extern char *xcoff_current_include_file;
-
-/* Name of the current function file.  This is the file the `.bf' is
-   emitted from.  In case a line is emitted from a different file,
-   (by including that file of course), then the line number will be
-   absolute.  */
-
-extern char *xcoff_current_function_file;
+extern const char *xcoff_current_include_file;
 
 /* Names of bss and data sections.  These should be unique names for each
    compilation unit.  */
@@ -119,49 +128,35 @@ extern char *xcoff_bss_section_name;
 extern char *xcoff_private_data_section_name;
 extern char *xcoff_read_only_section_name;
 
+/* Last source file name mentioned in a NOTE insn.  */
+
+extern const char *xcoff_lastfile;
+
 /* Don't write out path name for main source file.  */
-#define DBX_OUTPUT_MAIN_SOURCE_DIRECTORY(FILE,FILENAME)
+#define NO_DBX_MAIN_SOURCE_DIRECTORY 1
 
-/* Write out main source file name using ".file" rather than ".stabs".  */
+/* Write out main source file name using ".file" rather than ".stabs".
+   We don't actually do this here, because the assembler gets confused if there
+   is more than one .file directive.  rs6000_xcoff_file_start is already
+   emitting a .file directory, so we don't output one here also.
+   Initialize xcoff_lastfile.  */
 #define DBX_OUTPUT_MAIN_SOURCE_FILENAME(FILE,FILENAME) \
-  fprintf (FILE, "\t.file\t\"%s\"\n", FILENAME);
-
-#define ABS_OR_RELATIVE_LINENO(LINENO)		\
-((xcoff_current_include_file			\
-  && xcoff_current_include_file != xcoff_current_function_file)	\
- ? (LINENO) : (LINENO) - xcoff_begin_function_line)
-
-/* Output source line numbers via ".line" rather than ".stabd".  */
-#define ASM_OUTPUT_SOURCE_LINE(FILE,LINENUM) \
-  do {						\
-    if (xcoff_begin_function_line >= 0)		\
-      fprintf (FILE, "\t.line\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM)); \
-  } while (0)
-
-/* We don't want to emit source file names in dbx style. */
-#define DBX_OUTPUT_SOURCE_FILENAME(FILE, FILENAME)	\
-{							\
-  if (xcoff_current_include_file)			\
-    fprintf (FILE, "\t.ei\t\"%s\"\n", xcoff_current_include_file);\
-  if (strcmp (main_input_filename, FILENAME))		\
-    {							\
-      fprintf (FILE, "\t.bi\t\"%s\"\n", FILENAME);	\
-      xcoff_current_include_file = FILENAME;		\
-    }							\
-  else							\
-    xcoff_current_include_file = NULL;			\
-}
+  xcoff_lastfile = (FILENAME)
 
 /* If we are still in an include file, its end must be marked.  */
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)	\
-{							\
+do {							\
   if (xcoff_current_include_file)			\
     {							\
-      fprintf ((FILE), "\t.ei\t\"%s\"\n",		\
-	       xcoff_current_include_file);		\
+      fputs ("\t.ei\t", (FILE));			\
+      output_quoted_string ((FILE), xcoff_current_include_file);	\
+      putc ('\n', (FILE));				\
       xcoff_current_include_file = NULL;		\
     }							\
-}
+} while (0)
+
+/* Do not emit any marker for XCOFF until assembler allows XFT_CV.  */
+#define NO_DBX_GCC_MARKER
 
 /* Do not break .stabs pseudos into continuations.  */
 #define DBX_CONTIN_LENGTH 0
@@ -170,3 +165,21 @@ extern char *xcoff_read_only_section_name;
    Also has the consequence of putting each struct, union or enum
    into a separate .stabs, containing only cross-refs to the others.  */
 #define DBX_NO_XREFS
+
+/* We must put stabs in the text section.  If we don't the assembler
+   won't handle them correctly; it will sometimes put stabs where gdb
+   can't find them.  */
+
+#define DEBUG_SYMS_TEXT
+
+/* Prototype functions in xcoffout.c.  */
+
+extern int stab_to_sclass (int);
+extern void xcoffout_begin_prologue (unsigned int, const char *);
+extern void xcoffout_begin_block (unsigned, unsigned);
+extern void xcoffout_end_epilogue (unsigned int, const char *);
+extern void xcoffout_end_function (unsigned int);
+extern void xcoffout_end_block (unsigned, unsigned);
+extern int xcoff_assign_fundamental_type_number (tree);
+extern void xcoffout_declare_function (FILE *, tree, const char *);
+extern void xcoffout_source_line (unsigned int, const char *);

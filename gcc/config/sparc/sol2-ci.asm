@@ -23,7 +23,8 @@
 ! 
 ! You should have received a copy of the GNU General Public License
 ! along with this program; see the file COPYING.  If not, write to
-! the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+! the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+! Boston, MA 02110-1301, USA.
 ! 
 !    As a special exception, if you link this library with files
 !    compiled with GCC to produce an executable, this does not cause
@@ -47,7 +48,11 @@
 	.type	_init,#function
 	.align	4
 _init:
+#ifdef __sparcv9
+	save	%sp, -176, %sp
+#else
 	save	%sp, -96, %sp
+#endif
 
 
 	.section	".fini"
@@ -56,4 +61,8 @@ _init:
 	.type	_fini,#function
 	.align	4
 _fini:
+#ifdef __sparcv9
+	save	%sp, -176, %sp
+#else
 	save	%sp, -96, %sp
+#endif

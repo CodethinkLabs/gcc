@@ -1,31 +1,25 @@
-/* Definitions for Intel 386 running system V with gnu tools
-   Copyright (C) 1988 Free Software Foundation, Inc.
+/* Definitions for Intel 386 using GAS.
+   Copyright (C) 1988, 1993, 1994, 1996, 2002, 2004, 2007
+   Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
+GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
+the Free Software Foundation; either version 3, or (at your option)
 any later version.
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
-/* Note that seq386gas.h is a GAS configuration that does not use this
-   file. */
-
-#include "i386.h"
-
-#ifndef YES_UNDERSCORES
-/* Define this now, because bsd386.h tests it.  */
-#define NO_UNDERSCORES
-#endif
+/* Note that i386/seq-gas.h is a GAS configuration that does not use this
+   file.  */
 
 /* Use the bsd assembler syntax.  */
 /* we need to do this because gas is really a bsd style assembler,
@@ -43,59 +37,47 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  * people who want both form will have to compile twice.
  */
 
-#include "bsd386.h"
-
-/* these come from bsd386.h, but are specific to sequent */
+/* these come from i386/bsd.h, but are specific to sequent */
 #undef DBX_NO_XREFS
 #undef DBX_CONTIN_LENGTH
 
 /* Ask for COFF symbols.  */
 
-#define SDB_DEBUGGING_INFO
-
-/* Specify predefined symbols in preprocessor.  */
-
-#define CPP_PREDEFINES "-Dunix -Di386"
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
-
-/* Allow #sccs in preprocessor.  */
-
-#define SCCS_DIRECTIVE
+#define SDB_DEBUGGING_INFO 1
 
 /* Output #ident as a .ident.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) fprintf (FILE, "\t.ident \"%s\"\n", NAME);
 
-/* Implicit library calls should use memcpy, not bcopy, etc.  */
+/* In the past there was confusion as to what the argument to .align was
+   in GAS.  For the last several years the rule has been this: for a.out
+   file formats that argument is LOG, and for all other file formats the
+   argument is 1<<LOG.
 
-#define TARGET_MEM_FUNCTIONS
+   However, GAS now has .p2align and .balign pseudo-ops so to remove any
+   doubt or guess work, and since this file is used for both a.out and other
+   file formats, we use one of them.  */
 
-#if 0  /* People say gas uses the log as the arg to .align.  */
-/* When using gas, .align N aligns to an N-byte boundary.  */
-
+#ifdef HAVE_GAS_BALIGN_AND_P2ALIGN 
 #undef ASM_OUTPUT_ALIGN
-#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-     if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
+#define ASM_OUTPUT_ALIGN(FILE,LOG) \
+  if ((LOG)!=0) fprintf ((FILE), "\t.balign %d\n", 1<<(LOG))
 #endif
 
-/* Align labels, etc. at 4-byte boundaries.
-   For the 486, align to 16-byte boundary for sake of cache.  */
+/* A C statement to output to the stdio stream FILE an assembler
+   command to advance the location counter to a multiple of 1<<LOG
+   bytes if it is within MAX_SKIP bytes.
 
-#undef ASM_OUTPUT_ALIGN_CODE
-#define ASM_OUTPUT_ALIGN_CODE(FILE)			\
-     fprintf ((FILE), "\t.align %d,0x90\n",		\
-	      TARGET_486 ? 4 : 2);  /* Use log of 16 or log of 4 as arg.  */
+   This is used to align code labels according to Intel recommendations.  */
 
-/* Align start of loop at 4-byte boundary.  */
-
-#undef ASM_OUTPUT_LOOP_ALIGN
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-     fprintf ((FILE), "\t.align 2,0x90\n");  /* Use log of 4 as arg.  */
+#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
+#  define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP) \
+     if ((LOG) != 0) {\
+       if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG)); \
+       else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP)); \
+     }
+#endif
 
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE) \
-  fprintf (FILE, "\t.file\t\"%s\"\n", dump_base_name);
-
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a
    variable of type `char *' which points to the opcode name in its
@@ -127,32 +109,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    count is in %cl.  Some assemblers require %cl as an argument;
    some don't.
 
-   GAS requires the %cl argument, so override unx386.h. */
+   GAS requires the %cl argument, so override i386/unix.h.  */
 
-#undef AS3_SHIFT_DOUBLE
-#define AS3_SHIFT_DOUBLE(a,b,c,d) AS3 (a,b,c,d)
+#undef SHIFT_DOUBLE_OMITS_COUNT
+#define SHIFT_DOUBLE_OMITS_COUNT 0
 
-/* Print opcodes the way that GAS expects them. */
+/* Print opcodes the way that GAS expects them.  */
 #define GAS_MNEMONICS 1
 
-#ifdef NO_UNDERSCORES /* If user-symbols don't have underscores,
-			 then it must take more than `L' to identify
-			 a label that should be ignored.  */
+/* The comment-starter string as GAS expects it. */
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
 
-/* This is how to store into the string BUF
-   the symbol_ref name of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.  */
-
-#undef ASM_GENERATE_INTERNAL_LABEL
-#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-    sprintf ((BUF), ".%s%d", (PREFIX), (NUMBER))
-
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
-
-#endif /* NO_UNDERSCORES */
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true

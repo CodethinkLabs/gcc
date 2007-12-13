@@ -1,77 +1,65 @@
 /* Output xcoff-format symbol table information from GNU compiler.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2002, 2003, 2004,
+   2007  Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 /* Output xcoff-format symbol table data.  The main functionality is contained
    in dbxout.c.  This file implements the sdbout-like parts of the xcoff
    interface.  Many functions are very similar to their counterparts in
    sdbout.c.  */
 
-/* Include this first, because it may define MIN and MAX.  */
-#include <stdio.h>
-
 #include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "rtl.h"
 #include "flags.h"
+#include "toplev.h"
+#include "output.h"
+#include "ggc.h"
+#include "target.h"
+#include "debug.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 
 /* This defines the C_* storage classes.  */
-#include <dbxstclass.h>
-
+#include "xcoff.h"
 #include "xcoffout.h"
-
-#if defined (USG) || defined (NO_STAB_H)
+#include "dbxout.h"
 #include "gstab.h"
-#else
-#include <stab.h>
-
-/* This is a GNU extension we need to reference in this file.  */
-#ifndef N_CATCH
-#define N_CATCH 0x54
-#endif
-#endif
-
-/* These are GNU extensions we need to reference in this file.  */
-#ifndef N_DSLINE
-#define N_DSLINE 0x46
-#endif
-#ifndef N_BSLINE
-#define N_BSLINE 0x48
-#endif
 
 /* Line number of beginning of current function, minus one.
    Negative means not in a function or not using xcoff.  */
 
-int xcoff_begin_function_line = -1;
+static int xcoff_begin_function_line = -1;
+static int xcoff_inlining = 0;
 
 /* Name of the current include file.  */
 
-char *xcoff_current_include_file;
+const char *xcoff_current_include_file;
 
 /* Name of the current function file.  This is the file the `.bf' is
    emitted from.  In case a line is emitted from a different file,
    (by including that file of course), then the line number will be
    absolute.  */
 
-char *xcoff_current_function_file;
+static const char *xcoff_current_function_file;
 
 /* Names of bss and data sections.  These should be unique names for each
    compilation unit.  */
@@ -79,12 +67,24 @@ char *xcoff_current_function_file;
 char *xcoff_bss_section_name;
 char *xcoff_private_data_section_name;
 char *xcoff_read_only_section_name;
+
+/* Last source file name mentioned in a NOTE insn.  */
+
+const char *xcoff_lastfile;
 
 /* Macro definitions used below.  */
-/* Ensure we don't output a negative line number.  */
-#define MAKE_LINE_SAFE(LINE)  \
-  if (LINE <= xcoff_begin_function_line)	\
-    LINE = xcoff_begin_function_line + 1	\
+
+#define ABS_OR_RELATIVE_LINENO(LINENO)		\
+((xcoff_inlining) ? (LINENO) : (LINENO) - xcoff_begin_function_line)
+
+/* Output source line numbers via ".line".  */
+#define ASM_OUTPUT_LINE(FILE,LINENUM)					   \
+  do									   \
+    {									   \
+      if (xcoff_begin_function_line >= 0)				   \
+	fprintf (FILE, "\t.line\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM)); \
+    }									   \
+  while (0)
 
 #define ASM_OUTPUT_LFB(FILE,LINENUM) \
 {						\
@@ -98,96 +98,98 @@ char *xcoff_read_only_section_name;
        ? xcoff_current_include_file : main_input_filename); \
 }
 
-#define ASM_OUTPUT_LFE(FILE,LINENUM) \
-  do {						\
-    int linenum = LINENUM;				\
-    MAKE_LINE_SAFE (linenum);			\
-    fprintf (FILE, "\t.ef\t%d\n", ABS_OR_RELATIVE_LINENO (linenum)); \
-    xcoff_begin_function_line = -1;		\
-  } while (0)
+#define ASM_OUTPUT_LFE(FILE,LINENUM)		\
+  do						\
+    {						\
+      fprintf (FILE, "\t.ef\t%d\n", (LINENUM));	\
+      xcoff_begin_function_line = -1;		\
+    }						\
+  while (0)
 
 #define ASM_OUTPUT_LBB(FILE,LINENUM,BLOCKNUM) \
-  do {						\
-    int linenum = LINENUM;				\
-    MAKE_LINE_SAFE (linenum);			\
-    fprintf (FILE, "\t.bb\t%d\n", ABS_OR_RELATIVE_LINENO (linenum)); \
-  } while (0)
+  fprintf (FILE, "\t.bb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))
 
 #define ASM_OUTPUT_LBE(FILE,LINENUM,BLOCKNUM) \
-  do {						\
-    int linenum = LINENUM;				\
-    MAKE_LINE_SAFE (linenum);			\
-    fprintf (FILE, "\t.eb\t%d\n", ABS_OR_RELATIVE_LINENO (linenum)); \
-  } while (0)
+  fprintf (FILE, "\t.eb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))
+
+static void xcoffout_block (tree, int, tree);
+static void xcoffout_source_file (FILE *, const char *, int);
 
 /* Support routines for XCOFF debugging info.  */
 
-/* Assign NUMBER as the stabx type number for the type described by NAME.
-   Search all decls in the list SYMS to find the type NAME.  */
-
-static void
-assign_type_number (syms, name, number)
-     tree syms;
-     char *name;
-     int number;
+struct xcoff_type_number
 {
-  tree decl;
-
-  for (decl = syms; decl; decl = TREE_CHAIN (decl))
-    if (DECL_NAME (decl)
-	&& strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), name) == 0)
-      {
-	TREE_ASM_WRITTEN (decl) = 1;
-	TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = number;
-      }
-}
-
-/* Setup gcc primitive types to use the XCOFF built-in type numbers where
-   possible.  */
-
-void
-xcoff_output_standard_types (syms)
-     tree syms;
-{
-  /* Handle built-in C types here.  */
-
-  assign_type_number (syms, "int", -1);
-  assign_type_number (syms, "char", -2);
-  assign_type_number (syms, "short int", -3);
-  assign_type_number (syms, "long int", -4);
-  assign_type_number (syms, "unsigned char", -5);
-  assign_type_number (syms, "signed char", -6);
-  assign_type_number (syms, "short unsigned int", -7);
-  assign_type_number (syms, "unsigned int", -8);
+  const char *name;
+  int number;
+};
+static const struct xcoff_type_number xcoff_type_numbers[] = {
+  { "int", -1 },
+  { "char", -2 },
+  { "short int", -3 },
+  { "long int", -4 },  /* fiddled to -31 if 64 bits */
+  { "unsigned char", -5 },
+  { "signed char", -6 },
+  { "short unsigned int", -7 },
+  { "unsigned int", -8 },
   /* No such type "unsigned".  */
-  assign_type_number (syms, "long unsigned int", -10);
-  assign_type_number (syms, "void", -11);
-  assign_type_number (syms, "float", -12);
-  assign_type_number (syms, "double", -13);
-  assign_type_number (syms, "long double", -14);
+  { "long unsigned int", -10 }, /* fiddled to -32 if 64 bits */
+  { "void", -11 },
+  { "float", -12 },
+  { "double", -13 },
+  { "long double", -14 },
   /* Pascal and Fortran types run from -15 to -29.  */
-  /* No such type "wchar".  */
-
-  /* "long long int", and "long long unsigned int", are not handled here,
-     because there are no predefined types that match them.  */
+  { "wchar", -30 },  /* XXX Should be "wchar_t" ? */
+  { "long long int", -31 },
+  { "long long unsigned int", -32 },
+  /* Additional Fortran types run from -33 to -37.  */
 
   /* ??? Should also handle built-in C++ and Obj-C types.  There perhaps
      aren't any that C doesn't already have.  */
+};    
+
+/* Returns an XCOFF fundamental type number for DECL (assumed to be a
+   TYPE_DECL), or 0 if dbxout.c should assign a type number normally.  */
+int
+xcoff_assign_fundamental_type_number (tree decl)
+{
+  const char *name;
+  size_t i;
+
+  /* Do not waste time searching the list for non-intrinsic types.  */
+  if (DECL_NAME (decl) == 0 || ! DECL_IS_BUILTIN (decl))
+    return 0;
+
+  name = IDENTIFIER_POINTER (DECL_NAME (decl));
+
+  /* Linear search, blech, but the list is too small to bother
+     doing anything else.  */
+  for (i = 0; i < ARRAY_SIZE (xcoff_type_numbers); i++)
+    if (!strcmp (xcoff_type_numbers[i].name, name))
+      goto found;
+  return 0;
+
+ found:
+  /* -4 and -10 should be replaced with -31 and -32, respectively,
+     when used for a 64-bit type.  */
+  if (int_size_in_bytes (TREE_TYPE (decl)) == 8)
+    {
+      if (xcoff_type_numbers[i].number == -4)
+	return -31;
+      if (xcoff_type_numbers[i].number == -10)
+	return -32;
+    }
+  return xcoff_type_numbers[i].number;
 }
 
 /* Print an error message for unrecognized stab codes.  */
 
 #define UNKNOWN_STAB(STR)	\
-   do { \
-     fprintf(stderr, "Error, unknown stab %s: : 0x%x\n", STR, stab); \
-     fflush (stderr);	\
-   } while (0)
+  internal_error ("no sclass for %s stab (0x%x)", STR, stab)
 
 /* Conversion routine from BSD stabs to AIX storage classes.  */
 
 int
-stab_to_sclass (stab)
-     int stab;
+stab_to_sclass (int stab)
 {
   switch (stab)
     {
@@ -195,8 +197,7 @@ stab_to_sclass (stab)
       return C_GSYM;
 
     case N_FNAME:
-      UNKNOWN_STAB ("N_FNAME"); 
-      abort();
+      UNKNOWN_STAB ("N_FNAME");
 
     case N_FUN:
       return C_FUN;
@@ -206,15 +207,13 @@ stab_to_sclass (stab)
       return C_STSYM;
 
     case N_MAIN:
-      UNKNOWN_STAB ("N_MAIN"); 
-      abort ();
+      UNKNOWN_STAB ("N_MAIN");
 
     case N_RSYM:
       return C_RSYM;
 
     case N_SSYM:
-      UNKNOWN_STAB ("N_SSYM"); 
-      abort ();
+      UNKNOWN_STAB ("N_SSYM");
 
     case N_RPSYM:
       return C_RPSYM;
@@ -229,50 +228,34 @@ stab_to_sclass (stab)
       return C_ENTRY;
 
     case N_SO:
-      UNKNOWN_STAB ("N_SO"); 
-      abort ();
+      UNKNOWN_STAB ("N_SO");
 
     case N_SOL:
-      UNKNOWN_STAB ("N_SOL"); 
-      abort ();
+      UNKNOWN_STAB ("N_SOL");
 
     case N_SLINE:
-      UNKNOWN_STAB ("N_SLINE"); 
-      abort ();
+      UNKNOWN_STAB ("N_SLINE");
 
     case N_DSLINE:
-      UNKNOWN_STAB ("N_DSLINE"); 
-      abort ();
+      UNKNOWN_STAB ("N_DSLINE");
 
     case N_BSLINE:
-      UNKNOWN_STAB ("N_BSLINE"); 
-      abort ();
-#if 0
-      /* This has the same value as N_BSLINE.  */
-    case N_BROWS:
-      UNKNOWN_STAB ("N_BROWS"); 
-      abort ();
-#endif
+      UNKNOWN_STAB ("N_BSLINE");
 
     case N_BINCL:
-      UNKNOWN_STAB ("N_BINCL"); 
-      abort ();
+      UNKNOWN_STAB ("N_BINCL");
 
     case N_EINCL:
-      UNKNOWN_STAB ("N_EINCL"); 
-      abort ();
+      UNKNOWN_STAB ("N_EINCL");
 
     case N_EXCL:
-      UNKNOWN_STAB ("N_EXCL"); 
-      abort ();
+      UNKNOWN_STAB ("N_EXCL");
 
     case N_LBRAC:
-      UNKNOWN_STAB ("N_LBRAC"); 
-      abort ();
+      UNKNOWN_STAB ("N_LBRAC");
 
     case N_RBRAC:
-      UNKNOWN_STAB ("N_RBRAC"); 
-      abort ();
+      UNKNOWN_STAB ("N_RBRAC");
 
     case N_BCOMM:
       return C_BCOMM;
@@ -282,59 +265,81 @@ stab_to_sclass (stab)
       return C_ECOML;
 
     case N_LENG:
-      UNKNOWN_STAB ("N_LENG"); 
-      abort ();
+      UNKNOWN_STAB ("N_LENG");
 
     case N_PC:
-      UNKNOWN_STAB ("N_PC"); 
-      abort ();
+      UNKNOWN_STAB ("N_PC");
 
     case N_M2C:
-      UNKNOWN_STAB ("N_M2C"); 
-      abort ();
+      UNKNOWN_STAB ("N_M2C");
 
     case N_SCOPE:
-      UNKNOWN_STAB ("N_SCOPE"); 
-      abort ();
+      UNKNOWN_STAB ("N_SCOPE");
 
     case N_CATCH:
-      UNKNOWN_STAB ("N_CATCH"); 
-      abort ();
+      UNKNOWN_STAB ("N_CATCH");
+
+    case N_OPT:
+      UNKNOWN_STAB ("N_OPT");
 
     default:
-      UNKNOWN_STAB ("default"); 
-      abort ();
-  }
+      UNKNOWN_STAB ("?");
+    }
+}
+
+/* Output debugging info to FILE to switch to sourcefile FILENAME.
+   INLINE_P is true if this is from an inlined function.  */
+
+static void
+xcoffout_source_file (FILE *file, const char *filename, int inline_p)
+{
+  if (filename
+      && (xcoff_lastfile == 0 || strcmp (filename, xcoff_lastfile)
+	  || (inline_p && ! xcoff_inlining)
+	  || (! inline_p && xcoff_inlining)))
+    {
+      if (xcoff_current_include_file)
+	{
+	  fprintf (file, "\t.ei\t");
+	  output_quoted_string (file,
+	      remap_debug_filename (xcoff_current_include_file));
+	  fprintf (file, "\n");
+	  xcoff_current_include_file = NULL;
+	}
+      xcoff_inlining = inline_p;
+      if (strcmp (main_input_filename, filename) || inline_p)
+	{
+	  fprintf (file, "\t.bi\t");
+	  output_quoted_string (file, remap_debug_filename (filename));
+	  fprintf (file, "\n");
+	  xcoff_current_include_file = filename;
+	}
+      xcoff_lastfile = filename;
+    }
 }
 
-/* In XCOFF, we have to have this .bf before the function prologue.
-   Rely on the value of `dbx_begin_function_line' not to duplicate .bf.  */
+/* Output a line number symbol entry for location (FILENAME, LINE).  */
 
 void
-xcoffout_output_first_source_line (file, last_linenum)
-     FILE *file;
-     int last_linenum;
+xcoffout_source_line (unsigned int line, const char *filename)
 {
-  ASM_OUTPUT_LFB (file, last_linenum);
-  dbxout_parms (DECL_ARGUMENTS (current_function_decl));
-  ASM_OUTPUT_SOURCE_LINE (file, last_linenum);
-}
+  bool inline_p = (strcmp (xcoff_current_function_file, filename) != 0
+		   || (int) line < xcoff_begin_function_line);
 
+  xcoffout_source_file (asm_out_file, filename, inline_p);
+
+  ASM_OUTPUT_LINE (asm_out_file, line);
+}
+
 /* Output the symbols defined in block number DO_BLOCK.
-   Set NEXT_BLOCK_NUMBER to 0 before calling.
 
    This function works by walking the tree structure of blocks,
    counting blocks until it finds the desired block.  */
 
 static int do_block = 0;
 
-static int next_block_number;
-
 static void
-xcoffout_block (block, depth, args)
-     register tree block;
-     int depth;
-     tree args;
+xcoffout_block (tree block, int depth, tree args)
 {
   while (block)
     {
@@ -342,7 +347,7 @@ xcoffout_block (block, depth, args)
       if (TREE_USED (block))
 	{
 	  /* When we reach the specified block, output its symbols.  */
-	  if (next_block_number == do_block)
+	  if (BLOCK_NUMBER (block) == do_block)
 	    {
 	      /* Output the syms of the block.  */
 	      if (debug_info_level != DINFO_LEVEL_TERSE || depth == 0)
@@ -354,10 +359,8 @@ xcoffout_block (block, depth, args)
 	      return;
 	    }
 	  /* If we are past the specified block, stop the scan.  */
-	  else if (next_block_number >= do_block)
+	  else if (BLOCK_NUMBER (block) >= do_block)
 	    return;
-
-	  next_block_number++;
 
 	  /* Output the subblocks.  */
 	  xcoffout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE);
@@ -375,98 +378,107 @@ xcoffout_block (block, depth, args)
    if the count starts at 0 for the outermost one.  */
 
 void
-xcoffout_begin_block (file, line, n)
-     FILE *file;
-     int line;
-     int n;
+xcoffout_begin_block (unsigned int line, unsigned int n)
 {
   tree decl = current_function_decl;
 
-  ASM_OUTPUT_LBB (file, line, n);
+  /* The IBM AIX compiler does not emit a .bb for the function level scope,
+     so we avoid it here also.  */
+  if (n != 1)
+    ASM_OUTPUT_LBB (asm_out_file, line, n);
 
   do_block = n;
-  next_block_number = 0;
   xcoffout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl));
 }
 
 /* Describe the end line-number of an internal block within a function.  */
 
 void
-xcoffout_end_block (file, line, n)
-     FILE *file;
-     int line;
-     int n;
+xcoffout_end_block (unsigned int line, unsigned int n)
 {
-  ASM_OUTPUT_LBE (file, line, n);
+  if (n != 1)
+    ASM_OUTPUT_LBE (asm_out_file, line, n);
 }
 
 /* Called at beginning of function (before prologue).
    Declare function as needed for debugging.  */
 
 void
-xcoffout_declare_function (file, decl, name)
-     FILE *file;
-     tree decl;
-     char *name;
+xcoffout_declare_function (FILE *file, tree decl, const char *name)
 {
-  char *n = name;
-  int i;
+  size_t len;
 
-  for (i = 0; name[i]; ++i)
+  if (*name == '*')
+    name++;
+  len = strlen (name);
+  if (name[len - 1] == ']')
     {
-      if (name[i] == '[')
-	{
-	  n = (char *) alloca (i + 1);
-	  strncpy (n, name, i);
-	  n[i] = '\0';
-	  break;
-	}
+      char *n = alloca (len - 3);
+      memcpy (n, name, len - 4);
+      n[len - 4] = '\0';
+      name = n;
     }
 
+  /* Any pending .bi or .ei must occur before the .function pseudo op.
+     Otherwise debuggers will think that the function is in the previous
+     file and/or at the wrong line number.  */
+  xcoffout_source_file (file, DECL_SOURCE_FILE (decl), 0);
   dbxout_symbol (decl, 0);
-  fprintf (file, "\t.function .%s,.%s,16,044,FE..%s-.%s\n", n, n, n, n);
+
+  /* .function NAME, TOP, MAPPING, TYPE, SIZE
+     16 and 044 are placeholders for backwards compatibility */
+  fprintf (file, "\t.function .%s,.%s,16,044,FE..%s-.%s\n",
+	   name, name, name, name);
 }
 
-/* Called at beginning of function body (after prologue).
+/* Called at beginning of function body (at start of prologue).
    Record the function's starting line number, so we can output
    relative line numbers for the other lines.
    Record the file name that this function is contained in.  */
 
 void
-xcoffout_begin_function (file, last_linenum)
-     FILE *file;
-     int last_linenum;
+xcoffout_begin_prologue (unsigned int line,
+			 const char *file ATTRIBUTE_UNUSED)
 {
-  ASM_OUTPUT_LFB (file, last_linenum);
+  ASM_OUTPUT_LFB (asm_out_file, line);
+  dbxout_parms (DECL_ARGUMENTS (current_function_decl));
+
+  /* Emit the symbols for the outermost BLOCK's variables.  sdbout.c does this
+     in sdbout_begin_block, but there is no guarantee that there will be any
+     inner block 1, so we must do it here.  This gives a result similar to
+     dbxout, so it does make some sense.  */
+  do_block = BLOCK_NUMBER (DECL_INITIAL (current_function_decl));
+  xcoffout_block (DECL_INITIAL (current_function_decl), 0,
+		  DECL_ARGUMENTS (current_function_decl));
+
+  ASM_OUTPUT_LINE (asm_out_file, line);
 }
 
 /* Called at end of function (before epilogue).
    Describe end of outermost block.  */
 
 void
-xcoffout_end_function (file, last_linenum)
-     FILE *file;
-     int last_linenum;
+xcoffout_end_function (unsigned int last_linenum)
 {
-  ASM_OUTPUT_LFE (file, last_linenum);
+  ASM_OUTPUT_LFE (asm_out_file, last_linenum);
 }
 
 /* Output xcoff info for the absolute end of a function.
    Called after the epilogue is output.  */
 
 void
-xcoffout_end_epilogue (file)
-     FILE *file;
+xcoffout_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
+		       const char *file ATTRIBUTE_UNUSED)
 {
   /* We need to pass the correct function size to .function, otherwise,
      the xas assembler can't figure out the correct size for the function
      aux entry.  So, we emit a label after the last instruction which can
      be used by the .function pseudo op to calculate the function size.  */
 
-  char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+  const char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
   if (*fname == '*')
     ++fname;
-  fprintf (file, "FE..");
-  ASM_OUTPUT_LABEL (file, fname);
+  fprintf (asm_out_file, "FE..");
+  ASM_OUTPUT_LABEL (asm_out_file, fname);
 }
 #endif /* XCOFF_DEBUGGING_INFO */

@@ -1,26 +1,23 @@
 /* Definitions for AT&T assembler syntax for the Intel 80386.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 2000, 2001, 2002, 2007
+   Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
+GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
+the Free Software Foundation; either version 3, or (at your option)
 any later version.
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
-/* Include common aspects of all 386 Unix assemblers.  */
-#include "unx386.h"
-
-#define TARGET_VERSION fprintf (stderr, " (80386, ATT syntax)");
 
 /* Define the syntax of instructions and addresses.  */
 
@@ -29,25 +26,26 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Assembler pseudos to introduce constants of various size.  */
 
-/* #define ASM_BYTE_OP "\t.byte"  Now in svr3.h or svr4.h.  */
-#define ASM_SHORT "\t.value"
-#define ASM_LONG "\t.long"
-#define ASM_DOUBLE "\t.double"
+#define ASM_SHORT "\t.value\t"
+#define ASM_LONG "\t.long\t"
+#define ASM_QUAD "\t.quad\t"  /* Should not be used for 32bit compilation.  */
 
 /* How to output an ASCII string constant.  */
 
-#define ASM_OUTPUT_ASCII(FILE, p, size) \
-{ int i = 0; 							\
-  while (i < (size))						\
+#undef ASM_OUTPUT_ASCII
+#define ASM_OUTPUT_ASCII(FILE, PTR, SIZE)			\
+do								\
+{ size_t i = 0, limit = (SIZE); 				\
+  while (i < limit)						\
     { if (i%10 == 0) { if (i!=0) fprintf ((FILE), "\n");	\
-		       fprintf ((FILE), "%s ", ASM_BYTE_OP); }	\
-      else fprintf ((FILE), ",");					\
-	fprintf ((FILE), "0x%x", ((p)[i++] & 0377)) ;}		\
-      fprintf ((FILE), "\n"); }
+		       fputs ("\t.byte\t", (FILE)); }		\
+      else fprintf ((FILE), ",");				\
+	fprintf ((FILE), "0x%x", ((PTR)[i++] & 0377)) ;}	\
+      fprintf ((FILE), "\n");					\
+} while (0)
 
-/* Do use .optim by default on this machine.  */
-#undef ASM_FILE_START_1
-#define ASM_FILE_START_1(FILE) fprintf (FILE, "\t.optim\n")
+/* Output at beginning of assembler file.  */
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -59,26 +57,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
 
+#undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf ((FILE), "\t.set .,.+%u\n", (SIZE))
+  fprintf ((FILE), "\t.set .,.+%u\n", (int)(SIZE))
 
 /* Can't use ASM_OUTPUT_SKIP in text section; it doesn't leave 0s.  */
 
 #define ASM_NO_SKIP_IN_TEXT 1
-
-#undef BSS_SECTION_FUNCTION  /* Override the definition from svr3.h.  */
-#define BSS_SECTION_FUNCTION \
-void								\
-bss_section ()							\
-{								\
-  if (in_section != in_bss)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);	\
-      in_section = in_bss;					\
-    }								\
-}
 
 /* Define the syntax of labels and symbol definitions/declarations.  */
+
+/* The prefix to add for compiler private assembler symbols.  */
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX "."
 
 /* This is how to store into the string BUF
    the symbol_ref name of an internal numbered label where
@@ -87,17 +78,9 @@ bss_section ()							\
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-  sprintf ((BUF), ".%s%d", (PREFIX), (NUMBER))
+  sprintf ((BUF), "%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUMBER))
 
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
+/* The prefix to add to user-visible assembler symbols.  */
 
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
-
-/* This is how to output a reference to a user-level label named NAME.  */
-
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "%s", NAME)
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""

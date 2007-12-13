@@ -10,10 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
+ * 3. [rescinded 22 July 1999]
  * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
@@ -31,22 +28,18 @@
  * SUCH DAMAGE.
  */
 
-/* Mangled into a form that works on Sparc Solaris 2 by Mark Eichin
+/* Mangled into a form that works on SPARC Solaris 2 by Mark Eichin
  * for Cygnus Support, July 1992.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)gmon.c	5.3 (Berkeley) 5/22/91";
-#endif /* not lint */
-
-#include <unistd.h>
-
-#ifdef DEBUG
-#include <stdio.h>
-#endif
+#include "tconfig.h"
+#include "tsystem.h"
+#include <fcntl.h> /* for creat() */
+#include "coretypes.h"
+#include "tm.h"
 
 #if 0
-#include "gmon.h"
+#include "sparc/gmon.h"
 #else
 struct phdr {
   char *lpc;
@@ -95,9 +88,11 @@ static int	s_scale;
 
 #define	MSG "No space for profiling buffer(s)\n"
 
-monstartup(lowpc, highpc)
-    char	*lowpc;
-    char	*highpc;
+static void moncontrol (int);
+extern void monstartup (char *, char *);
+extern void _mcleanup (void);
+
+void monstartup(char *lowpc, char *highpc)
 {
     int			monsize;
     char		*buffer;
@@ -108,10 +103,10 @@ monstartup(lowpc, highpc)
 	 *	so the rest of the scaling (here and in gprof) stays in ints.
 	 */
     lowpc = (char *)
-	    ROUNDDOWN((unsigned)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
+	    ROUNDDOWN((unsigned long)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
     s_lowpc = lowpc;
     highpc = (char *)
-	    ROUNDUP((unsigned)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
+	    ROUNDUP((unsigned long)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
     s_highpc = highpc;
     s_textsize = highpc - lowpc;
     monsize = (s_textsize / HISTFRACTION) + sizeof(struct phdr);
@@ -172,7 +167,8 @@ monstartup(lowpc, highpc)
     moncontrol(1);
 }
 
-_mcleanup()
+void
+_mcleanup(void)
 {
     int			fd;
     int			fromindex;
@@ -180,16 +176,40 @@ _mcleanup()
     char		*frompc;
     int			toindex;
     struct rawarc	rawarc;
+    char		*profdir;
+    const char		*proffile;
+    char		*progname;
+    char		 buf[PATH_MAX];
+    extern char	       **___Argv;
 
     moncontrol(0);
-    fd = creat( "gmon.out" , 0666 );
+
+    if ((profdir = getenv("PROFDIR")) != NULL) {
+	/* If PROFDIR contains a null value, no profiling output is produced */
+	if (*profdir == '\0') {
+	    return;
+	}
+
+	progname=strrchr(___Argv[0], '/');
+	if (progname == NULL)
+	    progname=___Argv[0];
+	else
+	    progname++;
+
+	sprintf(buf, "%s/%ld.%s", profdir, (long) getpid(), progname);
+	proffile = buf;
+    } else {
+	proffile = "gmon.out";
+    }
+
+    fd = creat( proffile, 0666 );
     if ( fd < 0 ) {
-	perror( "mcount: gmon.out" );
+	perror( proffile );
 	return;
     }
 #   ifdef DEBUG
 	fprintf( stderr , "[mcleanup] sbuf 0x%x ssiz %d\n" , sbuf , ssiz );
-#   endif DEBUG
+#   endif /* DEBUG */
     write( fd , sbuf , ssiz );
     endfrom = s_textsize / (HASHFRACTION * sizeof(*froms));
     for ( fromindex = 0 ; fromindex < endfrom ; fromindex++ ) {
@@ -202,7 +222,7 @@ _mcleanup()
 		fprintf( stderr ,
 			"[mcleanup] frompc 0x%x selfpc 0x%x count %d\n" ,
 			frompc , tos[toindex].selfpc , tos[toindex].count );
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    rawarc.raw_frompc = (unsigned long) frompc;
 	    rawarc.raw_selfpc = (unsigned long) tos[toindex].selfpc;
 	    rawarc.raw_count = tos[toindex].count;
@@ -213,7 +233,7 @@ _mcleanup()
 }
 
 /*
- * The Sparc stack frame is only held together by the frame pointers
+ * The SPARC stack frame is only held together by the frame pointers
  * in the register windows. According to the SVR4 SPARC ABI
  * Supplement, Low Level System Information/Operating System
  * Interface/Software Trap Types, a type 3 trap will flush all of the
@@ -247,15 +267,17 @@ _mcleanup()
  * -- [eichin:19920702.1107EST]
  */
 
+static void internal_mcount (char *, unsigned short *) __attribute__ ((used));
+
 /* i7 == last ret, -> frompcindex */
 /* o7 == current ret, -> selfpc */
+/* Solaris 2 libraries use _mcount.  */
+asm(".global _mcount; _mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
+/* This is for compatibility with old versions of gcc which used mcount.  */
 asm(".global mcount; mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
 
-static internal_mcount(selfpc, frompcindex)
-	register char			*selfpc;
-	register unsigned short		*frompcindex;
+static void internal_mcount(char *selfpc, unsigned short *frompcindex)
 {
-	register char			*nextframe;
 	register struct tostruct	*top;
 	register struct tostruct	*prevtop;
 	register long			toindex;
@@ -267,9 +289,11 @@ static internal_mcount(selfpc, frompcindex)
 	 */
 
 	if(!already_setup) {
-          extern etext();
+          extern char etext[];
+	  extern char _start[];
+	  extern char _init[];
 	  already_setup = 1;
-	  monstartup(0, etext);
+	  monstartup(_start < _init ? _start : _init, etext);
 #ifdef USE_ONEXIT
 	  on_exit(_mcleanup, 0);
 #else
@@ -382,14 +406,13 @@ overflow:
  *	profiling is what mcount checks to see if
  *	all the data structures are ready.
  */
-moncontrol(mode)
-    int mode;
+static void moncontrol(int mode)
 {
     if (mode) {
 	/* start */
 	profil((unsigned short *)(sbuf + sizeof(struct phdr)),
 	       ssiz - sizeof(struct phdr),
-	       (int)s_lowpc, s_scale);
+	       (long)s_lowpc, s_scale);
 	profiling = 0;
     } else {
 	/* stop */

@@ -1,112 +1,80 @@
-/* Definitions of target machine for GNU compiler, for SPARC running Solaris 2
-   Copyright 1992 Free Software Foundation, Inc.
-   Contributed by Ron Guilmette (rfg@ncd.com) and
-   David V. Henkel-Wallace (gumby@cygnus.com).
+/* Definitions of target machine for GCC, for SPARC running Solaris 2
+   Copyright 1992, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005,
+   2006, 2007 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@netcom.com).
+   Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
+GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
+the Free Software Foundation; either version 3, or (at your option)
 any later version.
 
-GNU CC is distributed in the hope that it will be useful,
+GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
-#include "sparcv4.h"
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
- "-Dsun -Dsparc -Dunix -D__svr4__ -Asystem(unix) -Acpu(sparc) -Amachine(sparc)"
+/* This is here rather than in sparc.h because it's not known what
+   other assemblers will accept.  */
 
-/* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
-   It's safe to pass -s always, even if -g is not used. */
-#undef ASM_SPEC
-#define ASM_SPEC \
-  "%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s"
-
-/* However it appears that Solaris 2.0 uses the same reg numbering as
-   the old BSD-style system did. */
-
-#undef DBX_REGISTER_NUMBER
-/* Same as sparc.h */
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
-/* We use stabs-in-elf for debugging, because that is what the native
-   toolchain uses.  */
-#define DBX_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#define DBX_BLOCKS_FUNCTION_RELATIVE 1
-
-/* "gcc2_compiled." must be a .stabs, not an ordinary symbol, or GDB won't
-   see it.  Furthermore, since GDB reads the input piecemeal, starting
-   with each N_SO, it's a lot easier if the gcc2 flag symbol is *after*
-   the N_SO rather than before it.  So we emit an N_OPT stab here.  */
-
-#define ASM_IDENTIFY_GCC(FILE)	/* Do nothing */
-
-#define ASM_IDENTIFY_GCC_AFTER_SOURCE(FILE)	\
- fputs ("\t.stabs\t\"gcc2_compiled.\", 0x3c, 0, 0, 0\n", FILE)
-
-#undef CTORS_SECTION_ASM_OP
-#undef DTORS_SECTION_ASM_OP
-
-#if 0 /* These seems unnecessary; the ones in sparcv4.h look right.  */
-#undef TEXT_SECTION_ASM_OP
-#undef DATA_SECTION_ASM_OP
-#undef BSS_SECTION_ASM_OP
-#undef CONST_SECTION_ASM_OP
-#undef INIT_SECTION_ASM_OP
-
-#define TEXT_SECTION_ASM_OP	"\t.section\t\".text\""
-#define DATA_SECTION_ASM_OP	"\t.section\t\".data\""
-#define BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
-
-#define CONST_SECTION_ASM_OP	"\t.section\t\".rodata\""
-#define INIT_SECTION_ASM_OP	"\t.section\t\".init\""
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v9
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-xarch=v8plus"
 #endif
 
-#define CTORS_SECTION_ASM_OP	"\t.section\t\".ctors\",#alloc,#execinstr\n"
-#define DTORS_SECTION_ASM_OP	"\t.section\t\".dtors\",#alloc,#execinstr\n"
+#if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-xarch=v8plusa"
+#endif
 
-/* The Solaris 2 assembler uses .skip, not .zero, so put this back. */
+#if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-xarch=v8plusb"
+#endif
+
+#if TARGET_CPU_DEFAULT == TARGET_CPU_niagara
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-xarch=v8plusb"
+#endif
+
+#if TARGET_CPU_DEFAULT == TARGET_CPU_niagara2
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-xarch=v8plusb"
+#endif
+
+#undef ASM_CPU_SPEC
+#define ASM_CPU_SPEC "\
+%{mcpu=v9:-xarch=v8plus} \
+%{mcpu=ultrasparc:-xarch=v8plusa} \
+%{mcpu=ultrasparc3:-xarch=v8plusb} \
+%{mcpu=niagara:-xarch=v8plusb} \
+%{mcpu=niagara2:-xarch=v8plusb} \
+%{!mcpu*:%(asm_cpu_default)} \
+"
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "startfile_arch",	STARTFILE_ARCH_SPEC },	\
+  { "link_arch",	LINK_ARCH_SPEC }
+
+/* However it appears that Solaris 2.0 uses the same reg numbering as
+   the old BSD-style system did.  */
+
+/* The Solaris 2 assembler uses .skip, not .zero, so put this back.  */
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.skip %u\n", (SIZE))
+  fprintf (FILE, "\t.skip %u\n", (int)(SIZE))
 
-#undef ASM_OUTPUT_ALIGNED_LOCAL
-#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
-do {									\
-  fputs ("\t.local\t", (FILE));		\
-  assemble_name ((FILE), (NAME));					\
-  putc ('\n', (FILE));							\
-  ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);			\
-} while (0)
-
-#undef COMMON_ASM_OP
-#define COMMON_ASM_OP "\t.common"
-
-/* This is how to output a definition of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#undef  ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".L%s%d:\n", PREFIX, NUM)
-
-/* This is how to output a reference to an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#undef  ASM_OUTPUT_INTERNAL_LABELREF
-#define ASM_OUTPUT_INTERNAL_LABELREF(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".L%s%d", PREFIX, NUM)
+#undef  LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX  "."
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
@@ -115,79 +83,96 @@ do {									\
 
 #undef  ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*.L%s%d", PREFIX, NUM)
+  sprintf ((LABEL), "*.L%s%lu", (PREFIX), (unsigned long)(NUM))
 
-/* in Solaris 2.0, linenos are relative to the current fn. */
-#undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
-  { static int sym_lineno = 1;				\
-    fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",	\
-	     line, sym_lineno, 				\
-	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)),\
-	     sym_lineno);				\
-    sym_lineno += 1; }
+/* The native TLS-enabled assembler requires the directive #tls_object
+   to be put on objects in TLS sections (as of v7.1).  This is not
+   required by the GNU assembler but supported on SPARC.  */
+#undef  ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
+  do								\
+    {								\
+      HOST_WIDE_INT size;					\
+								\
+      if (targetm.have_tls && DECL_THREAD_LOCAL_P (DECL))	\
+	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "tls_object");	\
+      else							\
+	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");	\
+								\
+      size_directive_output = 0;				\
+      if (!flag_inhibit_size_directive				\
+	  && (DECL) && DECL_SIZE (DECL))			\
+	{							\
+	  size_directive_output = 1;				\
+	  size = int_size_in_bytes (TREE_TYPE (DECL));		\
+	  ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);		\
+	}							\
+								\
+      ASM_OUTPUT_LABEL (FILE, NAME);				\
+    }								\
+  while (0)
 
-/* But, to make this work, we have to output the stabs for the function
-   name *first*...  */
-#define	DBX_FUNCTION_FIRST
+/* The Solaris assembler cannot grok .stabd directives.  */
+#undef NO_DBX_BNSYM_ENSYM
+#define NO_DBX_BNSYM_ENSYM 1
+
+
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   crtend.o%s crtn.o%s"
+
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.
+
+   Some Solaris dynamic linkers don't handle unaligned section relative
+   relocs properly, so force them to be aligned.  */
+#ifndef HAVE_AS_SPARC_UA_PCREL
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)		\
+  ((flag_pic || GLOBAL) ? DW_EH_PE_aligned : DW_EH_PE_absptr)
+#endif
 
 
-/* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.
-   We don't use the standard LIB_SPEC only because we don't yet support c++ */
+/* Define for support of TFmode long double.
+   SPARC ABI says that long double is 4 words.  */
+#define LONG_DOUBLE_TYPE_SIZE 128
 
-/* If we cannot find the GNU *crt*.o files in the STANDARD_STARTFILE_PREFIX
-   directory, our fallback strategy must be to look for these files instead
-   in the Sun C 2.0 directory.  */
+/* But indicate that it isn't supported by the hardware.  */
+#define WIDEST_HARDWARE_FP_SIZE 64
 
-#undef MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX "/opt/SUNWspro/SC2.0/"
+/* Solaris's _Qp_* library routine implementation clobbers the output
+   memory before the inputs are fully consumed.  */
 
-#undef	STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared: \
-			 %{!symbolic: \
-			  %{pg:crt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} \
-			  %{pg:gmon.o%s} \
-			  %{pg:crti.o%s}%{!pg:crti.o%s} \
-			  %{ansi:/usr/ccs/lib/values-Xc.o%s} \
-			  %{!ansi: \
-			   %{traditional:/usr/ccs/lib/values-Xt.o%s} \
-			   %{!traditional:/usr/ccs/lib/values-Xa.o%s}}}} \
-			  crtbegin.o%s"
+#undef TARGET_BUGGY_QP_LIB
+#define TARGET_BUGGY_QP_LIB	1
 
-#undef	LIB_SPEC
-#define LIB_SPEC \
-  "%{!shared:%{!symbolic:-lc}} \
-  crtend.o%s \
-  %{!shared:%{!symbolic:%{pg:crtn.o%s}%{!pg:crtn.o%s}}}"
+#undef SUN_CONVERSION_LIBFUNCS
+#define SUN_CONVERSION_LIBFUNCS 1
 
-/* This should be the same as in svr4.h, except with -R added.  */
-#undef LINK_SPEC
-#define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
-		   %{b} %{Wl,*:%*} \
-		   %{static:-dn -Bstatic} \
-		   %{shared:-G -dy} \
-		   %{symbolic:-Bsymbolic -G -dy} \
-		   %{G:-G} \
-		   %{YP,*} \
-		   %{R*} \
-		   %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-		    %{!p:-Y P,/usr/ccs/lib:/usr/lib}} \
-		   %{Qy:} %{!Qn:-Qy}"
+#undef DITF_CONVERSION_LIBFUNCS
+#define DITF_CONVERSION_LIBFUNCS 1
 
-/* This defines which switch letters take arguments.
-   It is as in svr4.h but with -R added.  */
+#undef SUN_INTEGER_MULTIPLY_64
+#define SUN_INTEGER_MULTIPLY_64 1
 
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (   (CHAR) == 'D' \
-   || (CHAR) == 'U' \
-   || (CHAR) == 'o' \
-   || (CHAR) == 'e' \
-   || (CHAR) == 'u' \
-   || (CHAR) == 'I' \
-   || (CHAR) == 'm' \
-   || (CHAR) == 'L' \
-   || (CHAR) == 'R' \
-   || (CHAR) == 'A' \
-   || (CHAR) == 'h' \
-   || (CHAR) == 'z')
+/* Solaris allows 64 bit out and global registers in 32 bit mode.
+   sparc_override_options will disable V8+ if not generating V9 code.  */
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_V8PLUS + MASK_APP_REGS + MASK_FPU \
+			+ MASK_LONG_DOUBLE_128)
+
+/* Solaris-specific #pragmas are implemented on top of attributes.  Hook in
+   the bits from config/sol2.c.  */
+#define SUBTARGET_INSERT_ATTRIBUTES solaris_insert_attributes
+#define SUBTARGET_ATTRIBUTE_TABLE SOLARIS_ATTRIBUTE_TABLE
+
+/* Output a simple call for .init/.fini.  */
+#define ASM_OUTPUT_CALL(FILE, FN)			        \
+  do								\
+    {								\
+      fprintf (FILE, "\tcall\t");				\
+      print_operand (FILE, XEXP (DECL_RTL (FN), 0), 0);	\
+      fprintf (FILE, "\n\tnop\n");				\
+    }								\
+  while (0)

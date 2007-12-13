@@ -83,9 +83,10 @@ struct ypall_callback;
 union wait;
 
 /* Get size_t and wchar_t.  */
-#include "gstddef.h"
+#include <stddef.h>
 
 /* #include "sys/types.h" */
+#define ssize_t int
 
 /* The actual types used here are mostly wrong,
    but it is not supposed to matter what types we use here.  */
@@ -165,7 +166,7 @@ typedef int ushort;
 typedef int ulong;
 typedef int uint;
 
-typedef int va_list;
+typedef int __gnuc_va_list;
 
 typedef int archdr;
 typedef int AUTH;

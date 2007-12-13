@@ -1,21 +1,21 @@
 /* Definitions for condition code handling in final.c and output routines.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 2007 Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 /* None of the things in the files exist if we don't use CC0.  */
 
@@ -84,6 +84,8 @@ extern CC_STATUS cc_status;
 
 /* This bit means that the current setting of the overflow flag
    is bogus and conditional jumps should pretend there is no overflow.  */
+/* ??? Note that for most targets this macro is misnamed as it applies
+   to the carry flag, not the overflow flag.  */
 #define CC_NO_OVERFLOW 010
 
 /* This bit means that what ought to be in the Z bit
@@ -102,7 +104,7 @@ extern CC_STATUS cc_status;
 #define CC_INVERTED 0100
 
 /* Nonzero if we must convert signed condition operators to unsigned.
-   This is only used by machine description files. */
+   This is only used by machine description files.  */
 #define CC_NOT_SIGNED 0200
 
 /* This is how to initialize the variable cc_status.
