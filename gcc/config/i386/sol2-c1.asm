@@ -1,6 +1,6 @@
 ! crt1.s for Solaris 2, x86
 
-!   Copyright (C) 1993 Free Software Foundation, Inc.
+!   Copyright (C) 1993, 1998 Free Software Foundation, Inc.
 !   Written By Fred Fish, Nov 1992
 ! 
 ! This file is free software; you can redistribute it and/or modify it
@@ -23,7 +23,8 @@
 ! 
 ! You should have received a copy of the GNU General Public License
 ! along with this program; see the file COPYING.  If not, write to
-! the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+! the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+! Boston, MA 02110-1301, USA.
 ! 
 !    As a special exception, if you link this library with files
 !    compiled with GCC to produce an executable, this does not cause
@@ -40,7 +41,6 @@
 ! information obtained by single stepping executables on other i386 SVR4
 ! implementations.  This file is the first thing linked into any executable.
 
-	.file	"crt1.s"
 	.ident	"GNU C crt1.s"
 	.weak	_cleanup
 	.weak	_DYNAMIC
@@ -114,6 +114,12 @@ _start:
 ! is the argument vector pointer, which is at a fixed address off
 ! the initial frame pointer.
 
+!
+! Make sure the stack is properly aligned.
+!
+	andl $0xfffffff0,%esp
+	subl $4,%esp
+	
 	pushl	%edx
 	leal	12(%ebp),%edx
 	pushl	%edx
@@ -148,7 +154,7 @@ _start:
 ! A dummy profiling support routine for non-profiling executables,
 ! in case we link in some objects that have been compiled for profiling.
 
-	.globl	_mcount
+	.weak	_mcount
 _mcount:
 	ret
 	.type	_mcount,@function

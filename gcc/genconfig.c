@@ -1,73 +1,73 @@
 /* Generate from machine description:
-
    - some #define configuration flags.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1997, 1998, 1999, 2000, 2003, 2004, 2007
+   Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 
-#include <stdio.h>
-#include "hconfig.h"
+#include "bconfig.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
-#include "obstack.h"
+#include "errors.h"
+#include "gensupport.h"
 
-static struct obstack obstack;
-struct obstack *rtl_obstack = &obstack;
-
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
-extern void free ();
-extern rtx read_rtx ();
 
 /* flags to determine output of machine description dependent #define's.  */
 static int max_recog_operands;  /* Largest operand number seen.  */
 static int max_dup_operands;    /* Largest number of match_dup in any insn.  */
 static int max_clobbers_per_insn;
-static int register_constraint_flag;
 static int have_cc0_flag;
 static int have_cmove_flag;
+static int have_cond_exec_flag;
 static int have_lo_sum_flag;
+static int have_peephole_flag;
+static int have_peephole2_flag;
 
 /* Maximum number of insns seen in a split.  */
 static int max_insns_per_split = 1;
 
+/* Maximum number of input insns for peephole2.  */
+static int max_insns_per_peep2;
+
 static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
-char *xmalloc ();
-static void fatal ();
-void fancy_abort ();
+static void walk_insn_part (rtx, int, int);
+static void gen_insn (rtx);
+static void gen_expand (rtx);
+static void gen_split (rtx);
+static void gen_peephole (rtx);
+static void gen_peephole2 (rtx);
 
-/* RECOG_P will be non-zero if this pattern was seen in a context where it will
+/* RECOG_P will be nonzero if this pattern was seen in a context where it will
    be used to recognize, rather than just generate an insn. 
 
-   NON_PC_SET_SRC will be non-zero if this pattern was seen in a SET_SRC
+   NON_PC_SET_SRC will be nonzero if this pattern was seen in a SET_SRC
    of a SET whose destination is not (pc).  */
 
 static void
-walk_insn_part (part, recog_p, non_pc_set_src)
-     rtx part;
-     int recog_p;
-     int non_pc_set_src;
+walk_insn_part (rtx part, int recog_p, int non_pc_set_src)
 {
-  register int i, j;
-  register RTX_CODE code;
-  register char *format_ptr;
+  int i, j;
+  RTX_CODE code;
+  const char *format_ptr;
 
   if (part == 0)
     return;
@@ -82,8 +82,6 @@ walk_insn_part (part, recog_p, non_pc_set_src)
     case MATCH_OPERAND:
       if (XINT (part, 0) > max_recog_operands)
 	max_recog_operands = XINT (part, 0);
-      if (XSTR (part, 2) && *XSTR (part, 2))
-	register_constraint_flag = 1;
       return;
 
     case MATCH_OP_DUP:
@@ -99,7 +97,8 @@ walk_insn_part (part, recog_p, non_pc_set_src)
       break;
 
     case LABEL_REF:
-      if (GET_CODE (XEXP (part, 0)) == MATCH_OPERAND)
+      if (GET_CODE (XEXP (part, 0)) == MATCH_OPERAND
+	  || GET_CODE (XEXP (part, 0)) == MATCH_DUP)
 	break;
       return;
 
@@ -138,9 +137,17 @@ walk_insn_part (part, recog_p, non_pc_set_src)
 	have_cmove_flag = 1;
       break;
 
+    case COND_EXEC:
+      if (recog_p)
+	have_cond_exec_flag = 1;
+      break;
+
     case REG: case CONST_INT: case SYMBOL_REF:
     case PC:
       return;
+
+    default:
+      break;
     }
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (part));
@@ -161,8 +168,7 @@ walk_insn_part (part, recog_p, non_pc_set_src)
 }
 
 static void
-gen_insn (insn)
-     rtx insn;
+gen_insn (rtx insn)
 {
   int i;
 
@@ -182,8 +188,7 @@ gen_insn (insn)
 /* Similar but scan a define_expand.  */
 
 static void
-gen_expand (insn)
-     rtx insn;
+gen_expand (rtx insn)
 {
   int i;
 
@@ -209,8 +214,7 @@ gen_expand (insn)
 /* Similar but scan a define_split.  */
 
 static void
-gen_split (split)
-     rtx split;
+gen_split (rtx split)
 {
   int i;
 
@@ -224,8 +228,7 @@ gen_split (split)
 }
 
 static void
-gen_peephole (peep)
-     rtx peep;
+gen_peephole (rtx peep)
 {
   int i;
 
@@ -234,122 +237,129 @@ gen_peephole (peep)
   for (i = 0; i < XVECLEN (peep, 0); i++)
     walk_insn_part (XVECEXP (peep, 0, i), 1, 0);
 }
-
-char *
-xmalloc (size)
-     unsigned size;
-{
-  register char *val = (char *) malloc (size);
-
-  if (val == 0)
-    fatal ("virtual memory exhausted");
-
-  return val;
-}
-
-char *
-xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
-{
-  char *result = (char *) realloc (ptr, size);
-  if (!result)
-    fatal ("virtual memory exhausted");
-  return result;
-}
 
 static void
-fatal (s, a1, a2)
-     char *s;
+gen_peephole2 (rtx peep)
 {
-  fprintf (stderr, "genconfig: ");
-  fprintf (stderr, s, a1, a2);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
+  int i, n;
+
+  /* Look through the patterns that are matched
+     to compute the maximum operand number.  */
+  for (i = XVECLEN (peep, 0) - 1; i >= 0; --i)
+    walk_insn_part (XVECEXP (peep, 0, i), 1, 0);
+
+  /* Look at the number of insns this insn can be matched from.  */
+  for (i = XVECLEN (peep, 0) - 1, n = 0; i >= 0; --i)
+    if (GET_CODE (XVECEXP (peep, 0, i)) != MATCH_DUP
+	&& GET_CODE (XVECEXP (peep, 0, i)) != MATCH_SCRATCH)
+      n++;
+  if (n > max_insns_per_peep2)
+    max_insns_per_peep2 = n;
 }
 
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
-}
-
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   rtx desc;
-  FILE *infile;
-  register int c;
 
-  obstack_init (rtl_obstack);
+  progname = "genconfig";
 
-  if (argc <= 1)
-    fatal ("No input file name.");
+  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+    return (FATAL_EXIT_CODE);
 
-  infile = fopen (argv[1], "r");
-  if (infile == 0)
-    {
-      perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
-    }
+  puts ("/* Generated automatically by the program `genconfig'");
+  puts ("   from the machine description file `md'.  */\n");
+  puts ("#ifndef GCC_INSN_CONFIG_H");
+  puts ("#define GCC_INSN_CONFIG_H\n");
 
-  init_rtl ();
-
-  printf ("/* Generated automatically by the program `genconfig'\n\
-from the machine description file `md'.  */\n\n");
-
-  /* Allow at least 10 operands for the sake of asm constructs.  */
-  max_recog_operands = 9;  /* We will add 1 later.  */
+  /* Allow at least 30 operands for the sake of asm constructs.  */
+  /* ??? We *really* ought to reorganize things such that there
+     is no fixed upper bound.  */
+  max_recog_operands = 29;  /* We will add 1 later.  */
   max_dup_operands = 1;
 
   /* Read the machine description.  */
 
   while (1)
     {
-      c = read_skip_spaces (infile);
-      if (c == EOF)
-	break;
-      ungetc (c, infile);
+      int line_no, insn_code_number = 0;
 
-      desc = read_rtx (infile);
-      if (GET_CODE (desc) == DEFINE_INSN)
-	gen_insn (desc);
-      if (GET_CODE (desc) == DEFINE_EXPAND)
-	gen_expand (desc);
-      if (GET_CODE (desc) == DEFINE_SPLIT)
-	gen_split (desc);
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE)
-	gen_peephole (desc);
+      desc = read_md_rtx (&line_no, &insn_code_number);
+      if (desc == NULL)
+	break;
+	
+      switch (GET_CODE (desc)) 
+	{
+  	  case DEFINE_INSN:
+	    gen_insn (desc);
+	    break;
+	  
+	  case DEFINE_EXPAND:
+	    gen_expand (desc);
+	    break;
+
+	  case DEFINE_SPLIT:
+	    gen_split (desc);
+	    break;
+
+	  case DEFINE_PEEPHOLE2:
+	    have_peephole2_flag = 1;
+	    gen_peephole2 (desc);
+	    break;
+
+	  case DEFINE_PEEPHOLE:
+	    have_peephole_flag = 1;
+	    gen_peephole (desc);
+	    break;
+
+	  default:
+	    break;
+	}
     }
 
-  printf ("\n#define MAX_RECOG_OPERANDS %d\n", max_recog_operands + 1);
-
-  printf ("\n#define MAX_DUP_OPERANDS %d\n", max_dup_operands);
+  printf ("#define MAX_RECOG_OPERANDS %d\n", max_recog_operands + 1);
+  printf ("#define MAX_DUP_OPERANDS %d\n", max_dup_operands);
 
   /* This is conditionally defined, in case the user writes code which emits
      more splits than we can readily see (and knows s/he does it).  */
-  printf ("#ifndef MAX_INSNS_PER_SPLIT\n#define MAX_INSNS_PER_SPLIT %d\n#endif\n",
-	  max_insns_per_split);
-
-  if (register_constraint_flag)
-    printf ("#define REGISTER_CONSTRAINTS\n");
+  printf ("#ifndef MAX_INSNS_PER_SPLIT\n");
+  printf ("#define MAX_INSNS_PER_SPLIT %d\n", max_insns_per_split);
+  printf ("#endif\n");
 
   if (have_cc0_flag)
-    printf ("#define HAVE_cc0\n");
+    {
+      printf ("#define HAVE_cc0 1\n");
+      printf ("#define CC0_P(X) ((X) == cc0_rtx)\n");
+    }
+  else
+    {
+      /* We output CC0_P this way to make sure that X is declared
+	 somewhere.  */
+      printf ("#define CC0_P(X) ((X) ? 0 : 0)\n");
+    }
 
   if (have_cmove_flag)
-    printf ("#define HAVE_conditional_move\n");
+    printf ("#define HAVE_conditional_move 1\n");
+
+  if (have_cond_exec_flag)
+    printf ("#define HAVE_conditional_execution 1\n");
 
   if (have_lo_sum_flag)
-    printf ("#define HAVE_lo_sum\n");
+    printf ("#define HAVE_lo_sum 1\n");
 
-  fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  if (have_peephole_flag)
+    printf ("#define HAVE_peephole 1\n");
+
+  if (have_peephole2_flag)
+    {
+      printf ("#define HAVE_peephole2 1\n");
+      printf ("#define MAX_INSNS_PER_PEEP2 %d\n", max_insns_per_peep2);
+    }
+
+  puts("\n#endif /* GCC_INSN_CONFIG_H */");
+
+  if (ferror (stdout) || fflush (stdout) || fclose (stdout))
+    return FATAL_EXIT_CODE;
+
+  return SUCCESS_EXIT_CODE;
 }

@@ -1,159 +1,97 @@
 /* Generate from machine description:
-
    - some macros CODE_FOR_... giving the insn_code_number value
    for each of the defined standard insn names.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1995, 1998, 1999, 2000, 2001, 2003,
+   2004, 2007  Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 
-#include <stdio.h>
-#include "hconfig.h"
+#include "bconfig.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
-#include "obstack.h"
-
-static struct obstack obstack;
-struct obstack *rtl_obstack = &obstack;
-
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
-extern void free ();
-extern rtx read_rtx ();
-
-char *xmalloc ();
-static void fatal ();
-void fancy_abort ();
-
-static int insn_code_number;
+#include "errors.h"
+#include "gensupport.h"
 
 static void
-gen_insn (insn)
-     rtx insn;
+gen_insn (rtx insn, int code)
 {
-  /* Don't mention instructions whose names are the null string.
-     They are in the machine description just to be recognized.  */
-  if (strlen (XSTR (insn, 0)) != 0)
-    printf ("  CODE_FOR_%s = %d,\n", XSTR (insn, 0),
-	    insn_code_number);
+  const char *name = XSTR (insn, 0);
+  int truth = maybe_eval_c_test (XSTR (insn, 2));
+
+  /* Don't mention instructions whose names are the null string
+     or begin with '*'.  They are in the machine description just
+     to be recognized.  */
+  if (name[0] != 0 && name[0] != '*')
+    {
+      if (truth == 0)
+	printf ("#define CODE_FOR_%s CODE_FOR_nothing\n", name);
+      else
+	printf ("  CODE_FOR_%s = %d,\n", name, code);
+    }
 }
 
-char *
-xmalloc (size)
-     unsigned size;
-{
-  register char *val = (char *) malloc (size);
-
-  if (val == 0)
-    fatal ("virtual memory exhausted");
-  return val;
-}
-
-char *
-xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
-{
-  char *result = (char *) realloc (ptr, size);
-  if (!result)
-    fatal ("virtual memory exhausted");
-  return result;
-}
-
-static void
-fatal (s, a1, a2)
-     char *s;
-{
-  fprintf (stderr, "gencodes: ");
-  fprintf (stderr, s, a1, a2);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
-}
-
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
-}
-
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   rtx desc;
-  FILE *infile;
-  register int c;
 
-  obstack_init (rtl_obstack);
+  progname = "gencodes";
 
-  if (argc <= 1)
-    fatal ("No input file name.");
+  /* We need to see all the possibilities.  Elided insns may have
+     direct references to CODE_FOR_xxx in C code.  */
+  insn_elision = 0;
 
-  infile = fopen (argv[1], "r");
-  if (infile == 0)
-    {
-      perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
-    }
+  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+    return (FATAL_EXIT_CODE);
 
-  init_rtl ();
-
-  printf ("/* Generated automatically by the program `gencodes'\n\
-from the machine description file `md'.  */\n\n");
-
-  printf ("#ifndef MAX_INSN_CODE\n\n");
+  puts ("\
+/* Generated automatically by the program `gencodes'\n\
+   from the machine description file `md'.  */\n\
+\n\
+#ifndef GCC_INSN_CODES_H\n\
+#define GCC_INSN_CODES_H\n\
+\n\
+enum insn_code {");
 
   /* Read the machine description.  */
 
-  insn_code_number = 0;
-  printf ("enum insn_code {\n");
-
   while (1)
     {
-      c = read_skip_spaces (infile);
-      if (c == EOF)
-	break;
-      ungetc (c, infile);
+      int line_no;
+      int insn_code_number;
 
-      desc = read_rtx (infile);
+      desc = read_md_rtx (&line_no, &insn_code_number);
+      if (desc == NULL)
+	break;
+
       if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
-	{
-	  gen_insn (desc);
-	  insn_code_number++;
-	}
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE
-	  || GET_CODE (desc) == DEFINE_SPLIT)
-	{
-	  insn_code_number++;
-	}
+	gen_insn (desc, insn_code_number);
     }
 
-  printf ("  CODE_FOR_nothing };\n");
+  puts ("  CODE_FOR_nothing\n\
+};\n\
+\n\
+#endif /* GCC_INSN_CODES_H */");
 
-  printf ("\n#define MAX_INSN_CODE ((int) CODE_FOR_nothing)\n");
+  if (ferror (stdout) || fflush (stdout) || fclose (stdout))
+    return FATAL_EXIT_CODE;
 
-  printf ("#endif /* MAX_INSN_CODE */\n");
-
-  fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  return SUCCESS_EXIT_CODE;
 }

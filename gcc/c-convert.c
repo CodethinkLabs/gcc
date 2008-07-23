@@ -1,21 +1,22 @@
 /* Language-level data type conversion for GNU C.
-   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1998, 2002, 2003, 2004, 2005, 2007
+   Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 
 /* This file contains the functions for converting C expressions
@@ -24,9 +25,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    but what kind of conversions it does will depend on the language.  */
 
 #include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "flags.h"
 #include "convert.h"
+#include "c-common.h"
+#include "c-tree.h"
+#include "langhooks.h"
+#include "toplev.h"
+#include "target.h"
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -39,7 +48,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Here is a list of all the functions that assume that widening and
    narrowing is always done with a NOP_EXPR:
      In convert.c, convert_to_integer.
-     In c-typeck.c, build_binary_op (boolean ops), and truthvalue_conversion.
+     In c-typeck.c, build_binary_op (boolean ops), and
+	c_common_truthvalue_conversion.
      In expr.c: expand_expr, for operands of a MULT_EXPR.
      In fold-const.c: fold.
      In tree.c: get_narrower and get_unwidened.  */
@@ -55,17 +65,29 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    not permitted by the language being compiled.  */
 
 tree
-convert (type, expr)
-     tree type, expr;
+convert (tree type, tree expr)
 {
-  register tree e = expr;
-  register enum tree_code code = TREE_CODE (type);
+  tree e = expr;
+  enum tree_code code = TREE_CODE (type);
+  const char *invalid_conv_diag;
 
-  if (type == TREE_TYPE (expr)
-      || TREE_CODE (expr) == ERROR_MARK)
+  if (type == error_mark_node
+      || expr == error_mark_node
+      || TREE_TYPE (expr) == error_mark_node)
+    return error_mark_node;
+
+  if ((invalid_conv_diag
+       = targetm.invalid_conversion (TREE_TYPE (expr), type)))
+    {
+      error (invalid_conv_diag);
+      return error_mark_node;
+    }
+
+  if (type == TREE_TYPE (expr))
     return expr;
+
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
-    return fold (build1 (NOP_EXPR, type, expr));
+    return fold_convert (type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
   if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
@@ -74,21 +96,24 @@ convert (type, expr)
       return error_mark_node;
     }
   if (code == VOID_TYPE)
-    return build1 (CONVERT_EXPR, type, e);
-#if 0
-  /* This is incorrect.  A truncation can't be stripped this way.
-     Extensions will be stripped by the use of get_unwidened.  */
-  if (TREE_CODE (expr) == NOP_EXPR)
-    return convert (type, TREE_OPERAND (expr, 0));
-#endif
+    return fold_convert (type, e);
   if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
     return fold (convert_to_integer (type, e));
-  if (code == POINTER_TYPE)
+  if (code == BOOLEAN_TYPE)
+    return fold_convert (type, c_objc_common_truthvalue_conversion (expr));
+  if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)
     return fold (convert_to_real (type, e));
+  if (code == FIXED_POINT_TYPE)
+    return fold (convert_to_fixed (type, e));
   if (code == COMPLEX_TYPE)
     return fold (convert_to_complex (type, e));
+  if (code == VECTOR_TYPE)
+    return fold (convert_to_vector (type, e));
+  if ((code == RECORD_TYPE || code == UNION_TYPE)
+      && lang_hooks.types_compatible_p (type, TREE_TYPE (expr)))
+      return e;
 
   error ("conversion to non-scalar type requested");
   return error_mark_node;
