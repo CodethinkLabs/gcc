@@ -1,151 +1,234 @@
 /* Generate code from machine description to extract operands from insn as rtl.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993, 1997, 1998, 1999, 2000, 2003,
+   2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 
-#include <stdio.h>
-#include "config.h"
+#include "bconfig.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
-#include "obstack.h"
+#include "errors.h"
+#include "read-md.h"
+#include "gensupport.h"
+#include "vec.h"
+#include "vecprim.h"
 
-static struct obstack obstack;
-struct obstack *rtl_obstack = &obstack;
+/* This structure contains all the information needed to describe one
+   set of extractions methods.  Each method may be used by more than
+   one pattern if the operands are in the same place.
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
+   The string for each operand describes that path to the operand and
+   contains `0' through `9' when going into an expression and `a' through
+   `z' when going into a vector.  We assume here that only the first operand
+   of an rtl expression is a vector.  genrecog.c makes the same assumption
+   (and uses the same representation) and it is currently true.  */
 
-extern void free ();
+typedef char *locstr;
 
-/* Number instruction patterns handled, starting at 0 for first one.  */
-
-static int insn_code_number;
-
-/* Number the occurrences of MATCH_DUP in each instruction,
-   starting at 0 for the first occurrence.  */
-
-static int dup_count;
-
-/* Record which operand numbers have been seen in the current pattern.
-   This table is made longer as needed.  */
-
-static char *operand_seen;
-
-/* Current allocated length of operand_seen.  */
-
-static int operand_seen_length;
-
-/* Have we got any peephole patterns yet?  */
-
-static int peephole_seen;
-
-/* While tree-walking an instruction pattern, we keep a chain
-   of these `struct link's to record how to get down to the
-   current position.  In each one, POS is the operand number,
-   and if the operand is a vector VEC is the element number.
-   VEC is -1 if the operand is not a vector.  */
-
-struct link
+struct extraction
 {
-  struct link *next;
-  int pos;
-  int vecelt;
+  unsigned int op_count;
+  unsigned int dup_count;
+  locstr *oplocs;
+  locstr *duplocs;
+  int *dupnums;
+  struct code_ptr *insns;
+  struct extraction *next;
 };
 
-static void walk_rtx ();
-static void print_path ();
-char *xmalloc ();
-char *xrealloc ();
-static void fatal ();
-void fancy_abort ();
-
-static void
-gen_insn (insn)
-     rtx insn;
+/* Holds a single insn code that uses an extraction method.  */
+struct code_ptr
 {
-  register int i;
+  int insn_code;
+  struct code_ptr *next;
+};
 
-  dup_count = 0;
+/* All extractions needed for this machine description.  */
+static struct extraction *extractions;
 
-  /* No operands seen so far in this pattern.  */
-  bzero (operand_seen, operand_seen_length);
+/* All insn codes for old-style peepholes.  */
+static struct code_ptr *peepholes;
 
-  printf ("    case %d:\n", insn_code_number);
+/* This structure is used by gen_insn and walk_rtx to accumulate the
+   data that will be used to produce an extractions structure.  */
+
+DEF_VEC_P(locstr);
+DEF_VEC_ALLOC_P(locstr,heap);
+
+struct accum_extract
+{
+  VEC(locstr,heap) *oplocs;
+  VEC(locstr,heap) *duplocs;
+  VEC(int,heap)    *dupnums;
+  VEC(char,heap)   *pathstr;
+};
+
+int line_no;
+
+/* Forward declarations.  */
+static void walk_rtx (rtx, struct accum_extract *);
+
+static void
+gen_insn (rtx insn, int insn_code_number)
+{
+  int i;
+  unsigned int op_count, dup_count, j;
+  struct extraction *p;
+  struct code_ptr *link;
+  struct accum_extract acc;
+
+  acc.oplocs  = VEC_alloc (locstr,heap, 10);
+  acc.duplocs = VEC_alloc (locstr,heap, 10);
+  acc.dupnums = VEC_alloc (int,heap,    10);
+  acc.pathstr = VEC_alloc (char,heap,   20);
 
   /* Walk the insn's pattern, remembering at all times the path
      down to the walking point.  */
 
   if (XVECLEN (insn, 1) == 1)
-    walk_rtx (XVECEXP (insn, 1, 0), 0);
+    walk_rtx (XVECEXP (insn, 1, 0), &acc);
   else
     for (i = XVECLEN (insn, 1) - 1; i >= 0; i--)
       {
-	struct link link;
-	link.next = 0;
-	link.pos = 0;
-	link.vecelt = i;
-	walk_rtx (XVECEXP (insn, 1, i), &link);
+	VEC_safe_push (char,heap, acc.pathstr, 'a' + i);
+	walk_rtx (XVECEXP (insn, 1, i), &acc);
+	VEC_pop (char, acc.pathstr);
       }
 
-  /* If the operand numbers used in the pattern are not consecutive,
-     don't leave an operand uninitialized.  */
-  for (i = operand_seen_length - 1; i >= 0; i--)
-    if (operand_seen[i])
-      break;
-  for (; i >= 0; i--)
-    if (!operand_seen[i])
-      {
-	printf ("      recog_operand[%d] = const0_rtx;\n", i);
-	printf ("      recog_operand_loc[%d] = &junk;\n", i);
-      }
-  printf ("      break;\n");
-}
-
-/* Record that we have seen an operand with number OPNO in this pattern.  */
+  link = XNEW (struct code_ptr);
+  link->insn_code = insn_code_number;
 
-static void
-mark_operand_seen (opno)
-     int opno;
-{
-  if (opno >= operand_seen_length)
+  /* See if we find something that already had this extraction method.  */
+
+  op_count = VEC_length (locstr, acc.oplocs);
+  dup_count = VEC_length (locstr, acc.duplocs);
+  gcc_assert (dup_count == VEC_length (int, acc.dupnums));
+
+  for (p = extractions; p; p = p->next)
     {
-      operand_seen_length *= 2;
-      operand_seen = (char *) xrealloc (operand_seen_length);
+      if (p->op_count != op_count || p->dup_count != dup_count)
+	continue;
+
+      for (j = 0; j < op_count; j++)
+	{
+	  char *a = p->oplocs[j];
+	  char *b = VEC_index (locstr, acc.oplocs, j);
+	  if (a != b && (!a || !b || strcmp (a, b)))
+	    break;
+	}
+
+      if (j != op_count)
+	continue;
+
+      for (j = 0; j < dup_count; j++)
+	if (p->dupnums[j] != VEC_index (int, acc.dupnums, j)
+	    || strcmp (p->duplocs[j], VEC_index (locstr, acc.duplocs, j)))
+	  break;
+
+      if (j != dup_count)
+	continue;
+
+      /* This extraction is the same as ours.  Just link us in.  */
+      link->next = p->insns;
+      p->insns = link;
+      goto done;
     }
 
-  operand_seen[opno] = 1;
+  /* Otherwise, make a new extraction method.  We stash the arrays
+     after the extraction structure in memory.  */
+
+  p = XNEWVAR (struct extraction, sizeof (struct extraction)
+	       + op_count*sizeof (char *)
+	       + dup_count*sizeof (char *)
+	       + dup_count*sizeof (int));
+  p->op_count = op_count;
+  p->dup_count = dup_count;
+  p->next = extractions;
+  extractions = p;
+  p->insns = link;
+  link->next = 0;
+
+  p->oplocs = (char **)((char *)p + sizeof (struct extraction));
+  p->duplocs = p->oplocs + op_count;
+  p->dupnums = (int *)(p->duplocs + dup_count);
+
+  memcpy(p->oplocs,  VEC_address(locstr,acc.oplocs),   op_count*sizeof(locstr));
+  memcpy(p->duplocs, VEC_address(locstr,acc.duplocs), dup_count*sizeof(locstr));
+  memcpy(p->dupnums, VEC_address(int,   acc.dupnums), dup_count*sizeof(int));
+
+ done:
+  VEC_free (locstr,heap, acc.oplocs);
+  VEC_free (locstr,heap, acc.duplocs);
+  VEC_free (int,heap,    acc.dupnums);
+  VEC_free (char,heap,   acc.pathstr);
+}
+
+/* Helper subroutine of walk_rtx: given a VEC(locstr), an index, and a
+   string, insert the string at the index, which should either already
+   exist and be NULL, or not yet exist within the vector.  In the latter
+   case the vector is enlarged as appropriate.  */
+static void
+VEC_safe_set_locstr (VEC(locstr,heap) **vp, unsigned int ix, char *str)
+{
+  if (ix < VEC_length (locstr, *vp))
+    {
+      if (VEC_index (locstr, *vp, ix))
+	{
+	  message_with_line (line_no, "repeated operand number %d", ix);
+	  have_error = 1;
+	}
+      else
+        VEC_replace (locstr, *vp, ix, str);
+    }
+  else
+    {
+      while (ix > VEC_length (locstr, *vp))
+	VEC_safe_push (locstr, heap, *vp, 0);
+      VEC_safe_push (locstr, heap, *vp, str);
+    }
+}
+
+/* Another helper subroutine of walk_rtx: given a VEC(char), convert it
+   to a NUL-terminated string in malloc memory.  */
+static char *
+VEC_char_to_string (VEC(char,heap) *v)
+{
+  size_t n = VEC_length (char, v);
+  char *s = XNEWVEC (char, n + 1);
+  memcpy (s, VEC_address (char, v), n);
+  s[n] = '\0';
+  return s;
 }
 
 static void
-walk_rtx (x, path)
-     rtx x;
-     struct link *path;
+walk_rtx (rtx x, struct accum_extract *acc)
 {
-  register RTX_CODE code;
-  register int i;
-  register int len;
-  register char *fmt;
-  struct link link;
+  RTX_CODE code;
+  int i, len, base;
+  const char *fmt;
 
   if (x == 0)
     return;
 
   code = GET_CODE (x);
-
   switch (code)
     {
     case PC:
@@ -156,75 +239,65 @@ walk_rtx (x, path)
 
     case MATCH_OPERAND:
     case MATCH_SCRATCH:
-      mark_operand_seen (XINT (x, 0));
-      printf ("      recog_operand[%d] = *(recog_operand_loc[%d]\n        = &",
-	      XINT (x, 0), XINT (x, 0));
-      print_path (path);
-      printf (");\n");
-      break;
-
-    case MATCH_DUP:
-    case MATCH_OP_DUP:
-      printf ("      recog_dup_loc[%d] = &", dup_count);
-      print_path (path);
-      printf (";\n");
-      printf ("      recog_dup_num[%d] = %d;\n", dup_count, XINT (x, 0));
-      dup_count++;
+      VEC_safe_set_locstr (&acc->oplocs, XINT (x, 0),
+			   VEC_char_to_string (acc->pathstr));
       break;
 
     case MATCH_OPERATOR:
-      mark_operand_seen (XINT (x, 0));
-      printf ("      recog_operand[%d] = *(recog_operand_loc[%d]\n        = &",
-	      XINT (x, 0), XINT (x, 0));
-      print_path (path);
-      printf (");\n");
-      link.next = path;
-      link.vecelt = -1;
-      for (i = XVECLEN (x, 2) - 1; i >= 0; i--)
-	{
-	  link.pos = i;
-	  walk_rtx (XVECEXP (x, 2, i), &link);
-	}
-      return;
-
     case MATCH_PARALLEL:
-      mark_operand_seen (XINT (x, 0));
-      printf ("      recog_operand[%d] = *(recog_operand_loc[%d]\n        = &",
-	      XINT (x, 0), XINT (x, 0));
-      print_path (path);
-      printf (");\n");
-      link.next = path;
-      link.pos = 0;
+      VEC_safe_set_locstr (&acc->oplocs, XINT (x, 0),
+			   VEC_char_to_string (acc->pathstr));
+
+      base = (code == MATCH_OPERATOR ? '0' : 'a');
       for (i = XVECLEN (x, 2) - 1; i >= 0; i--)
 	{
-	  link.vecelt = i;
-	  walk_rtx (XVECEXP (x, 2, i), &link);
-	}
+	  VEC_safe_push (char,heap, acc->pathstr, base + i);
+	  walk_rtx (XVECEXP (x, 2, i), acc);
+	  VEC_pop (char, acc->pathstr);
+        }
       return;
 
-    case ADDRESS:
-      walk_rtx (XEXP (x, 0), path);
+    case MATCH_DUP:
+    case MATCH_PAR_DUP:
+    case MATCH_OP_DUP:
+      VEC_safe_push (locstr,heap, acc->duplocs,
+		     VEC_char_to_string (acc->pathstr));
+      VEC_safe_push (int,heap, acc->dupnums, XINT (x, 0));
+
+      if (code == MATCH_DUP)
+	break;
+
+      base = (code == MATCH_OP_DUP ? '0' : 'a');
+      for (i = XVECLEN (x, 1) - 1; i >= 0; i--)
+        {
+	  VEC_safe_push (char,heap, acc->pathstr, base + i);
+	  walk_rtx (XVECEXP (x, 1, i), acc);
+	  VEC_pop (char, acc->pathstr);
+        }
       return;
+
+    default:
+      break;
     }
 
-  link.next = path;
-  link.vecelt = -1;
   fmt = GET_RTX_FORMAT (code);
   len = GET_RTX_LENGTH (code);
   for (i = 0; i < len; i++)
     {
-      link.pos = i;
       if (fmt[i] == 'e' || fmt[i] == 'u')
 	{
-	  walk_rtx (XEXP (x, i), &link);
+	  VEC_safe_push (char,heap, acc->pathstr, '0' + i);
+	  walk_rtx (XEXP (x, i), acc);
+	  VEC_pop (char, acc->pathstr);
 	}
       else if (fmt[i] == 'E')
 	{
 	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    {
-	      link.vecelt = j;
-	      walk_rtx (XVECEXP (x, i, j), &link);
+	      VEC_safe_push (char,heap, acc->pathstr, 'a' + j);
+	      walk_rtx (XVECEXP (x, i, j), acc);
+	      VEC_pop (char, acc->pathstr);
 	    }
 	}
     }
@@ -235,171 +308,190 @@ walk_rtx (x, path)
    evaluate to the rtx at that point.  */
 
 static void
-print_path (path)
-     struct link *path;
+print_path (const char *path)
 {
-  if (path == 0)
-    printf ("insn");
-  else if (path->vecelt >= 0)
+  int len = strlen (path);
+  int i;
+
+  if (len == 0)
     {
-      printf ("XVECEXP (");
-      print_path (path->next);
-      printf (", %d, %d)", path->pos, path->vecelt);
+      /* Don't emit "pat", since we may try to take the address of it,
+	 which isn't what is intended.  */
+      fputs ("PATTERN (insn)", stdout);
+      return;
     }
-  else
+
+  /* We first write out the operations (XEXP or XVECEXP) in reverse
+     order, then write "pat", then the indices in forward order.  */
+
+  for (i = len - 1; i >= 0 ; i--)
     {
-      printf ("XEXP (");
-      print_path (path->next);
-      printf (", %d)", path->pos);
+      if (ISLOWER (path[i]))
+	fputs ("XVECEXP (", stdout);
+      else if (ISDIGIT (path[i]))
+	fputs ("XEXP (", stdout);
+      else
+	gcc_unreachable ();
+    }
+
+  fputs ("pat", stdout);
+
+  for (i = 0; i < len; i++)
+    {
+      if (ISLOWER (path[i]))
+	printf (", 0, %d)", path[i] - 'a');
+      else if (ISDIGIT(path[i]))
+	printf (", %d)", path[i] - '0');
+      else
+	gcc_unreachable ();
     }
 }
 
-char *
-xmalloc (size)
-     unsigned size;
-{
-  register char *val = (char *) malloc (size);
-
-  if (val == 0)
-    fatal ("virtual memory exhausted");
-  return val;
-}
-
-char *
-xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
-{
-  char *result = (char *) realloc (ptr, size);
-  if (!result)
-    fatal ("virtual memory exhausted");
-  return result;
-}
-
 static void
-fatal (s, a1, a2)
-     char *s;
+print_header (void)
 {
-  fprintf (stderr, "genextract: ");
-  fprintf (stderr, s, a1, a2);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
+  /* N.B. Code below avoids putting squiggle braces in column 1 inside
+     a string, because this confuses some editors' syntax highlighting
+     engines.  */
+
+  puts ("\
+/* Generated automatically by the program `genextract'\n\
+   from the machine description file `md'.  */\n\
+\n\
+#include \"config.h\"\n\
+#include \"system.h\"\n\
+#include \"coretypes.h\"\n\
+#include \"tm.h\"\n\
+#include \"rtl.h\"\n\
+#include \"insn-config.h\"\n\
+#include \"recog.h\"\n\
+#include \"diagnostic-core.h\"\n\
+\n\
+/* This variable is used as the \"location\" of any missing operand\n\
+   whose numbers are skipped by a given pattern.  */\n\
+static rtx junk ATTRIBUTE_UNUSED;\n");
+
+  puts ("\
+void\n\
+insn_extract (rtx insn)\n{\n\
+  rtx *ro = recog_data.operand;\n\
+  rtx **ro_loc = recog_data.operand_loc;\n\
+  rtx pat = PATTERN (insn);\n\
+  int i ATTRIBUTE_UNUSED; /* only for peepholes */\n\
+\n\
+#ifdef ENABLE_CHECKING\n\
+  memset (ro, 0xab, sizeof (*ro) * MAX_RECOG_OPERANDS);\n\
+  memset (ro_loc, 0xab, sizeof (*ro_loc) * MAX_RECOG_OPERANDS);\n\
+#endif\n");
+
+  puts ("\
+  switch (INSN_CODE (insn))\n\
+    {\n\
+    default:\n\
+      /* Control reaches here if insn_extract has been called with an\n\
+         unrecognizable insn (code -1), or an insn whose INSN_CODE\n\
+         corresponds to a DEFINE_EXPAND in the machine description;\n\
+         either way, a bug.  */\n\
+      if (INSN_CODE (insn) < 0)\n\
+        fatal_insn (\"unrecognizable insn:\", insn);\n\
+      else\n\
+        fatal_insn (\"insn with invalid code number:\", insn);\n");
 }
 
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
-}
-
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   rtx desc;
-  FILE *infile;
-  extern rtx read_rtx ();
-  register int c, i;
+  unsigned int i;
+  struct extraction *p;
+  struct code_ptr *link;
+  const char *name;
+  int insn_code_number;
 
-  obstack_init (rtl_obstack);
+  progname = "genextract";
 
-  if (argc <= 1)
-    fatal ("No input file name.");
-
-  infile = fopen (argv[1], "r");
-  if (infile == 0)
-    {
-      perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
-    }
-
-  init_rtl ();
-
-  /* Assign sequential codes to all entries in the machine description
-     in parallel with the tables in insn-output.c.  */
-
-  insn_code_number = 0;
-
-  operand_seen_length = 40;
-  operand_seen = (char *) xmalloc (40);
-
-  printf ("/* Generated automatically by the program `genextract'\n\
-from the machine description file `md'.  */\n\n");
-
-  printf ("#include \"config.h\"\n");
-  printf ("#include \"rtl.h\"\n\n");
-
-  /* This variable exists only so it can be the "location"
-     of any missing operand whose numbers are skipped by a given pattern.  */
-  printf ("static rtx junk;\n");
-  printf ("extern rtx recog_operand[];\n");
-  printf ("extern rtx *recog_operand_loc[];\n");
-  printf ("extern rtx *recog_dup_loc[];\n");
-  printf ("extern char recog_dup_num[];\n");
-  printf ("extern void fatal_insn_not_found ();\n\n");
-
-  printf ("void\ninsn_extract (insn)\n");
-  printf ("     rtx insn;\n");
-  printf ("{\n");
-  printf ("  int insn_code = INSN_CODE (insn);\n");
-  printf ("  if (insn_code == -1) fatal_insn_not_found (insn);\n");
-  printf ("  insn = PATTERN (insn);\n");
-  printf ("  switch (insn_code)\n");
-  printf ("    {\n");
+  if (!init_rtx_reader_args (argc, argv))
+    return (FATAL_EXIT_CODE);
 
   /* Read the machine description.  */
 
-  while (1)
+  while ((desc = read_md_rtx (&line_no, &insn_code_number)) != NULL)
     {
-      c = read_skip_spaces (infile);
-      if (c == EOF)
-	break;
-      ungetc (c, infile);
+       if (GET_CODE (desc) == DEFINE_INSN)
+	 gen_insn (desc, insn_code_number);
 
-      desc = read_rtx (infile);
-      if (GET_CODE (desc) == DEFINE_INSN)
+      else if (GET_CODE (desc) == DEFINE_PEEPHOLE)
 	{
-	  gen_insn (desc);
-	  ++insn_code_number;
-	}
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE)
-	{
-	  printf ("    case %d: goto peephole;\n", insn_code_number);
-	  ++insn_code_number;
-	  ++peephole_seen;
-	}
-      if (GET_CODE (desc) == DEFINE_EXPAND || GET_CODE (desc) == DEFINE_SPLIT)
-	{
-	  printf ("    case %d: break;\n", insn_code_number);
-	  ++insn_code_number;
+	  struct code_ptr *link = XNEW (struct code_ptr);
+
+	  link->insn_code = insn_code_number;
+	  link->next = peepholes;
+	  peepholes = link;
 	}
     }
 
-  /* This should never be reached.  */
-  printf ("\n    default:\n      abort ();\n");
+  if (have_error)
+    return FATAL_EXIT_CODE;
 
-  if (peephole_seen)
+  print_header ();
+
+  /* Write out code to handle peepholes and the insn_codes that it should
+     be called for.  */
+  if (peepholes)
     {
+      for (link = peepholes; link; link = link->next)
+	printf ("    case %d:\n", link->insn_code);
+
       /* The vector in the insn says how many operands it has.
 	 And all it contains are operands.  In fact, the vector was
-	 created just for the sake of this function.  */
-      printf ("    peephole:\n");
-      printf ("#if __GNUC__ > 1 && !defined (bcopy)\n");
-      printf ("#define bcopy(FROM,TO,COUNT) __builtin_memcpy(TO,FROM,COUNT)\n");
-      printf ("#endif\n");
-      printf ("      bcopy (&XVECEXP (insn, 0, 0), recog_operand,\n");
-      printf ("             sizeof (rtx) * XVECLEN (insn, 0));\n");
-      printf ("      break;\n");
+	 created just for the sake of this function.  We need to set the
+	 location of the operands for sake of simplifications after
+	 extraction, like eliminating subregs.  */
+      puts ("      for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)\n"
+	    "          ro[i] = *(ro_loc[i] = &XVECEXP (pat, 0, i));\n"
+	    "      break;\n");
     }
 
-  printf ("    }\n}\n");
+  /* Write out all the ways to extract insn operands.  */
+  for (p = extractions; p; p = p->next)
+    {
+      for (link = p->insns; link; link = link->next)
+	{
+	  i = link->insn_code;
+	  name = get_insn_name (i);
+	  if (name)
+	    printf ("    case %d:  /* %s */\n", i, name);
+	  else
+	    printf ("    case %d:\n", i);
+	}
 
+      for (i = 0; i < p->op_count; i++)
+	{
+	  if (p->oplocs[i] == 0)
+	    {
+	      printf ("      ro[%d] = const0_rtx;\n", i);
+	      printf ("      ro_loc[%d] = &junk;\n", i);
+	    }
+	  else
+	    {
+	      printf ("      ro[%d] = *(ro_loc[%d] = &", i, i);
+	      print_path (p->oplocs[i]);
+	      puts (");");
+	    }
+	}
+
+      for (i = 0; i < p->dup_count; i++)
+	{
+	  printf ("      recog_data.dup_loc[%d] = &", i);
+	  print_path (p->duplocs[i]);
+	  puts (";");
+	  printf ("      recog_data.dup_num[%d] = %d;\n", i, p->dupnums[i]);
+	}
+
+      puts ("      break;\n");
+    }
+
+  puts ("    }\n}");
   fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
