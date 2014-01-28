@@ -229,6 +229,7 @@ match gfc_match_protected (void);
 match gfc_match_private (gfc_statement *);
 match gfc_match_public (gfc_statement *);
 match gfc_match_save (void);
+match gfc_match_automatic (void);
 match gfc_match_modproc (void);
 match gfc_match_target (void);
 match gfc_match_value (void);
