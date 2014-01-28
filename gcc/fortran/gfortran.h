@@ -702,7 +702,7 @@ typedef struct
     optional:1, pointer:1, target:1, value:1, volatile_:1, temporary:1,
     dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1,
     implied_index:1, subref_array_pointer:1, proc_pointer:1, asynchronous:1,
-    contiguous:1;
+    contiguous:1, automatic:1;
 
   /* For CLASS containers, the pointer attribute is sometimes set internally
      even though it was not directly specified.  In this case, keep the
@@ -2566,6 +2566,7 @@ gfc_try gfc_add_pointer (symbol_attribute *, locus *);
 gfc_try gfc_add_cray_pointer (symbol_attribute *, locus *);
 gfc_try gfc_add_cray_pointee (symbol_attribute *, locus *);
 match gfc_mod_pointee_as (gfc_array_spec *);
+
 gfc_try gfc_add_protected (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_result (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_save (symbol_attribute *, save_state, const char *, locus *);
@@ -2597,7 +2598,9 @@ gfc_try gfc_add_value (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_flavor (symbol_attribute *, sym_flavor, const char *, locus *);
 gfc_try gfc_add_entry (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_procedure (symbol_attribute *, procedure_type,
-		       const char *, locus *);
+			   const char *, locus *);
+gfc_try gfc_add_automatic (symbol_attribute *, const char *, locus *);
+
 gfc_try gfc_add_intent (symbol_attribute *, sym_intent, locus *);
 gfc_try gfc_add_explicit_interface (gfc_symbol *, ifsrc,
 				gfc_formal_arglist *, locus *);
