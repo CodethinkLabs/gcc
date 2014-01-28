@@ -356,9 +356,9 @@ gfc_check_function_type (gfc_namespace *ns)
 static bool
 check_conflict (symbol_attribute *attr, const char *name, locus *where)
 {
-  static const char *dummy = "DUMMY", *save = "SAVE", *pointer = "POINTER",
-    *target = "TARGET", *external = "EXTERNAL", *intent = "INTENT",
-    *intent_in = "INTENT(IN)", *intrinsic = "INTRINSIC",
+  static const char *dummy = "DUMMY", *save = "SAVE", *automatic = "AUTOMATIC",
+    *pointer = "POINTER", *target = "TARGET", *external = "EXTERNAL",
+    *intent = "INTENT", *intent_in = "INTENT(IN)", *intrinsic = "INTRINSIC",
     *intent_out = "INTENT(OUT)", *intent_inout = "INTENT(INOUT)",
     *allocatable = "ALLOCATABLE", *elemental = "ELEMENTAL",
     *privat = "PRIVATE", *recursive = "RECURSIVE",
@@ -424,6 +424,35 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	    ("%s attribute not allowed in BLOCK DATA program unit at %L",
 	     a1, where);
 	  return false;
+	}
+    }
+
+  if (attr->automatic)
+    {
+      conf (save, automatic);
+      conf (data, automatic);
+      conf (in_common, automatic);
+
+      switch (attr->flavor)
+	{
+	  case FL_PROGRAM:
+	  case FL_BLOCK_DATA:
+	  case FL_MODULE:
+	  case FL_LABEL:
+	  case FL_DERIVED:
+	  case FL_PARAMETER:
+            a1 = gfc_code2string (flavors, attr->flavor);
+            a2 = save;
+	    goto conflict;
+	  case FL_NAMELIST:
+	    gfc_error ("Namelist group name at %L cannot have the "
+		       "AUTOMATIC attribute", where);
+	    return false;
+	    break;
+	  case FL_PROCEDURE:
+	  case FL_VARIABLE:
+	  default:
+	    break;
 	}
     }
 
@@ -1150,6 +1179,20 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
   return check_conflict (attr, name, where);
 }
 
+bool
+gfc_add_automatic (symbol_attribute *attr,  const char *name, locus *where)
+{
+
+  if (check_used (attr, name, where))
+    return false;
+
+  gfc_notify_std (GFC_STD_LEGACY,
+		  "AUTOMATIC attribute specified at %L",
+		  where);
+
+  attr->automatic = 1;
+  return check_conflict (attr, name, where);
+}
 
 bool
 gfc_add_value (symbol_attribute *attr, const char *name, locus *where)
@@ -1790,6 +1833,8 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
   if (src->save && !gfc_add_save (dest, src->save, NULL, where))
     goto fail;
   if (src->value && !gfc_add_value (dest, NULL, where))
+    goto fail;
+  if (src->automatic && !gfc_add_automatic (dest, NULL, where))
     goto fail;
   if (src->volatile_ && !gfc_add_volatile (dest, NULL, where))
     goto fail;
