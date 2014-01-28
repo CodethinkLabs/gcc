@@ -712,7 +712,7 @@ typedef struct
     optional:1, pointer:1, target:1, value:1, volatile_:1, temporary:1,
     dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1,
     implied_index:1, subref_array_pointer:1, proc_pointer:1, asynchronous:1,
-    contiguous:1, fe_temp: 1;
+    contiguous:1, fe_temp: 1, automatic:1;
 
   /* For CLASS containers, the pointer attribute is sometimes set internally
      even though it was not directly specified.  In this case, keep the
@@ -2761,7 +2761,7 @@ bool gfc_add_intent (symbol_attribute *, sym_intent, locus *);
 bool gfc_add_explicit_interface (gfc_symbol *, ifsrc,
 				gfc_formal_arglist *, locus *);
 bool gfc_add_type (gfc_symbol *, gfc_typespec *, locus *);
-
+bool gfc_add_automatic (symbol_attribute *, const char *, locus *);
 void gfc_clear_attr (symbol_attribute *);
 bool gfc_missing_attr (symbol_attribute *, locus *);
 bool gfc_copy_attr (symbol_attribute *, symbol_attribute *, locus *);
