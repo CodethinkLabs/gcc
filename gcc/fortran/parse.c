@@ -193,6 +193,7 @@ decode_specification_statement (void)
 	     ST_INTERFACE);
       match ("allocatable", gfc_match_allocatable, ST_ATTR_DECL);
       match ("asynchronous", gfc_match_asynchronous, ST_ATTR_DECL);
+      match ("automatic", gfc_match_automatic, ST_ATTR_DECL);
       break;
 
     case 'b':
@@ -415,6 +416,7 @@ decode_statement (void)
       match ("allocatable", gfc_match_allocatable, ST_ATTR_DECL);
       match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT);
       match ("asynchronous", gfc_match_asynchronous, ST_ATTR_DECL);
+      match ("automatic", gfc_match_automatic, ST_ATTR_DECL);
       break;
 
     case 'b':

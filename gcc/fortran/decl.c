@@ -3401,9 +3401,9 @@ match_attr_spec (void)
     DECL_ALLOCATABLE = GFC_DECL_BEGIN, DECL_DIMENSION, DECL_EXTERNAL,
     DECL_IN, DECL_OUT, DECL_INOUT, DECL_INTRINSIC, DECL_OPTIONAL,
     DECL_PARAMETER, DECL_POINTER, DECL_PROTECTED, DECL_PRIVATE,
-    DECL_PUBLIC, DECL_SAVE, DECL_TARGET, DECL_VALUE, DECL_VOLATILE,
-    DECL_IS_BIND_C, DECL_CODIMENSION, DECL_ASYNCHRONOUS, DECL_CONTIGUOUS,
-    DECL_NONE, GFC_DECL_END /* Sentinel */
+    DECL_PUBLIC, DECL_SAVE, DECL_AUTOMATIC, DECL_TARGET, DECL_VALUE,
+    DECL_VOLATILE, DECL_IS_BIND_C, DECL_CODIMENSION, DECL_ASYNCHRONOUS,
+    DECL_CONTIGUOUS, DECL_NONE, GFC_DECL_END /* Sentinel */
   };
 
 /* GFC_DECL_END is the sentinel, index starts at 0.  */
@@ -3462,6 +3462,14 @@ match_attr_spec (void)
 		    {
 		      /* Matched "asynchronous".  */
 		      d = DECL_ASYNCHRONOUS;
+		    }
+		  break;
+
+		case 'u':
+		  if (match_string_p ("tomatic"))
+		    {
+		      /* Matched "automatic".  */
+		      d = DECL_AUTOMATIC;
 		    }
 		  break;
 		}
@@ -3730,6 +3738,9 @@ match_attr_spec (void)
 	  case DECL_SAVE:
 	    attr = "SAVE";
 	    break;
+	  case DECL_AUTOMATIC:
+	    attr = "AUTOMATIC";
+	    break;
 	  case DECL_TARGET:
 	    attr = "TARGET";
 	    break;
@@ -3896,6 +3907,10 @@ match_attr_spec (void)
 
 	case DECL_SAVE:
 	  t = gfc_add_save (&current_attr, SAVE_EXPLICIT, NULL, &seen_at[d]);
+	  break;
+
+	case DECL_AUTOMATIC:
+	  t = gfc_add_automatic (&current_attr, NULL, &seen_at[d]);
 	  break;
 
 	case DECL_TARGET:
@@ -7254,6 +7269,40 @@ gfc_match_save (void)
 
 syntax:
   gfc_error ("Syntax error in SAVE statement at %C");
+  return MATCH_ERROR;
+}
+
+match
+gfc_match_automatic (void)
+{
+  gfc_symbol *sym;
+  match m;
+
+  gfc_match (" ::");
+
+  for (;;)
+    {
+      m = gfc_match_symbol (&sym, 0);
+      switch (m)
+	{
+	case MATCH_YES:
+	  if (!gfc_add_automatic (&sym->attr, sym->name,
+			     &gfc_current_locus))
+	    return MATCH_ERROR;
+	  if (gfc_match_eos () == MATCH_YES)
+	    return MATCH_YES;
+	  if (gfc_match_char (',') != MATCH_YES)
+	    goto syntax;
+	  break;
+	case MATCH_NO:
+	  goto syntax;
+	case MATCH_ERROR:
+	  return MATCH_ERROR;
+	}
+    }
+
+syntax:
+  gfc_error ("Syntax error in AUTOMATIC statement at %C");
   return MATCH_ERROR;
 }
 
