@@ -7286,8 +7286,8 @@ gfc_match_automatic (void)
       switch (m)
 	{
 	case MATCH_YES:
-	  if (!gfc_add_automatic (&sym->attr, sym->name,
-			     &gfc_current_locus))
+	  if (gfc_add_automatic (&sym->attr, sym->name,
+			     &gfc_current_locus) == FAILURE)
 	    return MATCH_ERROR;
 	  if (gfc_match_eos () == MATCH_YES)
 	    return MATCH_YES;

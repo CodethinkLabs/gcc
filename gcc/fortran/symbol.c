@@ -1746,6 +1746,8 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
   if (sym->attr.result && type == BT_UNKNOWN && sym->ns->proc_name)
     type = sym->ns->proc_name->ts.type;
 
+  flavor = sym->attr.flavor;
+
   if (type != BT_UNKNOWN && !(sym->attr.function && sym->attr.implicit_type))
     {
       if (sym->attr.use_assoc)
@@ -1753,8 +1755,23 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 		   "use-associated at %L", sym->name, where, sym->module,
 		   &sym->declared_at);
       else
-	gfc_error ("Symbol %qs at %L already has basic type of %s", sym->name,
-		 where, gfc_basic_typename (type));
+	{
+          if (sym->ts.type == BT_DERIVED) {
+	    /* Ignore temporaries */
+	    return false;
+	  }
+	  if (gfc_compare_types(&sym->ts, ts) && (flavor == FL_UNKNOWN || flavor == FL_VARIABLE))
+	    {
+	      return gfc_notify_std (GFC_STD_LEGACY,
+				     "Symbol '%s' at %L already has basic type of %s", sym->name,
+				     where, gfc_basic_typename (type));
+	    }
+	  else
+	    {
+	      gfc_error ("Symbol '%s' at %L already has basic type of %s", sym->name,
+			 where, gfc_basic_typename (type));
+	    }
+	}
       return false;
     }
 
@@ -1764,8 +1781,6 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 		 sym->name, where, gfc_basic_typename (ts->type));
       return false;
     }
-
-  flavor = sym->attr.flavor;
 
   if (flavor == FL_PROGRAM || flavor == FL_BLOCK_DATA || flavor == FL_MODULE
       || flavor == FL_LABEL
