@@ -68,6 +68,7 @@ set_dec_flags (int value)
   flag_dec_intrinsic_ints |= value;
   flag_dec_static |= value;
   flag_dec_math |= value;
+  flag_dec_duplicates |= value;
 }
 
 
@@ -758,6 +759,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_std_legacy:
+    case OPT_fdec_duplicates:
       set_default_std_flags ();
       gfc_option.warn_std = 0;
       break;

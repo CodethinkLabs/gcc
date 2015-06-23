@@ -440,6 +440,10 @@ fdec
 Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
+fdec-duplicates
+Fortran Var(flag_dec_duplicates)
+Allow varibles to be duplicated in the type specification matches.
+
 fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
 Enable kind-specific variants of integer intrinsic functions.
