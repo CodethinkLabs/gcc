@@ -1740,8 +1740,15 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 		   "use-associated at %L", sym->name, where, sym->module,
 		   &sym->declared_at);
       else
-	gfc_error ("Symbol '%s' at %L already has basic type of %s", sym->name,
-		 where, gfc_basic_typename (type));
+      if (!gfc_compare_types(&sym->ts, ts))
+	  gfc_error ("Symbol '%s' at %L already has conflicting basic type of %s", sym->name,
+		     where, gfc_basic_typename (type));
+      else
+        {
+	  gfc_warning ("Symbol '%s' at %L already has basic type of %s", sym->name,
+		       where, gfc_basic_typename (type));
+	  return true;
+        }
       return false;
     }
 
