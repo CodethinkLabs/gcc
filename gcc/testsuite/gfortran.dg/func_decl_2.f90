@@ -1,4 +1,6 @@
 ! { dg-do compile }
+! { dg-options "-std=f95" }
+
 ! Test fix for PR16943 in which the double typing of
 ! N caused an error.
 !
