@@ -7109,7 +7109,6 @@ syntax:
   return MATCH_ERROR;
 }
 
-
 match
 gfc_match_value (void)
 {
