@@ -440,6 +440,10 @@ fdec
 Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
+fdec-duplicates
+Fortran Var(flag_dec_duplicates)
+Allow varibles to be duplicated in the type specification matches.
+
 fdec-include
 Fortran Var(flag_dec_include)
 Enable legacy parsing of INCLUDE as statement.
