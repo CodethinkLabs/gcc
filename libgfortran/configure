@@ -1823,10 +1823,7 @@ $as_echo_n "checking for $2... " >&6; }
 if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 /* Define $2 to an innocuous variant, in case <limits.h> declares $2.
    For example, HP-UX 11i <limits.h> declares gettimeofday.  */
@@ -3482,8 +3479,7 @@ ac_config_commands="$ac_config_commands default-1"
 #     suite is included, we'll have to know.
 if test "$build" != "$host"; then
   LIBGFOR_IS_NATIVE=false
-
-else
+  else
   LIBGFOR_IS_NATIVE=true
 fi
 
@@ -3889,34 +3885,6 @@ main ()
   return 0;
 }
 _ACEOF
-# FIXME: Cleanup?
-if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_link\""; } >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then :
-  gcc_no_link=no
-else
-  gcc_no_link=yes
-fi
-if test x$gcc_no_link = xyes; then
-  # Setting cross_compile will disable run tests; it will
-  # also disable AC_CHECK_FILE but that's generally
-  # correct if we can't link.
-  cross_compiling=yes
-  EXEEXT=
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
 ac_clean_files_save=$ac_clean_files
 ac_clean_files="$ac_clean_files a.out a.out.dSYM a.exe b.out conftest.out"
 # Try to create an executable without -o first, disregard a.out.
@@ -4080,7 +4048,6 @@ $as_echo "$ac_cv_exeext" >&6; }
 rm -f conftest.$ac_ext
 EXEEXT=$ac_cv_exeext
 ac_exeext=$EXEEXT
-fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for suffix of object files" >&5
 $as_echo_n "checking for suffix of object files... " >&6; }
 if test "${ac_cv_objext+set}" = set; then :
@@ -5812,10 +5779,7 @@ FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 int foo;
 int
@@ -5844,10 +5808,7 @@ FOO_1.0 {
   global: foo; local: *;
 };
 EOF
-        if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 int foo;
 int
@@ -8180,10 +8141,7 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-     if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -8769,10 +8727,7 @@ else
       save_LDFLAGS=$LDFLAGS
       echo "_main" > conftest.sym
       LDFLAGS="$LDFLAGS -Wl,-exported_symbols_list,conftest.sym"
-      if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -10406,10 +10361,7 @@ _LT_EOF
 	allow_undefined_flag='-berok'
         # Determine the default libpath from the value encoded in an
         # empty executable.
-        if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -10449,10 +10401,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	else
 	 # Determine the default libpath from the value encoded in an
 	 # empty executable.
-	 if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+	 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -10735,10 +10684,7 @@ fi
 	# implicitly export all symbols.
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -shared ${wl}-exported_symbol ${wl}foo ${wl}-update_registry ${wl}/dev/null"
-        if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 int foo(void) {}
 _ACEOF
@@ -11688,10 +11634,7 @@ else
     save_libdir=$libdir
     eval "libdir=/foo; wl=\"$lt_prog_compiler_wl\"; \
 	 LDFLAGS=\"\$LDFLAGS $hardcode_libdir_flag_spec\""
-    if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -12108,9 +12051,6 @@ if test "${ac_cv_lib_dl_dlopen+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-ldl  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12164,9 +12104,6 @@ if test "${ac_cv_lib_dld_shl_load+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-ldld  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12210,9 +12147,6 @@ if test "${ac_cv_lib_dl_dlopen+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-ldl  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12252,9 +12186,6 @@ if test "${ac_cv_lib_svld_dlopen+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lsvld  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12294,9 +12225,6 @@ if test "${ac_cv_lib_dld_dld_link+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-ldld  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12376,7 +12304,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12379 "configure"
+#line 12307 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12482,7 +12410,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12485 "configure"
+#line 12413 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14255,10 +14183,7 @@ _LT_EOF
 	allow_undefined_flag_FC='-berok'
         # Determine the default libpath from the value encoded in an
         # empty executable.
-        if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat > conftest.$ac_ext <<_ACEOF
+        cat > conftest.$ac_ext <<_ACEOF
       program main
 
       end
@@ -14292,10 +14217,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	else
 	 # Determine the default libpath from the value encoded in an
 	 # empty executable.
-	 if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat > conftest.$ac_ext <<_ACEOF
+	 cat > conftest.$ac_ext <<_ACEOF
       program main
 
       end
@@ -14533,10 +14455,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	# implicitly export all symbols.
         save_LDFLAGS="$LDFLAGS"
         LDFLAGS="$LDFLAGS -shared ${wl}-exported_symbol ${wl}foo ${wl}-update_registry ${wl}/dev/null"
-        if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat > conftest.$ac_ext <<_ACEOF
+        cat > conftest.$ac_ext <<_ACEOF
 int foo(void) {}
 _ACEOF
 if ac_fn_fc_try_link "$LINENO"; then :
@@ -15317,10 +15236,7 @@ else
     save_libdir=$libdir
     eval "libdir=/foo; wl=\"$lt_prog_compiler_wl_FC\"; \
 	 LDFLAGS=\"\$LDFLAGS $hardcode_libdir_flag_spec_FC\""
-    if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat > conftest.$ac_ext <<_ACEOF
+    cat > conftest.$ac_ext <<_ACEOF
       program main
 
       end
@@ -16722,9 +16638,6 @@ if test "${ac_cv_lib_m_sin+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lm  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -16774,10 +16687,7 @@ $as_echo_n "checking for acosf... " >&6; }
 if test "${gcc_cv_math_func_acosf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -16822,10 +16732,7 @@ $as_echo_n "checking for acos... " >&6; }
 if test "${gcc_cv_math_func_acos+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -16870,10 +16777,7 @@ $as_echo_n "checking for acosl... " >&6; }
 if test "${gcc_cv_math_func_acosl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -16918,10 +16822,7 @@ $as_echo_n "checking for acoshf... " >&6; }
 if test "${gcc_cv_math_func_acoshf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -16966,10 +16867,7 @@ $as_echo_n "checking for acosh... " >&6; }
 if test "${gcc_cv_math_func_acosh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17014,10 +16912,7 @@ $as_echo_n "checking for acoshl... " >&6; }
 if test "${gcc_cv_math_func_acoshl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17062,10 +16957,7 @@ $as_echo_n "checking for asinf... " >&6; }
 if test "${gcc_cv_math_func_asinf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17110,10 +17002,7 @@ $as_echo_n "checking for asin... " >&6; }
 if test "${gcc_cv_math_func_asin+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17158,10 +17047,7 @@ $as_echo_n "checking for asinl... " >&6; }
 if test "${gcc_cv_math_func_asinl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17206,10 +17092,7 @@ $as_echo_n "checking for asinhf... " >&6; }
 if test "${gcc_cv_math_func_asinhf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17254,10 +17137,7 @@ $as_echo_n "checking for asinh... " >&6; }
 if test "${gcc_cv_math_func_asinh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17302,10 +17182,7 @@ $as_echo_n "checking for asinhl... " >&6; }
 if test "${gcc_cv_math_func_asinhl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17350,10 +17227,7 @@ $as_echo_n "checking for atan2f... " >&6; }
 if test "${gcc_cv_math_func_atan2f+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17398,10 +17272,7 @@ $as_echo_n "checking for atan2... " >&6; }
 if test "${gcc_cv_math_func_atan2+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17446,10 +17317,7 @@ $as_echo_n "checking for atan2l... " >&6; }
 if test "${gcc_cv_math_func_atan2l+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17494,10 +17362,7 @@ $as_echo_n "checking for atanf... " >&6; }
 if test "${gcc_cv_math_func_atanf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17542,10 +17407,7 @@ $as_echo_n "checking for atan... " >&6; }
 if test "${gcc_cv_math_func_atan+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17590,10 +17452,7 @@ $as_echo_n "checking for atanl... " >&6; }
 if test "${gcc_cv_math_func_atanl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17638,10 +17497,7 @@ $as_echo_n "checking for atanhf... " >&6; }
 if test "${gcc_cv_math_func_atanhf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17686,10 +17542,7 @@ $as_echo_n "checking for atanh... " >&6; }
 if test "${gcc_cv_math_func_atanh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17734,10 +17587,7 @@ $as_echo_n "checking for atanhl... " >&6; }
 if test "${gcc_cv_math_func_atanhl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17782,10 +17632,7 @@ $as_echo_n "checking for cargf... " >&6; }
 if test "${gcc_cv_math_func_cargf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17830,10 +17677,7 @@ $as_echo_n "checking for carg... " >&6; }
 if test "${gcc_cv_math_func_carg+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17878,10 +17722,7 @@ $as_echo_n "checking for cargl... " >&6; }
 if test "${gcc_cv_math_func_cargl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17926,10 +17767,7 @@ $as_echo_n "checking for ceilf... " >&6; }
 if test "${gcc_cv_math_func_ceilf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -17974,10 +17812,7 @@ $as_echo_n "checking for ceil... " >&6; }
 if test "${gcc_cv_math_func_ceil+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18022,10 +17857,7 @@ $as_echo_n "checking for ceill... " >&6; }
 if test "${gcc_cv_math_func_ceill+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18070,10 +17902,7 @@ $as_echo_n "checking for copysignf... " >&6; }
 if test "${gcc_cv_math_func_copysignf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18118,10 +17947,7 @@ $as_echo_n "checking for copysign... " >&6; }
 if test "${gcc_cv_math_func_copysign+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18166,10 +17992,7 @@ $as_echo_n "checking for copysignl... " >&6; }
 if test "${gcc_cv_math_func_copysignl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18214,10 +18037,7 @@ $as_echo_n "checking for cosf... " >&6; }
 if test "${gcc_cv_math_func_cosf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18262,10 +18082,7 @@ $as_echo_n "checking for cos... " >&6; }
 if test "${gcc_cv_math_func_cos+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18310,10 +18127,7 @@ $as_echo_n "checking for cosl... " >&6; }
 if test "${gcc_cv_math_func_cosl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18358,10 +18172,7 @@ $as_echo_n "checking for ccosf... " >&6; }
 if test "${gcc_cv_math_func_ccosf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18406,10 +18217,7 @@ $as_echo_n "checking for ccos... " >&6; }
 if test "${gcc_cv_math_func_ccos+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18454,10 +18262,7 @@ $as_echo_n "checking for ccosl... " >&6; }
 if test "${gcc_cv_math_func_ccosl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18502,10 +18307,7 @@ $as_echo_n "checking for coshf... " >&6; }
 if test "${gcc_cv_math_func_coshf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18550,10 +18352,7 @@ $as_echo_n "checking for cosh... " >&6; }
 if test "${gcc_cv_math_func_cosh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18598,10 +18397,7 @@ $as_echo_n "checking for coshl... " >&6; }
 if test "${gcc_cv_math_func_coshl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18646,10 +18442,7 @@ $as_echo_n "checking for ccoshf... " >&6; }
 if test "${gcc_cv_math_func_ccoshf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18694,10 +18487,7 @@ $as_echo_n "checking for ccosh... " >&6; }
 if test "${gcc_cv_math_func_ccosh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18742,10 +18532,7 @@ $as_echo_n "checking for ccoshl... " >&6; }
 if test "${gcc_cv_math_func_ccoshl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18790,10 +18577,7 @@ $as_echo_n "checking for expf... " >&6; }
 if test "${gcc_cv_math_func_expf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18838,10 +18622,7 @@ $as_echo_n "checking for exp... " >&6; }
 if test "${gcc_cv_math_func_exp+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18886,10 +18667,7 @@ $as_echo_n "checking for expl... " >&6; }
 if test "${gcc_cv_math_func_expl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18934,10 +18712,7 @@ $as_echo_n "checking for cexpf... " >&6; }
 if test "${gcc_cv_math_func_cexpf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -18982,10 +18757,7 @@ $as_echo_n "checking for cexp... " >&6; }
 if test "${gcc_cv_math_func_cexp+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19030,10 +18802,7 @@ $as_echo_n "checking for cexpl... " >&6; }
 if test "${gcc_cv_math_func_cexpl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19078,10 +18847,7 @@ $as_echo_n "checking for fabsf... " >&6; }
 if test "${gcc_cv_math_func_fabsf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19126,10 +18892,7 @@ $as_echo_n "checking for fabs... " >&6; }
 if test "${gcc_cv_math_func_fabs+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19174,10 +18937,7 @@ $as_echo_n "checking for fabsl... " >&6; }
 if test "${gcc_cv_math_func_fabsl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19222,10 +18982,7 @@ $as_echo_n "checking for cabsf... " >&6; }
 if test "${gcc_cv_math_func_cabsf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19270,10 +19027,7 @@ $as_echo_n "checking for cabs... " >&6; }
 if test "${gcc_cv_math_func_cabs+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19318,10 +19072,7 @@ $as_echo_n "checking for cabsl... " >&6; }
 if test "${gcc_cv_math_func_cabsl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19366,10 +19117,7 @@ $as_echo_n "checking for floorf... " >&6; }
 if test "${gcc_cv_math_func_floorf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19414,10 +19162,7 @@ $as_echo_n "checking for floor... " >&6; }
 if test "${gcc_cv_math_func_floor+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19462,10 +19207,7 @@ $as_echo_n "checking for floorl... " >&6; }
 if test "${gcc_cv_math_func_floorl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19510,10 +19252,7 @@ $as_echo_n "checking for fmodf... " >&6; }
 if test "${gcc_cv_math_func_fmodf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19558,10 +19297,7 @@ $as_echo_n "checking for fmod... " >&6; }
 if test "${gcc_cv_math_func_fmod+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19606,10 +19342,7 @@ $as_echo_n "checking for fmodl... " >&6; }
 if test "${gcc_cv_math_func_fmodl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19654,10 +19387,7 @@ $as_echo_n "checking for frexpf... " >&6; }
 if test "${gcc_cv_math_func_frexpf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19702,10 +19432,7 @@ $as_echo_n "checking for frexp... " >&6; }
 if test "${gcc_cv_math_func_frexp+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19750,10 +19477,7 @@ $as_echo_n "checking for frexpl... " >&6; }
 if test "${gcc_cv_math_func_frexpl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19798,10 +19522,7 @@ $as_echo_n "checking for hypotf... " >&6; }
 if test "${gcc_cv_math_func_hypotf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19846,10 +19567,7 @@ $as_echo_n "checking for hypot... " >&6; }
 if test "${gcc_cv_math_func_hypot+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19894,10 +19612,7 @@ $as_echo_n "checking for hypotl... " >&6; }
 if test "${gcc_cv_math_func_hypotl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19942,10 +19657,7 @@ $as_echo_n "checking for ldexpf... " >&6; }
 if test "${gcc_cv_math_func_ldexpf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -19990,10 +19702,7 @@ $as_echo_n "checking for ldexp... " >&6; }
 if test "${gcc_cv_math_func_ldexp+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20038,10 +19747,7 @@ $as_echo_n "checking for ldexpl... " >&6; }
 if test "${gcc_cv_math_func_ldexpl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20086,10 +19792,7 @@ $as_echo_n "checking for logf... " >&6; }
 if test "${gcc_cv_math_func_logf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20134,10 +19837,7 @@ $as_echo_n "checking for log... " >&6; }
 if test "${gcc_cv_math_func_log+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20182,10 +19882,7 @@ $as_echo_n "checking for logl... " >&6; }
 if test "${gcc_cv_math_func_logl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20230,10 +19927,7 @@ $as_echo_n "checking for clogf... " >&6; }
 if test "${gcc_cv_math_func_clogf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20278,10 +19972,7 @@ $as_echo_n "checking for clog... " >&6; }
 if test "${gcc_cv_math_func_clog+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20326,10 +20017,7 @@ $as_echo_n "checking for clogl... " >&6; }
 if test "${gcc_cv_math_func_clogl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20374,10 +20062,7 @@ $as_echo_n "checking for log10f... " >&6; }
 if test "${gcc_cv_math_func_log10f+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20422,10 +20107,7 @@ $as_echo_n "checking for log10... " >&6; }
 if test "${gcc_cv_math_func_log10+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20470,10 +20152,7 @@ $as_echo_n "checking for log10l... " >&6; }
 if test "${gcc_cv_math_func_log10l+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20518,10 +20197,7 @@ $as_echo_n "checking for clog10f... " >&6; }
 if test "${gcc_cv_math_func_clog10f+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20566,10 +20242,7 @@ $as_echo_n "checking for clog10... " >&6; }
 if test "${gcc_cv_math_func_clog10+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20614,10 +20287,7 @@ $as_echo_n "checking for clog10l... " >&6; }
 if test "${gcc_cv_math_func_clog10l+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20662,10 +20332,7 @@ $as_echo_n "checking for nextafterf... " >&6; }
 if test "${gcc_cv_math_func_nextafterf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20710,10 +20377,7 @@ $as_echo_n "checking for nextafter... " >&6; }
 if test "${gcc_cv_math_func_nextafter+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20758,10 +20422,7 @@ $as_echo_n "checking for nextafterl... " >&6; }
 if test "${gcc_cv_math_func_nextafterl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20806,10 +20467,7 @@ $as_echo_n "checking for powf... " >&6; }
 if test "${gcc_cv_math_func_powf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20854,10 +20512,7 @@ $as_echo_n "checking for pow... " >&6; }
 if test "${gcc_cv_math_func_pow+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20902,10 +20557,7 @@ $as_echo_n "checking for powl... " >&6; }
 if test "${gcc_cv_math_func_powl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20950,10 +20602,7 @@ $as_echo_n "checking for cpowf... " >&6; }
 if test "${gcc_cv_math_func_cpowf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -20998,10 +20647,7 @@ $as_echo_n "checking for cpow... " >&6; }
 if test "${gcc_cv_math_func_cpow+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21046,10 +20692,7 @@ $as_echo_n "checking for cpowl... " >&6; }
 if test "${gcc_cv_math_func_cpowl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21094,10 +20737,7 @@ $as_echo_n "checking for roundf... " >&6; }
 if test "${gcc_cv_math_func_roundf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21142,10 +20782,7 @@ $as_echo_n "checking for round... " >&6; }
 if test "${gcc_cv_math_func_round+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21190,10 +20827,7 @@ $as_echo_n "checking for roundl... " >&6; }
 if test "${gcc_cv_math_func_roundl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21238,10 +20872,7 @@ $as_echo_n "checking for lroundf... " >&6; }
 if test "${gcc_cv_math_func_lroundf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21286,10 +20917,7 @@ $as_echo_n "checking for lround... " >&6; }
 if test "${gcc_cv_math_func_lround+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21334,10 +20962,7 @@ $as_echo_n "checking for lroundl... " >&6; }
 if test "${gcc_cv_math_func_lroundl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21382,10 +21007,7 @@ $as_echo_n "checking for llroundf... " >&6; }
 if test "${gcc_cv_math_func_llroundf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21430,10 +21052,7 @@ $as_echo_n "checking for llround... " >&6; }
 if test "${gcc_cv_math_func_llround+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21478,10 +21097,7 @@ $as_echo_n "checking for llroundl... " >&6; }
 if test "${gcc_cv_math_func_llroundl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21526,10 +21142,7 @@ $as_echo_n "checking for scalbnf... " >&6; }
 if test "${gcc_cv_math_func_scalbnf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21574,10 +21187,7 @@ $as_echo_n "checking for scalbn... " >&6; }
 if test "${gcc_cv_math_func_scalbn+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21622,10 +21232,7 @@ $as_echo_n "checking for scalbnl... " >&6; }
 if test "${gcc_cv_math_func_scalbnl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21670,10 +21277,7 @@ $as_echo_n "checking for sinf... " >&6; }
 if test "${gcc_cv_math_func_sinf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21718,10 +21322,7 @@ $as_echo_n "checking for sin... " >&6; }
 if test "${gcc_cv_math_func_sin+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21766,10 +21367,7 @@ $as_echo_n "checking for sinl... " >&6; }
 if test "${gcc_cv_math_func_sinl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21814,10 +21412,7 @@ $as_echo_n "checking for csinf... " >&6; }
 if test "${gcc_cv_math_func_csinf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21862,10 +21457,7 @@ $as_echo_n "checking for csin... " >&6; }
 if test "${gcc_cv_math_func_csin+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21910,10 +21502,7 @@ $as_echo_n "checking for csinl... " >&6; }
 if test "${gcc_cv_math_func_csinl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -21958,10 +21547,7 @@ $as_echo_n "checking for sinhf... " >&6; }
 if test "${gcc_cv_math_func_sinhf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22006,10 +21592,7 @@ $as_echo_n "checking for sinh... " >&6; }
 if test "${gcc_cv_math_func_sinh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22054,10 +21637,7 @@ $as_echo_n "checking for sinhl... " >&6; }
 if test "${gcc_cv_math_func_sinhl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22102,10 +21682,7 @@ $as_echo_n "checking for csinhf... " >&6; }
 if test "${gcc_cv_math_func_csinhf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22150,10 +21727,7 @@ $as_echo_n "checking for csinh... " >&6; }
 if test "${gcc_cv_math_func_csinh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22198,10 +21772,7 @@ $as_echo_n "checking for csinhl... " >&6; }
 if test "${gcc_cv_math_func_csinhl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22246,10 +21817,7 @@ $as_echo_n "checking for sqrtf... " >&6; }
 if test "${gcc_cv_math_func_sqrtf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22294,10 +21862,7 @@ $as_echo_n "checking for sqrt... " >&6; }
 if test "${gcc_cv_math_func_sqrt+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22342,10 +21907,7 @@ $as_echo_n "checking for sqrtl... " >&6; }
 if test "${gcc_cv_math_func_sqrtl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22390,10 +21952,7 @@ $as_echo_n "checking for csqrtf... " >&6; }
 if test "${gcc_cv_math_func_csqrtf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22438,10 +21997,7 @@ $as_echo_n "checking for csqrt... " >&6; }
 if test "${gcc_cv_math_func_csqrt+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22486,10 +22042,7 @@ $as_echo_n "checking for csqrtl... " >&6; }
 if test "${gcc_cv_math_func_csqrtl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22534,10 +22087,7 @@ $as_echo_n "checking for tanf... " >&6; }
 if test "${gcc_cv_math_func_tanf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22582,10 +22132,7 @@ $as_echo_n "checking for tan... " >&6; }
 if test "${gcc_cv_math_func_tan+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22630,10 +22177,7 @@ $as_echo_n "checking for tanl... " >&6; }
 if test "${gcc_cv_math_func_tanl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22678,10 +22222,7 @@ $as_echo_n "checking for ctanf... " >&6; }
 if test "${gcc_cv_math_func_ctanf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22726,10 +22267,7 @@ $as_echo_n "checking for ctan... " >&6; }
 if test "${gcc_cv_math_func_ctan+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22774,10 +22312,7 @@ $as_echo_n "checking for ctanl... " >&6; }
 if test "${gcc_cv_math_func_ctanl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22822,10 +22357,7 @@ $as_echo_n "checking for tanhf... " >&6; }
 if test "${gcc_cv_math_func_tanhf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22870,10 +22402,7 @@ $as_echo_n "checking for tanh... " >&6; }
 if test "${gcc_cv_math_func_tanh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22918,10 +22447,7 @@ $as_echo_n "checking for tanhl... " >&6; }
 if test "${gcc_cv_math_func_tanhl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -22966,10 +22492,7 @@ $as_echo_n "checking for ctanhf... " >&6; }
 if test "${gcc_cv_math_func_ctanhf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23014,10 +22537,7 @@ $as_echo_n "checking for ctanh... " >&6; }
 if test "${gcc_cv_math_func_ctanh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23062,10 +22582,7 @@ $as_echo_n "checking for ctanhl... " >&6; }
 if test "${gcc_cv_math_func_ctanhl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23110,10 +22627,7 @@ $as_echo_n "checking for truncf... " >&6; }
 if test "${gcc_cv_math_func_truncf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23158,10 +22672,7 @@ $as_echo_n "checking for trunc... " >&6; }
 if test "${gcc_cv_math_func_trunc+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23206,10 +22717,7 @@ $as_echo_n "checking for truncl... " >&6; }
 if test "${gcc_cv_math_func_truncl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23254,10 +22762,7 @@ $as_echo_n "checking for erff... " >&6; }
 if test "${gcc_cv_math_func_erff+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23302,10 +22807,7 @@ $as_echo_n "checking for erf... " >&6; }
 if test "${gcc_cv_math_func_erf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23350,10 +22852,7 @@ $as_echo_n "checking for erfl... " >&6; }
 if test "${gcc_cv_math_func_erfl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23398,10 +22897,7 @@ $as_echo_n "checking for erfcf... " >&6; }
 if test "${gcc_cv_math_func_erfcf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23446,10 +22942,7 @@ $as_echo_n "checking for erfc... " >&6; }
 if test "${gcc_cv_math_func_erfc+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23494,10 +22987,7 @@ $as_echo_n "checking for erfcl... " >&6; }
 if test "${gcc_cv_math_func_erfcl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23542,10 +23032,7 @@ $as_echo_n "checking for j0f... " >&6; }
 if test "${gcc_cv_math_func_j0f+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23590,10 +23077,7 @@ $as_echo_n "checking for j0... " >&6; }
 if test "${gcc_cv_math_func_j0+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23638,10 +23122,7 @@ $as_echo_n "checking for j0l... " >&6; }
 if test "${gcc_cv_math_func_j0l+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23686,10 +23167,7 @@ $as_echo_n "checking for j1f... " >&6; }
 if test "${gcc_cv_math_func_j1f+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23734,10 +23212,7 @@ $as_echo_n "checking for j1... " >&6; }
 if test "${gcc_cv_math_func_j1+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23782,10 +23257,7 @@ $as_echo_n "checking for j1l... " >&6; }
 if test "${gcc_cv_math_func_j1l+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23830,10 +23302,7 @@ $as_echo_n "checking for jnf... " >&6; }
 if test "${gcc_cv_math_func_jnf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23878,10 +23347,7 @@ $as_echo_n "checking for jn... " >&6; }
 if test "${gcc_cv_math_func_jn+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23926,10 +23392,7 @@ $as_echo_n "checking for jnl... " >&6; }
 if test "${gcc_cv_math_func_jnl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -23974,10 +23437,7 @@ $as_echo_n "checking for y0f... " >&6; }
 if test "${gcc_cv_math_func_y0f+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24022,10 +23482,7 @@ $as_echo_n "checking for y0... " >&6; }
 if test "${gcc_cv_math_func_y0+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24070,10 +23527,7 @@ $as_echo_n "checking for y0l... " >&6; }
 if test "${gcc_cv_math_func_y0l+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24118,10 +23572,7 @@ $as_echo_n "checking for y1f... " >&6; }
 if test "${gcc_cv_math_func_y1f+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24166,10 +23617,7 @@ $as_echo_n "checking for y1... " >&6; }
 if test "${gcc_cv_math_func_y1+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24214,10 +23662,7 @@ $as_echo_n "checking for y1l... " >&6; }
 if test "${gcc_cv_math_func_y1l+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24262,10 +23707,7 @@ $as_echo_n "checking for ynf... " >&6; }
 if test "${gcc_cv_math_func_ynf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24310,10 +23752,7 @@ $as_echo_n "checking for yn... " >&6; }
 if test "${gcc_cv_math_func_yn+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24358,10 +23797,7 @@ $as_echo_n "checking for ynl... " >&6; }
 if test "${gcc_cv_math_func_ynl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24406,10 +23842,7 @@ $as_echo_n "checking for tgamma... " >&6; }
 if test "${gcc_cv_math_func_tgamma+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24454,10 +23887,7 @@ $as_echo_n "checking for tgammaf... " >&6; }
 if test "${gcc_cv_math_func_tgammaf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24502,10 +23932,7 @@ $as_echo_n "checking for tgammal... " >&6; }
 if test "${gcc_cv_math_func_tgammal+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24550,10 +23977,7 @@ $as_echo_n "checking for lgamma... " >&6; }
 if test "${gcc_cv_math_func_lgamma+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24598,10 +24022,7 @@ $as_echo_n "checking for lgammaf... " >&6; }
 if test "${gcc_cv_math_func_lgammaf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24646,10 +24067,7 @@ $as_echo_n "checking for lgammal... " >&6; }
 if test "${gcc_cv_math_func_lgammal+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24696,10 +24114,7 @@ $as_echo_n "checking for cacos... " >&6; }
 if test "${gcc_cv_math_func_cacos+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24744,10 +24159,7 @@ $as_echo_n "checking for cacosf... " >&6; }
 if test "${gcc_cv_math_func_cacosf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24792,10 +24204,7 @@ $as_echo_n "checking for cacosh... " >&6; }
 if test "${gcc_cv_math_func_cacosh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24840,10 +24249,7 @@ $as_echo_n "checking for cacoshf... " >&6; }
 if test "${gcc_cv_math_func_cacoshf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24888,10 +24294,7 @@ $as_echo_n "checking for cacoshl... " >&6; }
 if test "${gcc_cv_math_func_cacoshl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24936,10 +24339,7 @@ $as_echo_n "checking for cacosl... " >&6; }
 if test "${gcc_cv_math_func_cacosl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -24984,10 +24384,7 @@ $as_echo_n "checking for casin... " >&6; }
 if test "${gcc_cv_math_func_casin+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25032,10 +24429,7 @@ $as_echo_n "checking for casinf... " >&6; }
 if test "${gcc_cv_math_func_casinf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25080,10 +24474,7 @@ $as_echo_n "checking for casinh... " >&6; }
 if test "${gcc_cv_math_func_casinh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25128,10 +24519,7 @@ $as_echo_n "checking for casinhf... " >&6; }
 if test "${gcc_cv_math_func_casinhf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25176,10 +24564,7 @@ $as_echo_n "checking for casinhl... " >&6; }
 if test "${gcc_cv_math_func_casinhl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25224,10 +24609,7 @@ $as_echo_n "checking for casinl... " >&6; }
 if test "${gcc_cv_math_func_casinl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25272,10 +24654,7 @@ $as_echo_n "checking for catan... " >&6; }
 if test "${gcc_cv_math_func_catan+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25320,10 +24699,7 @@ $as_echo_n "checking for catanf... " >&6; }
 if test "${gcc_cv_math_func_catanf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25368,10 +24744,7 @@ $as_echo_n "checking for catanh... " >&6; }
 if test "${gcc_cv_math_func_catanh+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25416,10 +24789,7 @@ $as_echo_n "checking for catanhf... " >&6; }
 if test "${gcc_cv_math_func_catanhf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25464,10 +24834,7 @@ $as_echo_n "checking for catanhl... " >&6; }
 if test "${gcc_cv_math_func_catanhl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25512,10 +24879,7 @@ $as_echo_n "checking for catanl... " >&6; }
 if test "${gcc_cv_math_func_catanl+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #ifdef HAVE_COMPLEX_H
@@ -25561,9 +24925,6 @@ if test "${ac_cv_lib_m___clog+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lm  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -25665,10 +25026,7 @@ if test "${libgfor_cv_have_mingw_snprintf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-    if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #include <stdio.h>
@@ -25772,10 +25130,7 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
     typedef _Complex float __attribute__((mode(TC))) __complex128;
@@ -25845,10 +25200,7 @@ else
       libgfor_cv_have_as_needed=no
 
 ac_c_werror_flag=yes
-      if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -25875,10 +25227,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	libgfor_cv_have_as_needed=no
 
 ac_c_werror_flag=yes
-	if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -25949,9 +25298,6 @@ if test "${ac_cv_lib_m_feenableexcept+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lm  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -26001,9 +25347,6 @@ if test "${ac_cv_lib_rt_clock_gettime+set}" = set; then :
 else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lrt  $LIBS"
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -26049,10 +25392,7 @@ if test "${libgfor_cv_have_fpsetmask+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-    if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #if HAVE_FLOATINGPOINT_H
@@ -26221,10 +25561,7 @@ if test "${libgfor_cv_posix_getpwuid_r+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-   if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #include <stdio.h>
@@ -26336,10 +25673,7 @@ if test "${libgfor_cv_have_attribute_alias+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 void foo(void) { }
@@ -26376,10 +25710,7 @@ if test "${libgfor_cv_have_sync_fetch_and_add+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 int foovar = 0;
 int

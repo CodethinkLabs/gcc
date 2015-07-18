@@ -80,7 +80,7 @@ AM_ENABLE_MULTILIB(, ..)
 #     suite is included, we'll have to know.
 if test "$build" != "$host"; then
   LIBGFOR_IS_NATIVE=false
-  GCC_NO_EXECUTABLES
+  dnl GCC_NO_EXECUTABLES
 else
   LIBGFOR_IS_NATIVE=true
 fi
