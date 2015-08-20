@@ -114,8 +114,8 @@ by type.  Explanations are in the following sections.
 @table @emph
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
-@gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
--fd-lines-as-comments @gol
+@gccoptlist{-fall-intrinsics -funderspecified-arrays -fbackslash @gol
+-fcray-pointer -fd-lines-as-code -fd-lines-as-comments @gol
 -fdec -fdec-structure -fdefault-double-8 -fdefault-integer-8 @gol
 -fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
@@ -218,6 +218,14 @@ force standard-compliance but get access to the full range of intrinsics
 available with @command{gfortran}.  As a consequence, @option{-Wintrinsics-std}
 will be ignored and no user-defined procedure with the same name as any
 intrinsic will be called except when it is explicitly declared @code{EXTERNAL}.
+
+@item -funderspecified-arrays
+@opindex @code{funderspecified-arrays}
+Allow array variables to be used with fewer dimensions than they were declared
+with. For example, an array can be declared as @code{INTEGER chsbrd(1:8,1:8)}
+and @code{chsbrd(5)} can be used as a variable; this is equivalent to
+@code{chsbrd(5,1)}. Any missing dimensions are taken to be the lower bound
+of that dimension.
 
 @item -fd-lines-as-code
 @itemx -fd-lines-as-comments

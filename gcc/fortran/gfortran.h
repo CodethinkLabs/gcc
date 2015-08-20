@@ -2536,6 +2536,7 @@ typedef struct
   char flag_init_character_value;
 
   int flag_dec_structure;
+  int flag_underspecified_arrays;
 
   int fpe;
   int fpe_summary;
