@@ -4147,6 +4147,26 @@ compare_spec_to_ref (gfc_array_ref *ar)
   if (ar->type == AR_FULL)
     return true;
 
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && as->rank > ar->dimen)
+    {
+      /* Add in the missing dimensions, assuming they are the lower bound
+         of that dimension if not specified. */
+      int j;
+      gfc_warning (0, "Using the lower bound for unspecified dimensions "
+                   "in array reference at %L", &ar->where);
+      /* Other parts of the code iterate ar->start and ar->end from 0 to
+	 ar->dimen, so it is safe to assume slots from ar->dimen upwards
+	 are unused (i.e. there are no gaps; the specified indexes are
+	 contiguous and start at zero */
+      for(j = ar->dimen; j <= as->rank; j++)
+        {
+	  ar->start[j] = gfc_copy_expr (as->lower[j]);
+	  ar->end[j]   = gfc_copy_expr (as->lower[j]);
+	  ar->dimen_type[j] = DIMEN_ELEMENT;
+        }
+      ar->dimen = as->rank;
+    }
+
   if (as->rank != ar->dimen)
     {
       gfc_error ("Rank mismatch in array reference at %L (%d/%d)",
