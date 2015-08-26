@@ -3454,10 +3454,39 @@ resolve_operator (gfc_expr *e)
       goto bad_op;
     }
 
+
+  /* If hollerith constant used in a binary operator the constant
+     has the type of the other operand. */
+  if (op1->ts.type == BT_HOLLERITH && op2 &&
+        op2->ts.type == BT_HOLLERITH)
+    {
+      e->ts.type = BT_INTEGER;
+      e->ts.kind = 4;
+      gfc_convert_type (op1, &e->ts, 2);
+      gfc_convert_type (op2, &e->ts, 2);
+    }
+  if (op1->ts.type == BT_HOLLERITH && op2)
+    {
+      gfc_convert_type (op1, &op2->ts, 2);
+    }
+  if (op2 && op2->ts.type == BT_HOLLERITH)
+    {
+      gfc_convert_type (op2, &op1->ts, 2);
+    }
+
   switch (e->value.op.op)
     {
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
+    /* If hollerith constant used in case where type cannot be resolved
+       it takes standard INTEGER*4 type */
+      if (op1->ts.type == BT_HOLLERITH)
+	{
+	  e->ts.type = BT_INTEGER;
+	  e->ts.kind = 4;
+	  gfc_convert_type (op1, &e->ts, 2);
+	  break;
+	}
       if (op1->ts.type == BT_INTEGER
 	  || op1->ts.type == BT_REAL
 	  || op1->ts.type == BT_COMPLEX)
