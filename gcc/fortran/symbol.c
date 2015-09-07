@@ -1756,8 +1756,8 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 		   &sym->declared_at);
       else
 	{
-          if (sym->ts.type == BT_DERIVED) {
-	    /* Ignore temporaries */
+          if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS || sym->ts.type == BT_PROCEDURE) {
+	    /* Ignore temporaries and class/procedure names */
 	    return false;
 	  }
 	  if (gfc_compare_types(&sym->ts, ts) && (flavor == FL_UNKNOWN || flavor == FL_VARIABLE))
