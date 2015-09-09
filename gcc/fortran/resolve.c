@@ -4153,7 +4153,7 @@ compare_spec_to_ref (gfc_array_ref *ar)
          of that dimension if not specified. */
       int j;
       gfc_warning (0, "Using the lower bound for unspecified dimensions "
-                      "in array reference at %L", &ar->where);
+                   "in array reference at %L", &ar->where);
       /* Other parts of the code iterate ar->start and ar->end from 0 to
 	 ar->dimen, so it is safe to assume slots from ar->dimen upwards
 	 are unused (i.e. there are no gaps; the specified indexes are
