@@ -228,7 +228,7 @@ decode_specification_statement (void)
 
     case 's':
       match ("save", gfc_match_save, ST_ATTR_DECL);
-      gfc_warning_now("Matching structure in decode_specification_statement");
+      /*gfc_warning_now("Matching structure in decode_specification_statement");*/
       match ("structure", gfc_match_derived_decl, ST_DERIVED_DECL);
       break;
 
@@ -499,7 +499,7 @@ decode_statement (void)
       match ("sync all", gfc_match_sync_all, ST_SYNC_ALL);
       match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
       match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
-      gfc_warning_now("Matching structure in decode_statement");
+      /*gfc_warning_now("Matching structure in decode_statement");*/
       match ("structure", gfc_match_derived_decl, ST_DERIVED_DECL);
       break;
 

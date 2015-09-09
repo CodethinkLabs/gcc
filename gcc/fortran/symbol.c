@@ -2064,6 +2064,7 @@ gfc_find_component (gfc_symbol *sym, const char *name,
 		    bool noaccess, bool silent)
 {
   gfc_component *p;
+  int i;
 
   if (name == NULL || sym == NULL)
     return NULL;

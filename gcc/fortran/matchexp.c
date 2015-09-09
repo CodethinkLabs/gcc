@@ -32,14 +32,16 @@ static char expression_syntax[] = N_("Syntax error in expression at %C");
    few restrictions.  The error_flag controls whether an error is
    raised if 'true' or 'false' are used or not.  */
 
+extern const char* const badops[];
+
+const char * const badops[] = {
+  "and", "or", "not", "eqv", "neqv", "eq", "ne", "ge", "le", "lt", "gt",
+  NULL
+};
+
 match
 gfc_match_defined_op_name (char *result, int error_flag)
 {
-  static const char * const badops[] = {
-    "and", "or", "not", "eqv", "neqv", "eq", "ne", "ge", "le", "lt", "gt",
-      NULL
-  };
-
   char name[GFC_MAX_SYMBOL_LEN + 1];
   locus old_loc;
   match m;
