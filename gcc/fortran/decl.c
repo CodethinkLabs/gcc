@@ -6151,8 +6151,20 @@ gfc_match_end (gfc_statement *st)
   /* Verify that we've got the sort of end-block that we're expecting.  */
   if (gfc_match (target) != MATCH_YES)
     {
-      gfc_error ("Expecting %s statement at %C", gfc_ascii_statement (*st));
-      goto cleanup;
+      /* Awful hack to accept END STRUCTURE */
+      if (*st == ST_END_TYPE)
+	{
+	  if (gfc_match (" structure") != MATCH_YES)
+	    {
+	      gfc_error ("Expecting %s statement at %C", gfc_ascii_statement (*st));
+	      goto cleanup;
+	    }
+	}
+      else
+	{
+	  gfc_error ("Expecting %s statement at %C", gfc_ascii_statement (*st));
+	  goto cleanup;
+	}
     }
 
   /* If we're at the end, make sure a block name wasn't required.  */
@@ -7614,8 +7626,12 @@ gfc_match_derived_decl (void)
     }
 
   m = gfc_match (" %n%t", name);
-  if (m != MATCH_YES)
-    return m;
+  if (m != MATCH_YES) {
+    m = gfc_match ("/%n/%t", name);
+    if (m != MATCH_YES) {
+      return m;
+    }
+  }
 
   /* Make sure the name is not the name of an intrinsic type.  */
   if (gfc_is_intrinsic_typename (name))
