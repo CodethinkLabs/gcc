@@ -2581,6 +2581,8 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   match m;
   char c;
   bool seen_deferred_kind, matched_type;
+  char closed_type_string[3];
+  char closing_character;
   const char *dt_name;
 
   /* A belt and braces check that the typespec is correctly being treated
@@ -2614,14 +2616,25 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     }
 
 
+  closing_character = ')';
   m = gfc_match (" type (");
+  if(m != MATCH_YES) {
+    m = gfc_match (" record (");
+    if(m != MATCH_YES) {
+      m = gfc_match (" record /");
+      if(m == MATCH_YES) {
+	closing_character = '/';
+      }
+    }
+  }
   matched_type = (m == MATCH_YES);
   if (matched_type)
     {
       gfc_gobble_whitespace ();
       if (gfc_peek_ascii_char () == '*')
 	{
-	  if ((m = gfc_match ("*)")) != MATCH_YES)
+	  snprintf(closed_type_string, 3, "*%c", closing_character);
+	  if ((m = gfc_match (closed_type_string)) != MATCH_YES)
 	    return m;
 	  if (gfc_current_state () == COMP_DERIVED)
 	    {
@@ -2661,7 +2674,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       else
 	m = MATCH_YES;
 
-      if (matched_type && m == MATCH_YES && gfc_match_char (')') != MATCH_YES)
+      if (matched_type && m == MATCH_YES && gfc_match_char (closing_character) != MATCH_YES)
 	m = MATCH_ERROR;
 
       return m;
@@ -2685,7 +2698,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	  && gfc_notify_std (GFC_STD_F2008, "TYPE with "
 			  "intrinsic-type-spec at %C") == FAILURE)
 	return MATCH_ERROR;
-      if (matched_type && gfc_match_char (')') != MATCH_YES)
+      if (matched_type && gfc_match_char (closing_character) != MATCH_YES)
 	return MATCH_ERROR;
 
       ts->type = BT_REAL;
@@ -2716,7 +2729,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 			  "intrinsic-type-spec at %C") == FAILURE)
 	return MATCH_ERROR;
 
-      if (matched_type && gfc_match_char (')') != MATCH_YES)
+      if (matched_type && gfc_match_char (closing_character) != MATCH_YES)
 	return MATCH_ERROR;
 
       ts->type = BT_COMPLEX;
@@ -2733,7 +2746,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     }
 
   if (matched_type)
-    m = gfc_match_char (')');
+    m = gfc_match_char (closing_character);
 
   if (m == MATCH_YES)
     ts->type = BT_DERIVED;
@@ -6151,8 +6164,13 @@ gfc_match_end (gfc_statement *st)
   /* Verify that we've got the sort of end-block that we're expecting.  */
   if (gfc_match (target) != MATCH_YES)
     {
-      gfc_error ("Expecting %s statement at %C", gfc_ascii_statement (*st));
-      goto cleanup;
+      /* Also accept 'structure' to end types. This isn't an ideal way of doing
+         this check, but it keeps the delta small. */
+      if (*st != ST_END_TYPE || gfc_match (" structure") != MATCH_YES)
+	{
+	  gfc_error ("Expecting %s statement at %C", gfc_ascii_statement (*st));
+	  goto cleanup;
+	}
     }
 
   /* If we're at the end, make sure a block name wasn't required.  */
@@ -7614,8 +7632,12 @@ gfc_match_derived_decl (void)
     }
 
   m = gfc_match (" %n%t", name);
-  if (m != MATCH_YES)
-    return m;
+  if (m != MATCH_YES) {
+    m = gfc_match (" /%n/%t", name);
+    if (m != MATCH_YES) {
+      return m;
+    }
+  }
 
   /* Make sure the name is not the name of an intrinsic type.  */
   if (gfc_is_intrinsic_typename (name))
