@@ -160,7 +160,8 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_realloc_lhs = -1;
   gfc_option.flag_aggressive_function_elimination = 0;
   gfc_option.flag_frontend_optimize = -1;
-  
+  gfc_option.flag_oracle_support = 0;
+
   gfc_option.fpe = 0;
   gfc_option.rtcheck = 0;
   gfc_option.coarray = GFC_FCOARRAY_NONE;
@@ -737,7 +738,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
     case OPT_fallow_leading_underscore:
       gfc_option.flag_allow_leading_underscore = value;
       break;
-      
+
     case OPT_fbackslash:
       gfc_option.flag_backslash = value;
       break;
@@ -1118,6 +1119,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fcoarray_:
       gfc_handle_coarray_option (arg);
+      break;
+
+    case OPT_foracle_support:
+      gfc_option.flag_oracle_support = value;
       break;
     }
 
