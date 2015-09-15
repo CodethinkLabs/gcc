@@ -54,7 +54,6 @@ static match
 match_word (const char *str, match (*subr) (void), locus *old_locus)
 {
   match m;
-
   if (str != NULL)
     {
       m = gfc_match (str);
@@ -228,8 +227,6 @@ decode_specification_statement (void)
 
     case 's':
       match ("save", gfc_match_save, ST_ATTR_DECL);
-      /*gfc_warning_now("Matching structure in decode_specification_statement");*/
-      match ("structure", gfc_match_derived_decl, ST_DERIVED_DECL);
       break;
 
     case 't':

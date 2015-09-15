@@ -7640,7 +7640,7 @@ gfc_match_derived_decl (void)
 
   m = gfc_match (" %n%t", name);
   if (m != MATCH_YES) {
-    m = gfc_match ("/%n/%t", name);
+    m = gfc_match (" /%n/%t", name);
     if (m != MATCH_YES) {
       return m;
     }
