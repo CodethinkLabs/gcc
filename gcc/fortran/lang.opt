@@ -601,6 +601,10 @@ fworking-directory
 Fortran
 ; Documented in C
 
+foracle-support
+Fortran Undocumented
+Support some extensions permitted by the Oracle Fortran compiler
+
 idirafter
 Fortran Joined Separate
 ; Documented in C
