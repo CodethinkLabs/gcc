@@ -1925,7 +1925,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
     }
 
   if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
-      || gfc_match_char ('%') != MATCH_YES)
+      || (gfc_match_char ('%') != MATCH_YES && gfc_match_char ('.') != MATCH_YES))
     goto check_substring;
 
   sym = sym->ts.u.derived;
