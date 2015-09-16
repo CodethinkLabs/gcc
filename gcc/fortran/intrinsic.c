@@ -142,6 +142,7 @@ find_conv (gfc_typespec *from, gfc_typespec *to)
   int i;
 
   target = conv_name (from, to);
+
   sym = conversion;
 
   for (i = 0; i < nconv; i++, sym++)

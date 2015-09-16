@@ -2306,6 +2306,7 @@ typedef struct
   int fpe;
   int rtcheck;
   gfc_fcoarray coarray;
+  int flag_oracle_support;
 
   int warn_std;
   int allow_std;
