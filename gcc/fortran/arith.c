@@ -2266,7 +2266,7 @@ gfc_int2log (gfc_expr *src, int kind)
 }
 
 
-/* Helper function to set the representation in a Hollerith conversion.  
+/* Helper function to set the representation in a Hollerith conversion.
    This assumes that the ts.type and ts.kind of the result have already
    been set.  */
 
@@ -2297,6 +2297,37 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 }
 
 
+/* Helper function to set the representation in a character conversion.
+   This assumes that the ts.type and ts.kind of the result have already
+   been set.  */
+
+static void
+character2representation (gfc_expr *result, gfc_expr *src)
+{
+  int src_len, result_len;
+  int i;
+  src_len = src->value.character.length;
+  result_len = gfc_target_expr_size (result);
+
+  if (src_len > result_len)
+    {
+      gfc_warning (0, "The character constant at %L is too long to convert to %s",
+		   &src->where, gfc_typename(&result->ts));
+    }
+
+  result->representation.string = XCNEWVEC (char, result_len + 1);
+
+  for(i=0;i<MIN (result_len, src_len);i++) {
+    result->representation.string[i] = (char) src->value.character.string[i];
+  }
+
+  if (src_len < result_len)
+    memset (&result->representation.string[src_len], ' ', result_len - src_len);
+
+  result->representation.string[result_len] = '\0'; /* For debugger  */
+  result->representation.length = result_len;
+}
+
 /* Convert Hollerith to integer. The constant will be padded or truncated.  */
 
 gfc_expr *
@@ -2312,6 +2343,19 @@ gfc_hollerith2int (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert character to integer. The constant will be padded or truncated. */
+
+gfc_expr *
+gfc_character2int (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_get_constant_expr (BT_INTEGER, kind, &src->where);
+
+  character2representation (result, src);
+  gfc_interpret_integer (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, result->value.integer);
+  return result;
+}
 
 /* Convert Hollerith to real. The constant will be padded or truncated.  */
 

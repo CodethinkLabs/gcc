@@ -10,6 +10,5 @@
       print *, "JMAC".eq.4HJMAN !  { dg-warning "Promoting argument for comparison from HOLLERITH to CHARACTER at" }
       print *, "AAAA".eq.5HAAAAA ! { dg-warning "Promoting argument for comparison from HOLLERITH to CHARACTER at" }
       print *, "BBBBB".eq.5HBBBB ! { dg-warning "Promoting argument for comparison from HOLLERITH to CHARACTER at" }
-
       end program
 
