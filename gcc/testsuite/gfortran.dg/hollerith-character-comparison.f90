@@ -10,6 +10,5 @@
       print *, "JMAC".eq.4HJMAN !  { dg-warning "Legacy Extension: Hollerith constant|Conversion from HOLLERITH" }
       print *, "AAAA".eq.5HAAAAA ! { dg-warning "Legacy Extension: Hollerith constant|Conversion from HOLLERITH" }
       print *, "BBBBB".eq.5HBBBB ! { dg-warning "Legacy Extension: Hollerith constant|Conversion from HOLLERITH" }
-
       end program
 
