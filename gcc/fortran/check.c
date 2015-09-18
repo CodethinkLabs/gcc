@@ -1969,9 +1969,13 @@ gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 }
 
 
+/* This is the check function for the argument to the INT intrinsic */
 gfc_try
 gfc_check_int (gfc_expr *x, gfc_expr *kind)
 {
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && x->ts.type == BT_CHARACTER)
+    return SUCCESS;
+
   if (numeric_check (x, 0) == FAILURE)
     return FAILURE;
 
