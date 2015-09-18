@@ -6850,7 +6850,16 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	  goto oops;
 	}
       break;
-
+    case BT_CHARACTER:
+      switch(type)
+	{
+	case BT_INTEGER:
+	  f = gfc_character2int;
+	  break;
+	default:
+	  goto oops;
+	}
+      break;
     default:
     oops:
       gfc_internal_error ("gfc_convert_constant(): Unexpected type");
