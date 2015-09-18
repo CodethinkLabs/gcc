@@ -1973,7 +1973,7 @@ gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 gfc_try
 gfc_check_int (gfc_expr *x, gfc_expr *kind)
 {
-  if (type_check (x, 0, BT_CHARACTER) == SUCCESS && gfc_option.flag_oracle_support)
+  if (gfc_option.flag_oracle_support && x->ts.type == BT_CHARACTER)
     return SUCCESS;
 
   if (numeric_check (x, 0) == FAILURE)
