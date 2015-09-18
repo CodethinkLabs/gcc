@@ -3346,6 +3346,17 @@ add_conversions (void)
 	  add_conv (BT_LOGICAL, gfc_logical_kinds[j].kind,
 		    BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_LEGACY);
 	}
+
+  /* Oracle allows character values to be converted to integers,
+     similar to Hollerith-Integer conversion - the first characters will
+     be turned into ascii values. */
+  if (gfc_option.flag_oracle_support)
+    {
+      /* Character-Integer conversions.  */
+      for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_LEGACY);
+    }
 }
 
 
@@ -4367,6 +4378,15 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
       else if (from_ts.type == BT_HOLLERITH || ts->type == BT_HOLLERITH)
 	{
 	  /* If HOLLERITH is involved, all bets are off.  */
+	  if (gfc_option.warn_conversion_extra
+	      || gfc_option.gfc_warn_conversion)
+	    gfc_warning_now ("Conversion from %s to %s at %L",
+			     gfc_typename (&from_ts), gfc_typename (ts),
+			     &expr->where);
+	}
+      else if (gfc_option.flag_oracle_support && from_ts.type == BT_CHARACTER
+	       && ts->type == BT_INTEGER)
+	{
 	  if (gfc_option.warn_conversion_extra
 	      || gfc_option.gfc_warn_conversion)
 	    gfc_warning_now ("Conversion from %s to %s at %L",

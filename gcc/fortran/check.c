@@ -1969,9 +1969,13 @@ gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 }
 
 
+/* This is the check function for the argument to the INT intrinsic */
 gfc_try
 gfc_check_int (gfc_expr *x, gfc_expr *kind)
 {
+  if (type_check (x, 0, BT_CHARACTER) == SUCCESS && gfc_option.flag_oracle_support)
+    return SUCCESS;
+
   if (numeric_check (x, 0) == FAILURE)
     return FAILURE;
 
