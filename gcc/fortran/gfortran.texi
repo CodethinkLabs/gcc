@@ -1358,6 +1358,7 @@ without warning.
 * CONVERT specifier::
 * OpenMP::
 * Argument list functions::
+* AUTOMATIC statement::
 @end menu
 
 @node Old-style kind specifications
@@ -1965,6 +1966,15 @@ For details refer to the g77 manual
 Also, @code{c_by_val.f} and its partner @code{c_by_val.c} of the
 GNU Fortran testsuite are worth a look.
 
+@node AUTOMATIC statement
+@subsection AUTOMATIC statement
+@cindex AUTOMATIC statement
+
+AUTOMATIC is the opposite to the standard SAVE statement. While SAVE forces
+variables to be placed in non-stack memory where it won't be overwritten,
+AUTOMATIC forces all variable declared with it to be on the stack.
+
+AUTOMATIC overrides -fno-automatic.
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
