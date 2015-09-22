@@ -1405,6 +1405,7 @@ without warning.
 * OpenACC::
 * Argument list functions::
 * Read/Write after EOF marker::
+* AUTOMATIC statement::
 @end menu
 
 @node Old-style kind specifications
@@ -2062,6 +2063,16 @@ rejects these codes with a run-time error message and suggests the user
 consider @code{BACKSPACE} or @code{REWIND} to properly position
 the file before the EOF marker.  As an extension, the run-time error may
 be disabled using -std=legacy.
+
+@node AUTOMATIC statement
+@subsection AUTOMATIC statement
+@cindex AUTOMATIC statement
+
+AUTOMATIC is the opposite to the standard SAVE statement. While SAVE forces
+variables to be placed in non-stack memory where it won't be overwritten,
+AUTOMATIC forces all variable declared with it to be on the stack.
+
+AUTOMATIC overrides -fno-automatic.
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
