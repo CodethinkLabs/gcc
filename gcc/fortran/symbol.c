@@ -1126,7 +1126,6 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
   return check_conflict (attr, name, where);
 }
 
-
 gfc_try
 gfc_add_value (symbol_attribute *attr, const char *name, locus *where)
 {
