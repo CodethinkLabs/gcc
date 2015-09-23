@@ -1186,9 +1186,10 @@ gfc_add_automatic (symbol_attribute *attr,  const char *name, locus *where)
   if (check_used (attr, name, where))
     return false;
 
-  gfc_notify_std (GFC_STD_LEGACY,
-		  "AUTOMATIC attribute specified at %L",
-		  where);
+  if (!gfc_notify_std (GFC_STD_LEGACY,
+		      "AUTOMATIC attribute specified at %L",
+		       where))
+    return false;
 
   attr->automatic = 1;
   return check_conflict (attr, name, where);
