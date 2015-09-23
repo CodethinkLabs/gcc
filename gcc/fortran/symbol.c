@@ -441,8 +441,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  case FL_LABEL:
 	  case FL_DERIVED:
 	  case FL_PARAMETER:
-            a1 = gfc_code2string (flavors, attr->flavor);
-            a2 = save;
+	    a1 = gfc_code2string (flavors, attr->flavor);
+	    a2 = save;
 	    goto conflict;
 	  case FL_NAMELIST:
 	    gfc_error ("Namelist group name at %L cannot have the "
