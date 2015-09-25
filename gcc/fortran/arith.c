@@ -2305,7 +2305,7 @@ static void
 character2representation (gfc_expr *result, gfc_expr *src)
 {
   int src_len, result_len;
-
+  int i;
   src_len = src->value.character.length;
   result_len = gfc_target_expr_size (result);
 
@@ -2316,8 +2316,10 @@ character2representation (gfc_expr *result, gfc_expr *src)
     }
 
   result->representation.string = XCNEWVEC (char, result_len + 1);
-  memcpy (result->representation.string, src->value.character.string,
-	  MIN (result_len, src_len));
+
+  for(i=0;i<MIN (result_len, src_len);i++) {
+    result->representation.string[i] = (char) src->value.character.string[i];
+  }
 
   if (src_len < result_len)
     memset (&result->representation.string[src_len], ' ', result_len - src_len);
