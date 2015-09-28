@@ -432,6 +432,10 @@ fdec-duplicates
 Fortran Var(flag_dec_duplicates)
 Allow varibles to be duplicated in the type specification matches.
 
+fdec-pad-with-spaces
+Fortran Var(flag_dec_pad_with_spaces)
+For character to integer conversions, use spaces for the pad rather than NUL.
+
 fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
 Enable kind-specific variants of integer intrinsic functions.
