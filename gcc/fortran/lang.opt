@@ -456,6 +456,10 @@ fdec-math
 Fortran Var(flag_dec_math)
 Enable legacy math intrinsics for compatibility.
 
+fdec-pad-with-spaces
+Fortran Var(flag_dec_pad_with_spaces)
+For character to integer conversions, use spaces for the pad rather than NUL.
+
 fdec-structure
 Fortran Var(flag_dec_structure)
 Enable support for DEC STRUCTURE/RECORD.
