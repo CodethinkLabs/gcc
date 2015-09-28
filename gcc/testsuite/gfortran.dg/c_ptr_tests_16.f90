@@ -13,7 +13,8 @@ program test
   print '(z8)', a
   if (     int(z'45434241') /= a  &
      .and. int(z'41424345') /= a  &
-     .and. int(z'4142434500000000',kind=8) /= a) &
+     .and. int(z'4142434520202020',kind=8) /= a &
+     .and. int(z'2020202045434241',kind=8) /= a ) &
     call i_do_not_exist()
 end program test
 
