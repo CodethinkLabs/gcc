@@ -852,6 +852,13 @@ data_desc:
 
       if (u != FMT_POSINT)
 	{
+	  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	    {
+	      /* Assume a default width based on the variable size.  */
+	      saved_token = u;
+	      break;
+	    }
+
 	  format_locus.nextc += format_string_pos;
 	  gfc_error ("Positive width required in format "
 			 "specifier %s at %L", token_to_string (t),
@@ -926,6 +933,11 @@ data_desc:
 	goto fail;
       if (t != FMT_ZERO && t != FMT_POSINT)
 	{
+	  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	    {
+	      saved_token = t;
+	      break;
+	    }
 	  error = nonneg_required;
 	  goto syntax;
 	}
