@@ -918,14 +918,20 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	{
 	  if (u != FMT_POSINT && u != FMT_ZERO)
 	    {
-	      fmt->error = nonneg_required;
-	      goto finished;
+	      tail->u.real.w = DEFAULT_WIDTH;
+	      tail->u.real.d = 0;
+	      tail->u.real.e = -1;
+	      fmt->saved_token = u;
+	      break;
 	    }
 	}
       else if (u != FMT_POSINT)
 	{
-	  fmt->error = posint_required;
-	  goto finished;
+	  tail->u.real.w = DEFAULT_WIDTH;
+	  tail->u.real.d = 0;
+	  tail->u.real.e = -1;
+	  fmt->saved_token = u;
+	  break;
 	}
 
       tail->u.real.w = fmt->value;

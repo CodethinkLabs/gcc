@@ -112,7 +112,7 @@ determine_precision (st_parameter_dt * dtp, const fnode * f, int len)
 
 static bool
 output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
-	      int nprinted, int precision, int sign_bit, bool zero_flag)
+	      int nprinted, int precision, int sign_bit, bool zero_flag, int width)
 {
   char *out;
   char *digits;
@@ -131,8 +131,8 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   sign_t sign;
 
   ft = f->format;
-  w = f->u.real.w;
-  d = f->u.real.d;
+  w = width;
+  d = precision;
   p = dtp->u.p.scale_factor;
 
   rchar = '5';
@@ -1009,7 +1009,7 @@ __qmath_(quadmath_snprintf) (buffer, size, "%+-#.*Qf", \
 static void \
 output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 		      GFC_REAL_ ## x m, char *buffer, size_t size, \
-			  int sign_bit, bool zero_flag, int comp_d) \
+			  int sign_bit, bool zero_flag, int comp_d, int width) \
 { \
   int e = f->u.real.e;\
   int d = f->u.real.d;\
@@ -1106,7 +1106,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 \
  finish:\
     result = output_float (dtp, &newf, buffer, size, nprinted, precision,\
-			   sign_bit, zero_flag);\
+			   sign_bit, zero_flag, width);\
   dtp->u.p.scale_factor = save_scale_factor;\
 \
 \
@@ -1245,7 +1245,7 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 	zero_flag = (tmp == 0.0);\
 	if (f->format == FMT_G)\
 	  output_float_FMT_G_ ## x (dtp, f, tmp, buffer, size, sign_bit, \
-				    zero_flag, comp_d);\
+				    zero_flag, comp_d, width);\
 	else\
 	  {\
 	    if (f->format == FMT_F)\
@@ -1253,7 +1253,7 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 	    else\
 	      nprinted = DTOA(y,precision,tmp);					\
 	    output_float (dtp, f, buffer, size, nprinted, precision,\
-			  sign_bit, zero_flag);\
+			  sign_bit, zero_flag, width);\
 	  }\
 }\
 
@@ -1265,14 +1265,35 @@ write_float (st_parameter_dt *dtp, const fnode *f, const char *source, \
 {
   int sign_bit, nprinted;
   int precision;  /* Precision for snprintf call.  */
+  int width;
   bool zero_flag;
 
-  if (f->format != FMT_EN)
-    precision = determine_precision (dtp, f, len);
-  else
-    precision = determine_en_precision (dtp, f, source, len);
+  precision = 0;
+  width = 0;
 
-  /* 4932 is the maximum exponent of long double and quad precision, 3
+  if(f->u.real.w == -1)
+    { // Set defaults based on size (and type also, but that's TODO)
+      switch(len) {
+            case 4: width = 15; precision = 7; break;
+	    case 8: width = 25; precision = 16; break;
+	    case 16: width = 42; precision = 33; break;
+      }
+    }
+
+  if (width == 0)
+    {
+       width = f->u.real.w;
+    }
+
+  if (precision == 0)
+    {
+      if (f->format != FMT_EN)
+        precision = determine_precision (dtp, f, len);
+      else
+        precision = determine_en_precision (dtp, f, source, len);
+    }
+
+   /* 4932 is the maximum exponent of long double and quad precision, 3
      extra characters for the sign, the decimal point, and the
      trailing null, and finally some extra digits depending on the
      requested precision.  */
