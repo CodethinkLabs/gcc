@@ -71,6 +71,7 @@ set_dec_flags (int value)
   flag_dec_pad_with_spaces |= value;
   flag_dec_hollerith_conversion |= value;
   flag_dec_blank_format_item |= value;
+  flag_dec_non_integer_index |= value;
 }
 
 
