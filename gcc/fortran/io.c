@@ -709,6 +709,11 @@ format_item_1:
       error = unexpected_end;
       goto syntax;
 
+    case FMT_RPAREN:
+      /* Oracle allows a blank format item. If this flag is off,
+	 fall through to default. */
+      if (gfc_option.flag_oracle_support) goto finished;
+
     default:
       error = unexpected_element;
       goto syntax;
