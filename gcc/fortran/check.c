@@ -2571,7 +2571,7 @@ gfc_check_ichar_iachar (gfc_expr *c, gfc_expr *kind)
   else
     return true;
 
-  if (i != 1)
+  if (i != 1 && !(flag_dec || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)))
     {
       gfc_error ("Argument of %s at %L must be of length one",
 		 gfc_current_intrinsic, &c->where);

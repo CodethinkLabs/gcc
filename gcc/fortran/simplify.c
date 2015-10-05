@@ -3226,7 +3226,8 @@ gfc_simplify_iachar (gfc_expr *e, gfc_expr *kind)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (e->value.character.length != 1)
+  if (e->value.character.length != 1
+      && !(flag_dec || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)))
     {
       gfc_error ("Argument of IACHAR at %L must be of length one", &e->where);
       return &gfc_bad_expr;
@@ -3424,7 +3425,8 @@ gfc_simplify_ichar (gfc_expr *e, gfc_expr *kind)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (e->value.character.length != 1)
+  if (e->value.character.length != 1
+      && !(flag_dec || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)))
     {
       gfc_error ("Argument of ICHAR at %L must be of length one", &e->where);
       return &gfc_bad_expr;
