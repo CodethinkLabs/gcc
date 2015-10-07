@@ -3507,6 +3507,19 @@ is_character_based (bt type)
   return type == BT_CHARACTER || type == BT_HOLLERITH;
 }
 
+static void
+convert_integer_to_logical (gfc_expr *e)
+{
+  if (e->ts.type == BT_INTEGER)
+    {
+      /* Convert to LOGICAL */
+      gfc_typespec t;
+      t.type = BT_LOGICAL;
+      t.kind = 1;
+      gfc_convert_type_warn (e, &t, 2, 1);
+    }
+}
+
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
@@ -3601,6 +3614,11 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_OR:
     case INTRINSIC_EQV:
     case INTRINSIC_NEQV:
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	{
+	  convert_integer_to_logical(op1);
+	  convert_integer_to_logical(op2);
+	}
       if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
 	{
 	  e->ts.type = BT_LOGICAL;
