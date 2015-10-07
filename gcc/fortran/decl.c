@@ -2163,6 +2163,35 @@ check_function_name (char *name)
 }
 
 
+static match
+match_character_length_clause (gfc_charlen **cl, bool *cl_deferred, int elem)
+{
+  gfc_expr* char_len;
+  char_len = NULL;
+
+  match m = match_char_length (&char_len, cl_deferred, false);
+  if (m == MATCH_YES)
+    {
+      *cl = gfc_new_charlen (gfc_current_ns, NULL);
+      (*cl)->length = char_len;
+    }
+  else if (m == MATCH_NO)
+    {
+      if (elem > 1
+	  && (current_ts.u.cl->length == NULL
+	      || current_ts.u.cl->length->expr_type != EXPR_CONSTANT))
+	{
+	  *cl = gfc_new_charlen (gfc_current_ns, NULL);
+	  (*cl)->length = gfc_copy_expr (current_ts.u.cl->length);
+	}
+      else
+      *cl = current_ts.u.cl;
+
+      *cl_deferred = current_ts.deferred;
+    }
+  return m;
+}
+
 /* Match a variable name with an optional initializer.  When this
    subroutine is called, a variable is expected to be parsed next.
    Depending on what is happening at the moment, updates either the
@@ -2172,7 +2201,7 @@ static match
 variable_decl (int elem)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  gfc_expr *initializer, *char_len;
+  gfc_expr *initializer;
   gfc_array_spec *as;
   gfc_array_spec *cp_as; /* Extra copy for Cray Pointees.  */
   gfc_charlen *cl;
@@ -2181,6 +2210,7 @@ variable_decl (int elem)
   match m;
   bool t;
   gfc_symbol *sym;
+  match cl_match;
 
   initializer = NULL;
   as = NULL;
@@ -2194,6 +2224,20 @@ variable_decl (int elem)
     goto cleanup;
 
   var_locus = gfc_current_locus;
+
+
+  cl = NULL;
+  cl_deferred = false;
+  cl_match = MATCH_NO;
+
+  /* Check for a character length clause before an array clause */
+  if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+      && current_ts.type == BT_CHARACTER)
+    {
+      cl_match = match_character_length_clause (&cl, &cl_deferred, elem);
+      if (cl_match == MATCH_ERROR)
+	goto cleanup;
+    }
 
   /* Now we could see the optional array spec. or character length.  */
   m = gfc_match_array_spec (&as, true, true);
@@ -2286,40 +2330,12 @@ variable_decl (int elem)
 	}
     }
 
-  char_len = NULL;
-  cl = NULL;
-  cl_deferred = false;
-
-  if (current_ts.type == BT_CHARACTER)
+  /* Second chance for a character length clause */
+  if (cl_match == MATCH_NO && current_ts.type == BT_CHARACTER)
     {
-      switch (match_char_length (&char_len, &cl_deferred, false))
-	{
-	case MATCH_YES:
-	  cl = gfc_new_charlen (gfc_current_ns, NULL);
-
-	  cl->length = char_len;
-	  break;
-
-	/* Non-constant lengths need to be copied after the first
-	   element.  Also copy assumed lengths.  */
-	case MATCH_NO:
-	  if (elem > 1
-	      && (current_ts.u.cl->length == NULL
-		  || current_ts.u.cl->length->expr_type != EXPR_CONSTANT))
-	    {
-	      cl = gfc_new_charlen (gfc_current_ns, NULL);
-	      cl->length = gfc_copy_expr (current_ts.u.cl->length);
-	    }
-	  else
-	    cl = current_ts.u.cl;
-
-	  cl_deferred = current_ts.deferred;
-
-	  break;
-
-	case MATCH_ERROR:
-	  goto cleanup;
-	}
+      m = match_character_length_clause( &cl, &cl_deferred, elem );
+      if (m == MATCH_ERROR)
+	goto cleanup;
     }
 
   /* The dummy arguments and result of the abreviated form of MODULE
