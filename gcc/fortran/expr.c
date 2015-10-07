@@ -3298,6 +3298,9 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 	  || rvalue->ts.type == BT_HOLLERITH)
 	return true;
 
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts (&lvalue->ts) && rvalue->ts.type == BT_CHARACTER)
+	return SUCCESS;
+
       if (lvalue->ts.type == BT_LOGICAL && rvalue->ts.type == BT_LOGICAL)
 	return true;
 
