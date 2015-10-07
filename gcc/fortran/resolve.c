@@ -3838,7 +3838,6 @@ lookup_uop_fuzzy (const char *op, gfc_symtree *uop)
   return gfc_closest_fuzzy_match (op, candidates);
 }
 
-
 /* Callback finding an impure function as an operand to an .and. or
    .or.  expression.  Remember the last function warned about to
    avoid double warnings when recursing.  */
@@ -3873,6 +3872,37 @@ impure_function_callback (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+/* If E is a logical, convert it to an integer and issue a warning
+   for the conversion.  */
+
+static void
+convert_integer_to_logical (gfc_expr *e)
+{
+  if (e->ts.type == BT_INTEGER)
+    {
+      /* Convert to LOGICAL */
+      gfc_typespec t;
+      t.type = BT_LOGICAL;
+      t.kind = 1;
+      gfc_convert_type_warn (e, &t, 2, 1);
+    }
+}
+
+/* If E is a logical, convert it to an integer and issue a warning
+   for the conversion.  */
+
+static void
+convert_logical_to_integer (gfc_expr *e)
+{
+  if (e->ts.type == BT_LOGICAL)
+    {
+      /* Convert to INTEGER */
+      gfc_typespec t;
+      t.type = BT_INTEGER;
+      t.kind = 1;
+      gfc_convert_type_warn (e, &t, 2, 1);
+    }
+}
 
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
@@ -3938,6 +3968,12 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_TIMES:
     case INTRINSIC_DIVIDE:
     case INTRINSIC_POWER:
+      if (flag_logical_as_integer)
+	{
+	  convert_logical_to_integer (op1);
+	  convert_logical_to_integer (op2);
+	}
+
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
 	{
 	  gfc_type_convert_binary (e, 1);
@@ -3974,6 +4010,13 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_OR:
     case INTRINSIC_EQV:
     case INTRINSIC_NEQV:
+
+      if (flag_logical_as_integer)
+	{
+	  convert_integer_to_logical (op1);
+	  convert_integer_to_logical (op2);
+	}
+
       if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
 	{
 	  e->ts.type = BT_LOGICAL;
@@ -4024,6 +4067,9 @@ resolve_operator (gfc_expr *e)
 	  goto simplify_op;
 	}
 
+      if (flag_logical_as_integer)
+	convert_integer_to_logical (op1);
+
       if (op1->ts.type == BT_LOGICAL)
 	{
 	  e->ts.type = BT_LOGICAL;
@@ -4055,6 +4101,13 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
+
+      if (flag_logical_as_integer)
+	{
+	  convert_logical_to_integer (op1);
+	  convert_logical_to_integer (op2);
+	}
+
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
 	  && op1->ts.kind == op2->ts.kind)
 	{
