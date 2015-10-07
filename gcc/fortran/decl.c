@@ -1881,7 +1881,7 @@ variable_decl (int elem)
   cl_match = MATCH_NO;
 
   /* Check for a character length clause before an array clause */
-  if (gfc_option.flag_oracle_support && current_ts.type == BT_CHARACTER)
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && current_ts.type == BT_CHARACTER)
     {
       cl_match = match_character_length_clause( &cl, &cl_deferred, elem );
       if (cl_match == MATCH_ERROR)
