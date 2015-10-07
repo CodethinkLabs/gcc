@@ -3627,6 +3627,22 @@ is_character_based (bt type)
    for the conversion.  */
 
 static void
+convert_integer_to_logical (gfc_expr *e)
+{
+  if (e->ts.type == BT_INTEGER)
+    {
+      /* Convert to LOGICAL */
+      gfc_typespec t;
+      t.type = BT_LOGICAL;
+      t.kind = 1;
+      gfc_convert_type_warn (e, &t, 2, 1);
+    }
+}
+
+/* If E is a logical, convert it to an integer and issue a warning
+   for the conversion.  */
+
+static void
 convert_logical_to_integer (gfc_expr *e)
 {
   if (e->ts.type == BT_LOGICAL)
@@ -3739,6 +3755,12 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_OR:
     case INTRINSIC_EQV:
     case INTRINSIC_NEQV:
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	{
+	  convert_integer_to_logical (op1);
+	  convert_integer_to_logical (op2);
+	}
+
       if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
 	{
 	  e->ts.type = BT_LOGICAL;
@@ -3778,6 +3800,11 @@ resolve_operator (gfc_expr *e)
 	  e->ts.kind = op1->ts.kind;
 	  e = logical_to_bitwise (e);
 	  return resolve_function (e);
+	}
+
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	{
+	  convert_integer_to_logical (op1);
 	}
 
       if (op1->ts.type == BT_LOGICAL)
