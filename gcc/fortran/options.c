@@ -75,6 +75,7 @@ set_dec_flags (int value)
   flag_dec_blank_format_item |= value;
   flag_dec_non_integer_index |= value;
   flag_dec_old_init |= value;
+  flag_dec_override_kind |= value;
 }
 
 
