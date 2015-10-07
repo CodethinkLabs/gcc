@@ -81,6 +81,7 @@ set_dec_flags (int value)
   SET_BITFLAG (flag_dec_blank_format_item, value, value);
   SET_BITFLAG (flag_dec_non_integer_index, value, value);
   SET_BITFLAG (flag_dec_old_init, value, value);
+  SET_BITFLAG (flag_dec_override_kind, value, value);
 }
 
 /* Finalize DEC flags.  */
