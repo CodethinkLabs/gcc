@@ -161,6 +161,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_aggressive_function_elimination = 0;
   gfc_option.flag_frontend_optimize = -1;
   gfc_option.flag_oracle_support = 0;
+  gfc_option.flag_oracle_support_experimental = 0;
 
   gfc_option.fpe = 0;
   gfc_option.rtcheck = 0;
@@ -1123,6 +1124,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_foracle_support:
       gfc_option.flag_oracle_support = value;
+      break;
+
+    case OPT_foracle_support_experimental:
+      gfc_option.flag_oracle_support_experimental = value;
       break;
     }
 
