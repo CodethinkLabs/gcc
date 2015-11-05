@@ -781,6 +781,24 @@ syntax:
   return MATCH_ERROR;
 }
 
+/* This matches the nonstandard kind given after a variable name, like:
+   INTEGER x*2, y*4
+   The per-variable kind will override any kind given in the type
+   declaration.
+*/
+
+static match
+match_per_symbol_kind (int *length)
+{
+  match m;
+
+  m = gfc_match_char ('*');
+  if (m != MATCH_YES)
+    return m;
+
+  m = gfc_match_small_literal_int (length, NULL);
+  return m;
+}
 
 /* Special subroutine for finding a symbol.  Check if the name is found
    in the current name space.  If not, and we're compiling a function or
@@ -1837,6 +1855,8 @@ variable_decl (int elem)
   gfc_try t;
   gfc_symbol *sym;
   match cl_match;
+  match kind_match;
+  int overridden_kind;
 
   initializer = NULL;
   as = NULL;
@@ -1857,12 +1877,19 @@ variable_decl (int elem)
   cl_match = MATCH_NO;
 
   /* Check for a character length clause before an array clause */
-  if (gfc_option.flag_oracle_support && current_ts.type == BT_CHARACTER)
-    {
-      cl_match = match_character_length_clause( &cl, &cl_deferred, elem );
-      if (cl_match == MATCH_ERROR)
-	goto cleanup;
-    }
+  if (gfc_option.flag_oracle_support)
+    if (current_ts.type == BT_CHARACTER)
+      {
+	cl_match = match_character_length_clause( &cl, &cl_deferred, elem );
+	if (cl_match == MATCH_ERROR)
+	  goto cleanup;
+      }
+    else
+      {
+	kind_match = match_per_symbol_kind ( &overridden_kind );
+	if (kind_match == MATCH_ERROR)
+	  goto cleanup;
+      }
 
   /* Now we could see the optional array spec. or character length.  */
   m = gfc_match_array_spec (&as, true, true);
@@ -1989,6 +2016,13 @@ variable_decl (int elem)
     {
       m = MATCH_ERROR;
       goto cleanup;
+    }
+
+  if ( kind_match == MATCH_YES )
+    {
+      gfc_find_symbol (name, gfc_current_ns, 1, &sym);
+      /* sym *must* be found at this point */
+      sym->ts.kind = overridden_kind;
     }
 
   if (check_function_name (name) == FAILURE)
