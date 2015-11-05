@@ -1861,6 +1861,7 @@ variable_decl (int elem)
   initializer = NULL;
   as = NULL;
   cp_as = NULL;
+  kind_match = MATCH_NO;
 
   /* When we get here, we've just matched a list of attributes and
      maybe a type and a double colon.  The next thing we expect to see
@@ -1878,18 +1879,20 @@ variable_decl (int elem)
 
   /* Check for a character length clause before an array clause */
   if (gfc_option.flag_oracle_support)
-    if (current_ts.type == BT_CHARACTER)
-      {
-	cl_match = match_character_length_clause( &cl, &cl_deferred, elem );
-	if (cl_match == MATCH_ERROR)
-	  goto cleanup;
-      }
-    else
-      {
-	kind_match = match_per_symbol_kind ( &overridden_kind );
-	if (kind_match == MATCH_ERROR)
-	  goto cleanup;
-      }
+    {
+      if (current_ts.type == BT_CHARACTER)
+	{
+	  cl_match = match_character_length_clause( &cl, &cl_deferred, elem );
+	  if (cl_match == MATCH_ERROR)
+	    goto cleanup;
+	}
+      else
+	{
+	  kind_match = match_per_symbol_kind ( &overridden_kind );
+	  if (kind_match == MATCH_ERROR)
+	    goto cleanup;
+	}
+    }
 
   /* Now we could see the optional array spec. or character length.  */
   m = gfc_match_array_spec (&as, true, true);
