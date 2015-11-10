@@ -2069,6 +2069,7 @@ variable_decl (int elem)
 		  m = gfc_match ("/");
 		  if (m != MATCH_YES)
 		    goto cleanup;
+		  return m;
 		}
 	    }
 	}
