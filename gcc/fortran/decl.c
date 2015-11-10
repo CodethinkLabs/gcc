@@ -2042,7 +2042,6 @@ variable_decl (int elem)
 
   if (!colon_seen && gfc_match (" /") == MATCH_YES)
     {
-      gfc_warning_now("Found old-style initializer");
       if (gfc_notify_std (GFC_STD_GNU, "Old-style "
 			  "initialization at %C") == FAILURE)
 	return MATCH_ERROR;
@@ -2069,11 +2068,11 @@ variable_decl (int elem)
 		  m = gfc_match ("/");
 		  if (m != MATCH_YES)
 		    goto cleanup;
-		  return m;
 		}
 	    }
 	}
-      return match_old_style_init (name);
+      else
+        return match_old_style_init (name);
 
     }
 
