@@ -25,6 +25,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
+#include "hash-set.h"
+#include "machmode.h"
+#include "vec.h"
+#include "double-int.h"
+#include "input.h"
+#include "alias.h"
+#include "symtab.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "stringpool.h"
+#include "arith.h"
 
 int gfc_matching_ptr_assignment = 0;
 int gfc_matching_procptr_assignment = 0;
@@ -1666,7 +1678,16 @@ got_match:
   *p->next = new_st;
   p->next->loc = gfc_current_locus;
 
-  p->expr1 = expr;
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && expr->ts.type != BT_LOGICAL)
+    {
+      p->expr1 = gfc_ne (expr, gfc_get_int_expr (1, &gfc_current_locus, 0), INTRINSIC_NE);
+      gfc_warning_now (0, "The type of condition in this IF statement isn't LOGICAL; it will be true if it evaluates to nonzero.");
+    }
+  else
+    {
+      p->expr1 = expr;
+    }
+  p->op = EXEC_IF;
 
   gfc_clear_new_st ();
 
