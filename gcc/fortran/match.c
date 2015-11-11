@@ -1667,7 +1667,6 @@ got_match:
   p->next->loc = gfc_current_locus;
 
   p->expr1 = expr;
-
   gfc_clear_new_st ();
 
   new_st.op = EXEC_IF;
