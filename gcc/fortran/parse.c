@@ -2955,7 +2955,7 @@ parse_if_block (void)
   if (gfc_option.flag_oracle_support && top->expr1->ts.type != BT_LOGICAL)
     {
       d->expr1 = gfc_ne (top->expr1, gfc_get_int_expr (1, &gfc_current_locus, 0), INTRINSIC_NE);
-      gfc_warning_now ("The type of condition in this IF statement isn't LOGICAL; it will be true if it evaluates to nonzero.", top->expr1->ts.type);
+      gfc_warning_now ("The type of condition in this IF statement isn't LOGICAL; it will be true if it evaluates to nonzero.");
     }
 
   top->expr1 = NULL;
