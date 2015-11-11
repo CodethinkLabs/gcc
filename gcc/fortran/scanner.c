@@ -85,6 +85,7 @@ static struct gfc_file_change
 size_t file_changes_cur, file_changes_count;
 size_t file_changes_allocated;
 
+static bool include_line_test (gfc_char_t *line);
 
 /* Functions dealing with our wide characters (gfc_char_t) and
    sequences of such characters.  */
@@ -1582,6 +1583,12 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
       *buffer++ = c;
       i++;
 
+      if (maxlen > 0 && gfc_option.flag_oracle_support && include_line_test (*pbuf))
+	{
+	  gfc_warning_now("An include line longer than 72 characters is nonstandard.");
+	  maxlen = 0;
+	}
+
       if (maxlen == 0 || preprocessor_flag)
 	{
 	  if (i >= buflen)
@@ -1595,6 +1602,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	}
       else if (i >= maxlen)
 	{
+
 	  bool trunc_warn = true;
 
 	  /* Enhancement, if the very next non-space character is an ampersand
@@ -1832,6 +1840,45 @@ preprocessor_line (gfc_char_t *c)
 
 
 static gfc_try load_file (const char *, const char *, bool);
+
+
+/* include_line_test ()-- Unpleasant hack to allow long include lines in
+   fixed-form fortran. If this looks like it's going to be an include
+   line, then return true, so load_line can extend the length of the
+   line arbirtrarily. */
+static bool
+include_line_test (gfc_char_t *line)
+{
+  gfc_char_t quote, *c, *begin, *stop;
+  char *filename;
+
+  c = line;
+
+  if (gfc_option.gfc_flag_openmp)
+    {
+      if (gfc_current_form == FORM_FREE)
+	{
+	  while (*c == ' ' || *c == '\t')
+	    c++;
+	  if (*c == '!' && c[1] == '$' && (c[2] == ' ' || c[2] == '\t'))
+	    c += 3;
+	}
+      else
+	{
+	  if ((*c == '!' || *c == 'c' || *c == 'C' || *c == '*')
+	      && c[1] == '$' && (c[2] == ' ' || c[2] == '\t'))
+	    c += 3;
+	}
+    }
+
+  while (*c == ' ' || *c == '\t')
+    c++;
+
+  if (gfc_wide_strncasecmp (c, "include", 7))
+    return false;
+
+  return true;
+}
 
 /* include_line()-- Checks a line buffer to see if it is an include
    line.  If so, we call load_file() recursively to load the included
