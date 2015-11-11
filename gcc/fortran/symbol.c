@@ -1761,7 +1761,7 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 	    /* Ignore temporaries and class/procedure names */
 	    return false;
 	  }
-	  if (gfc_compare_types(&sym->ts, ts) && (flavor == FL_UNKNOWN || flavor == FL_VARIABLE))
+	  if (gfc_compare_types(&sym->ts, ts) && (flavor == FL_UNKNOWN || flavor == FL_VARIABLE || (flavor == FL_PROCEDURE && gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)))
 	    {
 	      return gfc_notify_std (GFC_STD_LEGACY,
 				     "Symbol '%s' at %L already has basic type of %s", sym->name,
