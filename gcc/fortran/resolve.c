@@ -3715,19 +3715,19 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-
-      if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts(&op1->ts) && op2->ts.type == BT_HOLLERITH)
+      /* Numeric to hollerith comparisons */
+      if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts(&op1->ts) && (op2->ts.type == BT_HOLLERITH || op2->ts.type == BT_CHARACTER))
 	{
-	  gfc_warning("Promoting argument for comparison from HOLLERITH to INTEGER at %L", &op2->where);
+	  gfc_warning("Promoting argument for comparison from character type to INTEGER at %L", &op2->where);
 	  gfc_typespec ts;
 	  ts.type = BT_INTEGER;
 	  ts.kind = 4;
 	  gfc_convert_type_warn (op2, &ts, 2, 1);
 	}
 
-      if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts(&op2->ts) && op1->ts.type == BT_HOLLERITH)
+      if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts(&op2->ts) && (op1->ts.type == BT_HOLLERITH || op1->ts.type == BT_CHARACTER))
 	{
-	  gfc_warning("Promoting argument for comparison from HOLLERITH to INTEGER at %L", &op1->where);
+	  gfc_warning("Promoting argument for comparison from character type to INTEGER at %L", &op1->where);
 	  gfc_typespec ts;
 	  ts.type = BT_INTEGER;
 	  ts.kind = 4;
