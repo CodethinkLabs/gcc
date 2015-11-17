@@ -2656,7 +2656,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   bool seen_deferred_kind, matched_type;
   char closed_type_string[3];
   char closing_character;
-  const char *dt_name;
+  const char *dt_name, *fn_name;
 
   /* A belt and braces check that the typespec is correctly being treated
      as a deferred characteristic association.  */
@@ -2899,14 +2899,30 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   dt_name = gfc_get_string ("%c%s",
 			    (char) TOUPPER ((unsigned char) name[0]),
 			    (const char*)&name[1]);
+
+  fn_name = gfc_get_string ("%s", (const char*)name);
+
   sym = NULL;
   dt_sym = NULL;
   if (ts->kind != -1)
     {
-      gfc_get_ha_symbol (name, &sym);
-      if (sym->generic && gfc_find_symbol (dt_name, NULL, 0, &dt_sym))
+      /* Look for the derived type and the initializer function. If the type has
+	 the 'structure' tag, it came from a STRUCTURE keyword, and as such the
+	 initializer function is obfuscated. */
+
+      int find_dt_sym_err = gfc_find_symbol (dt_name, NULL, 0, &dt_sym);
+      if (dt_sym != NULL && dt_sym->attr.structure)
 	{
-	  gfc_error ("Type name '%s' at %C is ambiguous", name);
+	  fn_name = gfc_get_string ("%s_SI", (const char*) name);
+	  if (gfc_find_symbol(fn_name, NULL, 0, &sym) || sym == NULL) {
+	    gfc_error ("No initializer was defined for type '%s' at %C", name);
+	    return MATCH_ERROR;
+	  }
+	}
+      gfc_get_ha_symbol (fn_name, &sym);
+      if (sym->generic && find_dt_sym_err)
+	{
+	  gfc_error ("Type name '%s' at %C is ambiguous", fn_name);
 	  return MATCH_ERROR;
 	}
       if (sym->generic && !dt_sym)
@@ -2916,7 +2932,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     {
       int iface = gfc_state_stack->previous->state != COMP_INTERFACE
 		    || gfc_current_ns->has_import_set;
-      gfc_find_symbol (name, NULL, iface, &sym);
+      gfc_find_symbol (fn_name, NULL, iface, &sym);
       if (sym && sym->generic && gfc_find_symbol (dt_name, NULL, 1, &dt_sym))
 	{
 	  gfc_error ("Type name '%s' at %C is ambiguous", name);
@@ -7662,7 +7678,7 @@ gfc_get_type_attr_spec (symbol_attribute *attr, char *name)
    already to be known as a derived type yet have no components.  */
 
 match
-gfc_match_derived_decl (void)
+gfc_match_derived_or_structure_decl (int initializer_flag)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   char parent[GFC_MAX_SYMBOL_LEN + 1];
@@ -7673,6 +7689,7 @@ gfc_match_derived_decl (void)
   match is_type_attr_spec = MATCH_NO;
   bool seen_attr = false;
   gfc_interface *intr = NULL, *head;
+  const char* fn_name;
 
   if (gfc_current_state () == COMP_DERIVED)
     return MATCH_NO;
@@ -7722,7 +7739,16 @@ gfc_match_derived_decl (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_get_symbol (name, NULL, &gensym))
+  if (initializer_flag)
+    {
+      fn_name = name;
+    }
+  else
+    {
+      fn_name = gfc_get_string ("%s_SI", name);
+    }
+
+  if (gfc_get_symbol (fn_name, NULL, &gensym))
     return MATCH_ERROR;
 
   if (!gensym->attr.generic && gensym->ts.type != BT_UNKNOWN)
@@ -7753,9 +7779,9 @@ gfc_match_derived_decl (void)
     {
       /* Use upper case to save the actual derived-type symbol.  */
       gfc_get_symbol (gfc_get_string ("%c%s",
-			(char) TOUPPER ((unsigned char) gensym->name[0]),
-			&gensym->name[1]), NULL, &sym);
-      sym->name = gfc_get_string (gensym->name);
+			(char) TOUPPER ((unsigned char) name[0]),
+			 &name[1]), NULL, &sym);
+      sym->name = gfc_get_string (name);
       head = gensym->generic;
       intr = gfc_get_interface ();
       intr->sym = sym;
@@ -7783,6 +7809,10 @@ gfc_match_derived_decl (void)
 	   && gfc_add_access (&sym->attr, gensym->attr.access, sym->name, NULL)
 	      == FAILURE)
     return MATCH_ERROR;
+
+  /* If we specified an initializer, this is a derived type, otherwise it's a
+     legacy structure */
+  sym->attr.structure =  initializer_flag ? 0 : 1;
 
   if (sym->attr.access != ACCESS_UNKNOWN
       && gensym->attr.access == ACCESS_UNKNOWN)
@@ -7840,6 +7870,17 @@ gfc_match_derived_decl (void)
   return MATCH_YES;
 }
 
+match
+gfc_match_derived_decl (void)
+{
+  return gfc_match_derived_or_structure_decl (1);
+}
+
+match
+gfc_match_structure_decl (void)
+{
+  return gfc_match_derived_or_structure_decl (0);
+}
 
 /* Cray Pointees can be declared as:
       pointer (ipt, a (n,m,...,*))  */
