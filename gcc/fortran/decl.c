@@ -2656,7 +2656,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   bool seen_deferred_kind, matched_type;
   char closed_type_string[3];
   char closing_character;
-  const char *dt_name;
+  const char *dt_name, *fn_name;
 
   /* A belt and braces check that the typespec is correctly being treated
      as a deferred characteristic association.  */
@@ -2899,14 +2899,17 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   dt_name = gfc_get_string ("%c%s",
 			    (char) TOUPPER ((unsigned char) name[0]),
 			    (const char*)&name[1]);
+
+  fn_name = gfc_get_string ("%s_DECL", (const char*)name);
+
   sym = NULL;
   dt_sym = NULL;
   if (ts->kind != -1)
     {
-      gfc_get_ha_symbol (name, &sym);
+      gfc_get_ha_symbol (fn_name, &sym);
       if (sym->generic && gfc_find_symbol (dt_name, NULL, 0, &dt_sym))
 	{
-	  gfc_error ("Type name '%s' at %C is ambiguous", name);
+	  gfc_error ("Type name '%s' at %C is ambiguous", fn_name);
 	  return MATCH_ERROR;
 	}
       if (sym->generic && !dt_sym)
@@ -2916,7 +2919,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     {
       int iface = gfc_state_stack->previous->state != COMP_INTERFACE
 		    || gfc_current_ns->has_import_set;
-      gfc_find_symbol (name, NULL, iface, &sym);
+      gfc_find_symbol (fn_name, NULL, iface, &sym);
       if (sym && sym->generic && gfc_find_symbol (dt_name, NULL, 1, &dt_sym))
 	{
 	  gfc_error ("Type name '%s' at %C is ambiguous", name);
@@ -7673,6 +7676,7 @@ gfc_match_derived_decl (void)
   match is_type_attr_spec = MATCH_NO;
   bool seen_attr = false;
   gfc_interface *intr = NULL, *head;
+  const char* fn_name;
 
   if (gfc_current_state () == COMP_DERIVED)
     return MATCH_NO;
@@ -7722,7 +7726,8 @@ gfc_match_derived_decl (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_get_symbol (name, NULL, &gensym))
+  fn_name = gfc_get_string ("%s_DECL", name);
+  if (gfc_get_symbol (fn_name, NULL, &gensym))
     return MATCH_ERROR;
 
   if (!gensym->attr.generic && gensym->ts.type != BT_UNKNOWN)
