@@ -76,6 +76,7 @@ set_dec_flags (int value)
   flag_dec_old_init |= value;
   flag_dec_override_kind |= value;
   flag_dec_non_logical_if |= value;
+  flag_dec_sequence |= value;
 }
 
 
