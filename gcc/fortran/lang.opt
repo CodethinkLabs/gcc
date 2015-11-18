@@ -468,6 +468,10 @@ fdec-old-init
 Fortran Var(flag_dec_old_init)
 Enable support for old style initializers in derived types.
 
+fdec-sequence
+Fortran Var(flag_dec_sequence)
+Add the SEQUENCE attribute by default if it's not present
+
 fdec-structure
 Fortran Var(flag_dec_structure)
 Enable support for DEC STRUCTURE/RECORD.
