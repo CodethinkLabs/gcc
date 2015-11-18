@@ -512,6 +512,20 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
   return gfc_compare_derived_types (ts1->u.derived ,ts2->u.derived);
 }
 
+int
+gfc_compare_types_promotable (gfc_typespec *ts1, gfc_typespec *ts2)
+{
+  /* All this ultimately changes is the comparison of 'kind' in
+     gfc_compare_types. We could probably rearrange things to get rid of this
+     temporary variable. */
+
+  gfc_typespec temp = *ts2;
+  if (temp.kind <= ts1->kind)
+    temp.kind = ts1->kind;
+  return gfc_compare_types (ts1, &temp);
+}
+
+
 
 static int
 compare_type (gfc_symbol *s1, gfc_symbol *s2)
@@ -2019,7 +2033,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && actual->ts.type != BT_HOLLERITH
       && formal->ts.type != BT_ASSUMED
       && !(formal->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
-      && !gfc_compare_types (&formal->ts, &actual->ts)
+      && !gfc_compare_types_promotable (&formal->ts, &actual->ts)
       && !(formal->ts.type == BT_DERIVED && actual->ts.type == BT_CLASS
 	   && gfc_compare_derived_types (formal->ts.u.derived,
 					 CLASS_DATA (actual)->ts.u.derived)))

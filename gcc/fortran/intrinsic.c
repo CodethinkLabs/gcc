@@ -3934,6 +3934,16 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
       if (ts.kind == 0)
 	ts.kind = actual->expr->ts.kind;
 
+      /* ts.kind is the argument spec. actual is what was passed. */
+
+      if (actual->expr->ts.kind < ts.kind
+	  && ts.type == BT_INTEGER)
+	{
+	  /* If it was OK to overwrite ts.kind in the previous case, it
+	     should be fine here... */
+	  ts.kind = actual->expr->ts.kind;
+	}
+
       if (!gfc_compare_types (&ts, &actual->expr->ts))
 	{
 	  if (error_flag)
