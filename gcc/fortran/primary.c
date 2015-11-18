@@ -1811,6 +1811,24 @@ extend_ref (gfc_expr *primary, gfc_ref *tail)
   return tail;
 }
 
+match
+gfc_match_structure_access_operator ()
+{
+  match m;
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+    {
+      m = gfc_match_char('.');
+      if (m == MATCH_YES)
+	return m;
+    }
+  return gfc_match_char ('%');
+}
+
+int
+gfc_peek_structure_access_operator ()
+{
+  return gfc_peek_ascii_char () == '%' || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_peek_ascii_char () == '.');
+}
 
 /* Match any additional specifications associated with the current
    variable like member references or substrings.  If equiv_flag is
@@ -1911,11 +1929,11 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   if (equiv_flag)
     return MATCH_YES;
 
-  if (sym->ts.type == BT_UNKNOWN && gfc_peek_ascii_char () == '%'
+  if (sym->ts.type == BT_UNKNOWN && gfc_peek_structure_access_operator ()
       && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
     gfc_set_default_type (sym, 0, sym->ns);
 
-  if (sym->ts.type == BT_UNKNOWN && gfc_match_char ('%') == MATCH_YES)
+  if (sym->ts.type == BT_UNKNOWN && gfc_match_char('%') == MATCH_YES)
     {
       gfc_error ("Symbol '%s' at %C has no IMPLICIT type", sym->name);
       return MATCH_ERROR;
@@ -1931,7 +1949,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   old_locus = gfc_current_locus;
 
   if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
-      || !(gfc_match_char ('%') == MATCH_YES || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_match_char ('.') == MATCH_YES) ))
+      || gfc_match_structure_access_operator () != MATCH_YES)
     goto check_substring;
 
   sym = sym->ts.u.derived;
@@ -2075,7 +2093,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	}
 
       if ((component->ts.type != BT_DERIVED && component->ts.type != BT_CLASS)
-	  || gfc_match_char ('%') != MATCH_YES)
+	  || gfc_match_structure_access_operator () != MATCH_YES)
 	break;
 
       sym = component->ts.u.derived;
@@ -2986,7 +3004,7 @@ gfc_match_rvalue (gfc_expr **result)
 	 via an IMPLICIT statement.  This can't wait for the
 	 resolution phase.  */
 
-      if (gfc_peek_ascii_char () == '%'
+      if (gfc_peek_structure_access_operator ()
 	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, sym->ns);
@@ -3309,8 +3327,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	implicit_ns = gfc_current_ns;
       else
 	implicit_ns = sym->ns;
-	
-      if (gfc_peek_ascii_char () == '%'
+      if (gfc_peek_structure_access_operator ()
 	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym->name, implicit_ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, implicit_ns);
