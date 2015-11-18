@@ -3647,6 +3647,14 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
       if (ts.kind == 0)
 	ts.kind = actual->expr->ts.kind;
 
+      if (actual->expr->ts.kind < ts.kind)
+	{
+	  /* this is fine - conversion should work.
+	     If it was OK to overwrite ts.kind in the previous case, it
+	     should be fine here... */
+	  ts.kind = actual->expr->ts.kind;
+	}
+
       if (!gfc_compare_types (&ts, &actual->expr->ts))
 	{
 	  if (error_flag)
