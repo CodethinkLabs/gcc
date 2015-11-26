@@ -2906,17 +2906,21 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   dt_sym = NULL;
   if (ts->kind != -1)
     {
-      /* What are you asking here? If you find the initializer name and the type symbol and the initializer is generic, error? */
-      gfc_find_symbol (dt_name, NULL, 0, &dt_sym);
-      if(dt_sym != NULL && dt_sym->attr.structure)
-	{
-	  fn_name = gfc_get_string ("%s_STRUCTURE_INITIALIZER", (const char*)name);
-	}
-      if(gfc_find_symbol(fn_name, NULL, 0, &sym) || sym == NULL) {
-	  gfc_error ("No initializer was defined for type '%s' at %C", name);
-	  return MATCH_ERROR;
-      }
+      /* Look for the derived type and the initializer function. If the type has
+	 the 'structure' tag, it came from a STRUCTURE keyword, and as such the
+	 initializer function is obfuscated. */
 
+      gfc_find_symbol (dt_name, NULL, 0, &dt_sym);
+      if (dt_sym != NULL && dt_sym->attr.structure)
+	{
+	  gfc_warning_now("Instantiation of a structure found; using hidden initializer name");
+	  fn_name = gfc_get_string ("%s_SI", (const char*) name);
+	  if (gfc_find_symbol(fn_name, NULL, 0, &sym) || sym == NULL) {
+	    gfc_error ("No initializer was defined for type '%s' at %C", name);
+	    return MATCH_ERROR;
+	  }
+	}
+      gfc_get_ha_symbol (fn_name, &sym);
       if (sym->generic && dt_sym == NULL)
 	{
 	  gfc_error ("Type name '%s' at %C is ambiguous", fn_name);
@@ -7742,7 +7746,7 @@ gfc_match_derived_or_structure_decl (int initializer_flag)
     }
   else
     {
-      fn_name = gfc_get_string ("%s_STRUCTURE_INITIALIZER", name);
+      fn_name = gfc_get_string ("%s_SI", name);
     }
 
   if (gfc_get_symbol (fn_name, NULL, &gensym))
