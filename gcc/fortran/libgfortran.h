@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
    gfortran.texi.  */
 /* For now, use F2015 = GFC_STD_GNU.  */
 #define GFC_STD_F2015	        (1<<5)	/* PLACEHOLDER for Fortran 2015.  */
+#define GFC_STD_EXTRA_LEGACY	(1<<10)	/* Even more backward compatibility.  */
 #define GFC_STD_F2008_TS	(1<<9)	/* POST-F2008 technical reports.  */
 #define GFC_STD_F2008_OBS	(1<<8)	/* Obsolescent in F2008.  */
 #define GFC_STD_F2008		(1<<7)	/* New in F2008.  */
