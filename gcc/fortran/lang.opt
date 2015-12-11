@@ -742,6 +742,10 @@ std=legacy
 Fortran
 Accept extensions to support legacy code
 
+std=extra-legacy
+Fortran
+Accept even more legacy extensions, including things disallowed in f90
+
 undef
 Fortran
 ; Documented in C
