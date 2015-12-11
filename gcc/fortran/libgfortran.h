@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    Note that no features were obsoleted nor deleted in F2003.
    Please remember to keep those definitions in sync with
    gfortran.texi.  */
+#define GFC_STD_EXTRA_LEGACY	(1<<13)	/* Even more backward compatibility.  */
 #define GFC_STD_F2018_DEL      (1<<12)  /* Deleted in F2018.  */
 #define GFC_STD_F2018_OBS      (1<<11)  /* Obsolescent in F2018.  */
 #define GFC_STD_F2018          (1<<10)  /* New in F2018.  */
