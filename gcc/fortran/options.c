@@ -703,6 +703,12 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.warn_std = 0;
       break;
 
+    case OPT_std_extra_legacy:
+      set_default_std_flags ();
+      gfc_option.warn_std = 0;
+      gfc_option.allow_std |= GFC_STD_EXTRA_LEGACY;
+      break;
+
     case OPT_fshort_enums:
       /* Handled in language-independent code.  */
       break;
