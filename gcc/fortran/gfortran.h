@@ -636,6 +636,8 @@ typedef enum
 }
 gfc_reverse;
 
+enum match_type { MATCH_EXACT, MATCH_PROMOTABLE, MATCH_INVALID };
+
 /************************* Structures *****************************/
 
 /* Used for keeping things in balanced binary trees.  */
@@ -3105,7 +3107,7 @@ bool gfc_add_interface (gfc_symbol *);
 gfc_interface *gfc_current_interface_head (void);
 void gfc_set_current_interface_head (gfc_interface *);
 gfc_symtree* gfc_find_sym_in_symtree (gfc_symbol*);
-bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*);
+bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*, enum match_type mtype);
 bool gfc_check_operator_interface (gfc_symbol*, gfc_intrinsic_op, locus);
 int gfc_has_vector_subscript (gfc_expr*);
 gfc_intrinsic_op gfc_equivalent_op (gfc_intrinsic_op);
