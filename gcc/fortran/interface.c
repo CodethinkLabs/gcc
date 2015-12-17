@@ -479,7 +479,7 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
 /* Compare two typespecs, recursively if necessary.  */
 
 int
-gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
+gfc_compare_types_generic (gfc_typespec *ts1, gfc_typespec *ts2, enum match_type mtype)
 {
   /* See if one of the typespecs is a BT_VOID, which is what is being used
      to allow the funcs like c_f_pointer to accept any pointer type.
@@ -503,7 +503,13 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
 	  || (ts2->type != BT_DERIVED && ts2->type != BT_CLASS)))
     return 0;
   if (ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
-    return (ts1->kind == ts2->kind);
+    {
+    if (mtype == MATCH_PROMOTABLE)
+      return (ts1->kind >= ts2->kind);
+    else
+      return (ts1->kind == ts2->kind);
+    }
+
 
   /* Compare derived types.  */
   if (gfc_type_compatible (ts1, ts2))
@@ -513,19 +519,10 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
 }
 
 int
-gfc_compare_types_promotable (gfc_typespec *ts1, gfc_typespec *ts2)
+gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
 {
-  /* All this ultimately changes is the comparison of 'kind' in
-     gfc_compare_types. We could probably rearrange things to get rid of this
-     temporary variable. */
-
-  gfc_typespec temp = *ts2;
-  if (temp.kind <= ts1->kind)
-    temp.kind = ts1->kind;
-  return gfc_compare_types (ts1, &temp);
+  return gfc_compare_types_generic (ts1, ts2, MATCH_EXACT);
 }
-
-
 
 static int
 compare_type (gfc_symbol *s1, gfc_symbol *s2)
@@ -542,7 +539,9 @@ compare_type (gfc_symbol *s1, gfc_symbol *s2)
   return gfc_compare_types (&s1->ts, &s2->ts) || s2->ts.type == BT_ASSUMED;
 }
 
-
+/* Given two symbols that are formal arguments, compare their ranks
+   and types.  Returns nonzero if they have the same rank and type,
+   zero otherwise.  */
 static int
 compare_rank (gfc_symbol *s1, gfc_symbol *s2)
 {
@@ -1947,7 +1946,7 @@ argument_rank_mismatch (const char *name, locus *where,
 
 static int
 compare_parameter (gfc_symbol *formal, gfc_expr *actual,
-		   int ranks_must_agree, int is_elemental, locus *where)
+                   int ranks_must_agree, int is_elemental, locus *where, enum match_type mtype)
 {
   gfc_ref *ref;
   bool rank_check, is_pointer;
@@ -2033,7 +2032,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && actual->ts.type != BT_HOLLERITH
       && formal->ts.type != BT_ASSUMED
       && !(formal->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
-      && !gfc_compare_types_promotable (&formal->ts, &actual->ts)
+      && !gfc_compare_types_generic (&formal->ts, &actual->ts, mtype)
       && !(formal->ts.type == BT_DERIVED && actual->ts.type == BT_CLASS
 	   && gfc_compare_derived_types (formal->ts.u.derived,
 					 CLASS_DATA (actual)->ts.u.derived)))
@@ -2567,7 +2566,8 @@ is_procptr_result (gfc_expr *expr)
 
 static int
 compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
-	 	       int ranks_must_agree, int is_elemental, locus *where)
+		       int ranks_must_agree, int is_elemental, locus *where,
+		       enum match_type mtype)
 {
   gfc_actual_arglist **new_arg, *a, *actual, temp;
   gfc_formal_arglist *f;
@@ -2685,7 +2685,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	}
 
       if (!compare_parameter (f->sym, a->expr, ranks_must_agree,
-			      is_elemental, where))
+			      is_elemental, where, mtype))
 	return 0;
 
       /* TS 29113, 6.3p2.  */
@@ -3411,7 +3411,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 
   dummy_args = gfc_sym_get_dummy_args (sym);
 
-  if (!compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental, where))
+  if (!compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental, where, MATCH_PROMOTABLE))
     return false;
 
   if (!check_intents (dummy_args, *ap))
@@ -3460,7 +3460,7 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
     }
 
   if (!compare_actual_formal (ap, comp->ts.interface->formal, 0,
-			      comp->attr.elemental, where))
+			      comp->attr.elemental, where, MATCH_EXACT))
     return;
 
   check_intents (comp->ts.interface->formal, *ap);
@@ -3474,7 +3474,7 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
    GENERIC resolution.  */
 
 bool
-gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
+gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym, enum match_type mtype)
 {
   gfc_formal_arglist *dummy_args;
   bool r;
@@ -3484,7 +3484,7 @@ gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
   dummy_args = gfc_sym_get_dummy_args (sym);
 
   r = !sym->attr.elemental;
-  if (compare_actual_formal (args, dummy_args, r, !r, NULL))
+  if (compare_actual_formal (args, dummy_args, r, !r, NULL, mtype))
     {
       check_intents (dummy_args, *args);
       if (warn_aliasing)
@@ -3510,7 +3510,8 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
   locus null_expr_loc;
   gfc_actual_arglist *a;
   bool has_null_arg = false;
-
+  enum match_type mtypes[] = { MATCH_EXACT, MATCH_PROMOTABLE };
+  int i;
   for (a = *ap; a; a = a->next)
     if (a->expr && a->expr->expr_type == EXPR_NULL
 	&& a->expr->ts.type == BT_UNKNOWN)
@@ -3520,38 +3521,41 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
 	break;
       }
 
-  for (; intr; intr = intr->next)
+  for (i=0; i<2; i++)
     {
-      if (intr->sym->attr.flavor == FL_DERIVED)
-	continue;
-      if (sub_flag && intr->sym->attr.function)
-	continue;
-      if (!sub_flag && intr->sym->attr.subroutine)
-	continue;
-
-      if (gfc_arglist_matches_symbol (ap, intr->sym))
+      for (; intr; intr = intr->next)
 	{
-	  if (has_null_arg && null_sym)
-	    {
-	      gfc_error ("MOLD= required in NULL() argument at %L: Ambiguity "
-			 "between specific functions %s and %s",
-			 &null_expr_loc, null_sym->name, intr->sym->name);
-	      return NULL;
-	    }
-	  else if (has_null_arg)
-	    {
-	      null_sym = intr->sym;
-	      continue;
-	    }
+	  if (intr->sym->attr.flavor == FL_DERIVED)
+	    continue;
+	  if (sub_flag && intr->sym->attr.function)
+	    continue;
+	  if (!sub_flag && intr->sym->attr.subroutine)
+	continue;
 
-	  /* Satisfy 12.4.4.1 such that an elemental match has lower
-	     weight than a non-elemental match.  */
-	  if (intr->sym->attr.elemental)
+	  if (gfc_arglist_matches_symbol (ap, intr->sym, mtypes[i]))
 	    {
-	      elem_sym = intr->sym;
-	      continue;
+	      if (has_null_arg && null_sym)
+		{
+		  gfc_error ("MOLD= required in NULL() argument at %L: Ambiguity "
+			     "between specific functions %s and %s",
+			     &null_expr_loc, null_sym->name, intr->sym->name);
+		  return NULL;
+		}
+	      else if (has_null_arg)
+		{
+		  null_sym = intr->sym;
+		  continue;
+		}
+
+	      /* Satisfy 12.4.4.1 such that an elemental match has lower
+		 weight than a non-elemental match.  */
+	      if (intr->sym->attr.elemental)
+		{
+		  elem_sym = intr->sym;
+		  continue;
+		}
+	      return intr->sym;
 	    }
-	  return intr->sym;
 	}
     }
 
@@ -3686,7 +3690,7 @@ matching_typebound_op (gfc_expr** tb_base,
 
 		/* Check if this arglist matches the formal.  */
 		argcopy = gfc_copy_actual_arglist (args);
-		matches = gfc_arglist_matches_symbol (&argcopy, target);
+		matches = gfc_arglist_matches_symbol (&argcopy, target, MATCH_EXACT);
 		gfc_free_actual_arglist (argcopy);
 
 		/* Return if we found a match.  */
