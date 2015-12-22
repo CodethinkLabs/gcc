@@ -712,7 +712,7 @@ format_item_1:
     case FMT_RPAREN:
       /* Oracle allows a blank format item. If this flag is off,
 	 fall through to default. */
-      if (gfc_option.flag_oracle_support) goto finished;
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY) goto finished;
 
     default:
       error = unexpected_element;
@@ -857,7 +857,7 @@ data_desc:
 
       if (u != FMT_POSINT)
 	{
-	  if (gfc_option.flag_oracle_support)
+	  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	    {
 	      /* Assume a default width based on the variable size.  */
 	      saved_token = u;
@@ -938,7 +938,7 @@ data_desc:
 	goto fail;
       if (t != FMT_ZERO && t != FMT_POSINT)
 	{
-	  if (gfc_option.flag_oracle_support)
+	  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	    {
 	      saved_token = t;
 	      break;
@@ -1012,7 +1012,7 @@ data_desc:
 	goto fail;
       if (t != FMT_ZERO && t != FMT_POSINT)
 	{
-	  if (gfc_option.flag_oracle_support)
+	  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	    {
 	      /* Assume the default width is expected here and continue lexing.  */
 	      value = 0; /* It doesn't matter what we set the value to here.  */

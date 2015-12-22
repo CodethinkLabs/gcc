@@ -325,14 +325,6 @@ fallow-leading-underscore
 Fortran Undocumented
 ; For internal use only: allow the first character of symbol names to be an underscore
 
-foracle-support
-Fortran
-; Supports some extra features also supported by the Oracle Fortran compiler.
-
-foracle-support-experimental
-Fortran
-; Experimental and untested support for features also supported by the Oracle Fortran compiler.
-
 fautomatic
 Fortran
 Do not treat local variables and COMMON blocks as if they were named in SAVE statements

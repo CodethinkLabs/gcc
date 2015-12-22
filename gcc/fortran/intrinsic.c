@@ -3350,7 +3350,7 @@ add_conversions (void)
   /* Oracle allows character values to be converted to integers,
      similar to Hollerith-Integer conversion - the first characters will
      be turned into ascii values. */
-  if (gfc_option.flag_oracle_support)
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
     {
       /* Character-Integer conversions.  */
       for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
@@ -4394,7 +4394,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
 	}
-      else if (gfc_option.flag_oracle_support && from_ts.type == BT_CHARACTER
+      else if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && from_ts.type == BT_CHARACTER
 	       && ts->type == BT_INTEGER)
 	{
 	  if (gfc_option.warn_conversion_extra

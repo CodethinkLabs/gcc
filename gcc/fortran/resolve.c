@@ -925,7 +925,7 @@ resolve_common_vars (gfc_symbol *sym, bool named_common)
 
       if (!(csym->ts.u.derived->attr.sequence
 	    || csym->ts.u.derived->attr.is_bind_c)) {
-	if (gfc_option.flag_oracle_support)
+	if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	  {
 	    /* Assume sequence. */
 	    csym->ts.u.derived->attr.sequence = 1;
@@ -4025,7 +4025,7 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_OR:
     case INTRINSIC_EQV:
     case INTRINSIC_NEQV:
-      if (gfc_option.flag_oracle_support)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	{
 	  convert_integer_to_logical(op1);
 	  convert_integer_to_logical(op2);
@@ -4048,7 +4048,7 @@ resolve_operator (gfc_expr *e)
       goto bad_op;
 
     case INTRINSIC_NOT:
-      if (gfc_option.flag_oracle_support)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	{
 	  convert_integer_to_logical(op1);
 	}
@@ -4084,14 +4084,14 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
 
-      if (gfc_option.flag_oracle_support)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	{
 	  convert_logical_to_integer(op1);
 	  convert_logical_to_integer(op2);
 	}
       /* If you're comparing hollerith contants to character expresisons, convert the hollerith
 	 constant */
-      if (gfc_option.flag_oracle_support && is_character_based(op1->ts.type) && is_character_based(op2->ts.type))
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && is_character_based(op1->ts.type) && is_character_based(op2->ts.type))
 	{
 	  gfc_typespec ts;
 	  ts.type = BT_CHARACTER;
@@ -4113,7 +4113,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       /* Numeric to hollerith comparisons */
-      if(gfc_option.flag_oracle_support && gfc_numeric_ts(&op1->ts) && (op2->ts.type == BT_HOLLERITH || op2->ts.type == BT_CHARACTER))
+      if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts(&op1->ts) && (op2->ts.type == BT_HOLLERITH || op2->ts.type == BT_CHARACTER))
 	{
 	  gfc_warning("Promoting argument for comparison from character type to INTEGER at %L", &op2->where);
 	  gfc_typespec ts;
@@ -4122,7 +4122,7 @@ resolve_operator (gfc_expr *e)
 	  gfc_convert_type_warn (op2, &ts, 2, 1);
 	}
 
-      if(gfc_option.flag_oracle_support && gfc_numeric_ts(&op2->ts) && (op1->ts.type == BT_HOLLERITH || op1->ts.type == BT_CHARACTER))
+      if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts(&op2->ts) && (op1->ts.type == BT_HOLLERITH || op1->ts.type == BT_CHARACTER))
 	{
 	  gfc_warning("Promoting argument for comparison from character type to INTEGER at %L", &op1->where);
 	  gfc_typespec ts;
@@ -4966,7 +4966,7 @@ resolve_substring (gfc_ref *ref)
       /* In legacy mode, allow non-integer string indexes by converting */
       if (ref->u.ss.start->ts.type != BT_INTEGER &&
 	  gfc_numeric_ts (&ref->u.ss.start->ts) &&
-	  gfc_option.flag_oracle_support)
+	  gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	{
 	  gfc_typespec t;
 	  t.type = BT_INTEGER;
@@ -5006,7 +5006,7 @@ resolve_substring (gfc_ref *ref)
       /* Non-integer string index endings, as for start */
       if (ref->u.ss.end->ts.type != BT_INTEGER &&
 	  gfc_numeric_ts (&ref->u.ss.end->ts) &&
-	  gfc_option.flag_oracle_support)
+	  gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	{
 	  gfc_typespec t;
 	  t.type = BT_INTEGER;

@@ -1815,7 +1815,7 @@ match
 gfc_match_structure_access_operator ()
 {
   match m;
-  if (gfc_option.flag_oracle_support)
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
     {
       m = gfc_match_char('.');
       if (m == MATCH_YES)
@@ -1827,7 +1827,7 @@ gfc_match_structure_access_operator ()
 int
 gfc_peek_structure_access_operator ()
 {
-  return gfc_peek_ascii_char () == '%' || (gfc_option.flag_oracle_support && gfc_peek_ascii_char () == '.');
+  return gfc_peek_ascii_char () == '%' || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_peek_ascii_char () == '.');
 }
 
 /* Match any additional specifications associated with the current

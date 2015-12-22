@@ -2308,8 +2308,6 @@ typedef struct
   int fpe;
   int rtcheck;
   gfc_fcoarray coarray;
-  int flag_oracle_support;
-  int flag_oracle_support_experimental;
 
   int warn_std;
   int allow_std;

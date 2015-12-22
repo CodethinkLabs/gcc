@@ -1583,7 +1583,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
       *buffer++ = c;
       i++;
 
-      if (maxlen > 0 && gfc_option.flag_oracle_support && include_line (*pbuf, 1))
+      if (maxlen > 0 && gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && include_line (*pbuf, 1))
 	{
 	  gfc_warning_now("An include line longer than 72 characters is nonstandard.");
 	  maxlen = 0;

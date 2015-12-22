@@ -1,4 +1,4 @@
-       ! { dg-options "-foracle-support" }
+       ! { dg-options "-std=extra-legacy" }
 
       program convert
       REAL*4 a
