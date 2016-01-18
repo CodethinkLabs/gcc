@@ -80,6 +80,7 @@ static struct gfc_file_change
 size_t file_changes_cur, file_changes_count;
 size_t file_changes_allocated;
 
+static bool is_include_line (gfc_char_t *line, gfc_char_t **filename_start, int *filename_length, int require_closing_quotes, int maxlen);
 
 /* Functions dealing with our wide characters (gfc_char_t) and
    sequences of such characters.  */
@@ -1737,6 +1738,8 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
   else
     maxlen = 72;
 
+  int initial_maxlen = maxlen;
+
   if (*pbuf == NULL)
     {
       /* Allocate the line buffer, storing its length into buflen.
@@ -1854,6 +1857,15 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
       *buffer++ = c;
       i++;
 
+      if (maxlen > 0 && i >= maxlen &&
+	  is_include_line (*pbuf, 0, 0, 0, 0) &&
+	  gfc_current_form == FORM_FIXED)
+	{
+	  /* If what we have so far looks like an include line, then cancel
+	     the length limit for this line and read all of it.  */
+	  maxlen = 0;
+	}
+
       if (maxlen == 0 || preprocessor_flag)
 	{
 	  if (i >= buflen)
@@ -1903,6 +1915,34 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 
 next_char:
       c = getc (input);
+    }
+
+  /* Truncate include lines after the closing quote character,
+     if that is more than 72 characters in.  */
+  gfc_char_t *filename_start;
+  int filename_length;
+
+  if (is_include_line (*pbuf, &filename_start, &filename_length,
+		       1, initial_maxlen))
+    {
+      /* Add on one for the closing quote mark.  */
+      int line_len = filename_start - *pbuf + filename_length + 1;
+      if (line_len >= initial_maxlen)
+	{
+	  if (line_len > initial_maxlen)
+	    {
+	      linemap_line_start (line_table, current_file->line, 80);
+	      gfc_warning_now_at (linemap_position_for_column
+				  (line_table, initial_maxlen),
+				  0,
+				  "Include statement at line %d is "
+				  "longer than the maximum length of "
+				  "%d characters.",
+				  current_line, initial_maxlen);
+	    }
+	  /* Truncate the line at this point.  */
+	  filename_start[filename_length+1] = '\0';
+	}
     }
 
   /* Pad lines to the selected line length in fixed form.  */
@@ -2112,17 +2152,25 @@ preprocessor_line (gfc_char_t *c)
 
 static bool load_file (const char *, const char *, bool);
 
-/* include_line()-- Checks a line buffer to see if it is an include
-   line.  If so, we call load_file() recursively to load the included
-   file.  We never return a syntax error because a statement like
+/* is_include_line()-- Checks a line buffer to see if it is an include
+   line. We never return a syntax error because a statement like
    "include = 5" is perfectly legal.  We return false if no include was
-   processed or true if we matched an include.  */
+   processed or true if we matched an include.
+
+   filename_start: If not NULL, and the start of the filename is detected,
+                   this will be set to the start of the filename.
+   filename_length: If not NULL, and the end of the filename is detected,
+                    this will be set to its length in bytes.
+   require_closing_quotes: if nonzero, the filename must be terminated by the
+                           quote character to return true.
+   maxlen: if nonzero, anything both after the closing quote and after maxlen
+           will be ignored.
+*/
 
 static bool
-include_line (gfc_char_t *line)
+is_include_line (gfc_char_t *line, gfc_char_t **filename_start, int* filename_length, int require_closing_quotes, int maxlen)
 {
-  gfc_char_t quote, *c, *begin, *stop;
-  char *filename;
+  gfc_char_t quote, *c, *begin;
 
   c = line;
 
@@ -2160,31 +2208,32 @@ include_line (gfc_char_t *line)
     return false;
 
   begin = c;
+  if(filename_start != NULL)
+    *filename_start = c;
 
   while (*c != quote && *c != '\0')
     c++;
 
   if (*c == '\0')
-    return false;
+    return !require_closing_quotes;
 
-  stop = c++;
-  
+  if(filename_length != NULL)
+    *filename_length = (c-begin);
+
+  c++; /* Move past the closing quote.  */
+
   while (*c == ' ' || *c == '\t')
     c++;
+
+  if (maxlen > 0 && (c-line) > maxlen)
+    {
+      /* Ignore anything that comes after maxlen.  */
+      return true;
+    }
 
   if (*c != '\0' && *c != '!')
     return false;
 
-  /* We have an include line at this point.  */
-
-  *stop = '\0'; /* It's ok to trash the buffer, as this line won't be
-		   read by anything else.  */
-
-  filename = gfc_widechar_to_char (begin, -1);
-  if (!load_file (filename, NULL, false))
-    exit (FATAL_EXIT_CODE);
-
-  free (filename);
   return true;
 }
 
@@ -2338,8 +2387,18 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	 but the first line that's not a preprocessor line.  */
       first_line = false;
 
-      if (include_line (line))
+      gfc_char_t *filename_start;
+      int filename_length;
+
+      if (is_include_line (line, &filename_start, &filename_length, 1, 0))
 	{
+	  char* filename;
+	  filename = gfc_widechar_to_char (filename_start, filename_length);
+	  if (!load_file (filename, NULL, false))
+	    exit (FATAL_EXIT_CODE);
+
+	  free (filename);
+
 	  current_file->line++;
 	  continue;
 	}
