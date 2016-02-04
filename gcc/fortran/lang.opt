@@ -452,6 +452,10 @@ fdec-format-defaults
 Fortran Var(flag_dec_format_defaults)
 Enable default widths for i, f and g format specifiers.
 
+fdec-hollerith-conversion
+Fortran Var(flag_dec_hollerith_conversion)
+Enable conversion of Hollerith constants to string or integer.
+
 fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
 Enable kind-specific variants of integer intrinsic functions.
