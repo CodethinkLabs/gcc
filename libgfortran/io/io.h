@@ -847,5 +847,8 @@ memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
     *p++ = c;
 }
 
+/* Used in width fields to indicate that the default should be used */
+#define DEFALUT_WIDTH -1
+
 #endif
 
