@@ -4017,6 +4017,28 @@ add_conversions (void)
 	  add_conv (BT_LOGICAL, gfc_logical_kinds[j].kind,
 		    BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_LEGACY);
 	}
+
+  /* Flang allows character conversions similar to Hollerith conversions
+     - the first characters will be turned into ascii values. */
+  if (flag_dec_char_conversions)
+    {
+      /* Character-Integer conversions.  */
+      for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_LEGACY);
+      /* Character-Real conversions.  */
+      for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_REAL, gfc_real_kinds[i].kind, GFC_STD_LEGACY);
+      /* Character-Complex conversions.  */
+      for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_COMPLEX, gfc_real_kinds[i].kind, GFC_STD_LEGACY);
+      /* Character-Logical conversions.  */
+      for (i = 0; gfc_logical_kinds[i].kind != 0; i++)
+	add_conv (BT_CHARACTER, gfc_default_character_kind,
+		  BT_LOGICAL, gfc_logical_kinds[i].kind, GFC_STD_LEGACY);
+    }
 }
 
 
@@ -5128,8 +5150,16 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
 	}
+      else if (flag_dec_char_conversions && from_ts.type == BT_CHARACTER
+	       && (gfc_numeric_ts (ts) || ts->type == BT_LOGICAL))
+	{
+	  if (warn_conversion)
+	    gfc_warning_now (OPT_Wconversion, "Conversion from %s to %s at %L",
+			     gfc_typename (&from_ts), gfc_typename (ts),
+			     &expr->where);
+	}
       else
-        gcc_unreachable ();
+	gcc_unreachable ();
     }
 
   /* Insert a pre-resolved function call to the right function.  */
