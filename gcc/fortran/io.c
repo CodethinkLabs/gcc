@@ -752,6 +752,15 @@ format_item_1:
       error = unexpected_end;
       goto syntax;
 
+    case FMT_RPAREN:
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+        /* Oracle allows a blank format item. */
+        goto finished;
+      else {
+        error = unexpected_element;
+        goto syntax;
+      }
+
     default:
       error = unexpected_element;
       goto syntax;
