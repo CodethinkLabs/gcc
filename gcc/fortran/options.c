@@ -103,7 +103,6 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_init_logical = GFC_INIT_LOGICAL_OFF;
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
-  
   gfc_option.fpe = 0;
   /* All except GFC_FPE_INEXACT.  */
   gfc_option.fpe_summary = GFC_FPE_INVALID | GFC_FPE_DENORMAL

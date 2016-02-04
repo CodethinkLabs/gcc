@@ -2075,7 +2075,7 @@ variable_decl (int elem)
 
       else if (gfc_current_state () == COMP_DERIVED)
 	{
-	  if(!gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	  if(!(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
 	    {
 	      gfc_error ("Invalid old style initialization for derived type "
 			 "component at %C");
