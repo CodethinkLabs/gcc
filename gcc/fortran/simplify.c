@@ -7994,10 +7994,19 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
       break;
 
     case BT_CHARACTER:
-      if (type == BT_CHARACTER)
-	f = gfc_character2character;
-      else
-	goto oops;
+      switch (type)
+	{
+	case BT_CHARACTER:
+	  f = gfc_character2character;
+	  break;
+
+	case BT_INTEGER:
+	  f = gfc_character2int;
+	  break;
+
+	default:
+	  goto oops;
+	}
       break;
 
     default:
