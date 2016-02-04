@@ -3803,6 +3803,13 @@ lookup_uop_fuzzy (const char *op, gfc_symtree *uop)
   return gfc_closest_fuzzy_match (op, candidates);
 }
 
+/* Return true if TYPE is character based, false otherwise.  */
+
+static int
+is_character_based (bt type)
+{
+  return type == BT_CHARACTER || type == BT_HOLLERITH;
+}
 
 /* If E is a logical, convert it to an integer and issue a warning
    for the conversion.  */
@@ -3834,6 +3841,36 @@ convert_logical_to_integer (gfc_expr *e)
       t.kind = 1;
       gfc_convert_type_warn (e, &t, 2, 1);
     }
+}
+
+/* If E is a hollerith, convert it to character and issue a warning
+   for the conversion.  */
+
+static void
+convert_hollerith_to_character (gfc_expr *e)
+{
+  if (e->ts.type == BT_HOLLERITH)
+    {
+      gfc_typespec t;
+      t.type = BT_CHARACTER;
+      t.kind = e->ts.kind;
+      gfc_convert_type_warn (e, &t, 2, 1);
+      gfc_warning (0, "Promoting argument for comparison from HOLLERITH "
+	              "to CHARACTER at %L", &e->where);
+    }
+}
+
+/* If E is a hollerith, convert it to character and issue a warning
+   for the conversion.  */
+
+static void
+convert_hollerith_to_integer (gfc_expr *e)
+{
+  gfc_warning (0, "Promoting argument for comparison from character type to INTEGER at %L", &e->where);
+  gfc_typespec t;
+  t.type = BT_INTEGER;
+  t.kind = 4;
+  gfc_convert_type_warn (e, &t, 2, 1);
 }
 
 /* Resolve an operator expression node.  This can involve replacing the
@@ -4027,12 +4064,34 @@ resolve_operator (gfc_expr *e)
 	  convert_logical_to_integer (op2);
 	}
 
+      /* If you're comparing hollerith contants to character expressions,
+	 convert the hollerith constant */
+      if (flag_dec_hollerith_conversion && is_character_based (op1->ts.type)
+	  && is_character_based (op2->ts.type))
+	{
+           convert_hollerith_to_character (op1);
+           convert_hollerith_to_character (op2);
+	}
+
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
 	  && op1->ts.kind == op2->ts.kind)
 	{
 	  e->ts.type = BT_LOGICAL;
 	  e->ts.kind = gfc_default_logical_kind;
 	  break;
+	}
+
+      /* Numeric to hollerith comparisons */
+      if (flag_dec_hollerith_conversion && gfc_numeric_ts (&op1->ts)
+	  && is_character_based (op2->ts.type))
+	{
+          convert_hollerith_to_integer (op2);
+	}
+
+      if (flag_dec_hollerith_conversion && gfc_numeric_ts (&op2->ts)
+	  && is_character_based (op1->ts.type))
+	{
+          convert_hollerith_to_integer (op1);
 	}
 
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
@@ -4238,7 +4297,6 @@ bad_op:
 
   return false;
 }
-
 
 /************** Array resolution subroutines **************/
 
