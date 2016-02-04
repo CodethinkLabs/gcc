@@ -547,9 +547,24 @@ write_l (st_parameter_dt *dtp, const fnode *f, char *source, int len)
   p[wlen - 1] = (n) ? 'T' : 'F';
 }
 
+static int
+default_width_for_len (int len)
+{
+  /* No width was specified in the format string, which is a legacy extension -
+     choose a default based on the data width.  */
+  switch (len)
+    {
+    case 1:
+    case 2:  return  7;
+    case 4:  return 12;
+    case 8:  return 23;
+    case 16: return 44;
+    default: return  0;
+    }
+}
 
 static void
-write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n)
+write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n, int len)
 {
   int w, m, digits, nzero, nblank;
   char *p;
@@ -581,6 +596,9 @@ write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n)
 
   /* Select a width if none was specified.  The idea here is to always
      print something.  */
+
+  if (w == DEFAULT_WIDTH)
+    w = default_width_for_len (len);
 
   if (w == 0)
     w = ((digits < m) ? m : digits);
@@ -708,6 +726,8 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 
   /* Select a width if none was specified.  The idea here is to always
      print something.  */
+  if (w == DEFAULT_WIDTH)
+    w = default_width_for_len(len);
 
   if (w == 0)
     w = ((digits < m) ? m : digits) + nsign;
@@ -1091,13 +1111,13 @@ write_b (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
   if (len > (int) sizeof (GFC_UINTEGER_LARGEST))
     {
       p = btoa_big (source, itoa_buf, len, &n);
-      write_boz (dtp, f, p, n);
+      write_boz (dtp, f, p, n, len);
     }
   else
     {
       n = extract_uint (source, len);
       p = btoa (n, itoa_buf, sizeof (itoa_buf));
-      write_boz (dtp, f, p, n);
+      write_boz (dtp, f, p, n, len);
     }
 }
 
@@ -1112,13 +1132,13 @@ write_o (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
   if (len > (int) sizeof (GFC_UINTEGER_LARGEST))
     {
       p = otoa_big (source, itoa_buf, len, &n);
-      write_boz (dtp, f, p, n);
+      write_boz (dtp, f, p, n, len);
     }
   else
     {
       n = extract_uint (source, len);
       p = otoa (n, itoa_buf, sizeof (itoa_buf));
-      write_boz (dtp, f, p, n);
+      write_boz (dtp, f, p, n, len);
     }
 }
 
@@ -1132,13 +1152,13 @@ write_z (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
   if (len > (int) sizeof (GFC_UINTEGER_LARGEST))
     {
       p = ztoa_big (source, itoa_buf, len, &n);
-      write_boz (dtp, f, p, n);
+      write_boz (dtp, f, p, n, len);
     }
   else
     {
       n = extract_uint (source, len);
       p = gfc_xtoa (n, itoa_buf, sizeof (itoa_buf));
-      write_boz (dtp, f, p, n);
+      write_boz (dtp, f, p, n, len);
     }
 }
 
