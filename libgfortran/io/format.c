@@ -1016,8 +1016,10 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	{
 	  if (t != FMT_ZERO && t != FMT_POSINT)
 	    {
-	      fmt->error = nonneg_required;
-	      goto finished;
+	      tail->u.integer.w = DEFAULT_WIDTH;
+	      tail->u.integer.m = -1;
+	      fmt->saved_token = t;
+	      break;
 	    }
 	}
 
