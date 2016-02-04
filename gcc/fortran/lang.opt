@@ -448,6 +448,10 @@ fdec-include
 Fortran Var(flag_dec_include)
 Enable legacy parsing of INCLUDE as statement.
 
+fdec-hollerith-conversion
+Fortran Var(flag_dec_hollerith_conversion)
+Enable conversion of Hollerith constants to string or integer.
+
 fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
 Enable kind-specific variants of integer intrinsic functions.
