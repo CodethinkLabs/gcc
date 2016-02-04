@@ -160,7 +160,6 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_realloc_lhs = -1;
   gfc_option.flag_aggressive_function_elimination = 0;
   gfc_option.flag_frontend_optimize = -1;
-  
   gfc_option.fpe = 0;
   gfc_option.rtcheck = 0;
   gfc_option.coarray = GFC_FCOARRAY_NONE;
@@ -1053,6 +1052,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.warn_std = 0;
       gfc_option.allow_std |= GFC_STD_EXTRA_LEGACY;
       break;
+
 
     case OPT_Wintrinsics_std:
       gfc_option.warn_intrinsics_std = value;
