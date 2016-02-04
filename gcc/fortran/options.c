@@ -70,6 +70,7 @@ set_dec_flags (int value)
   flag_dec_math |= value;
   flag_dec_duplicates |= value;
   flag_dec_pad_with_spaces |= value;
+  flag_dec_hollerith_conversion |= value;
 }
 
 
@@ -761,6 +762,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_std_legacy:
     case OPT_fdec_duplicates:
+    case OPT_fdec_hollerith_conversion:
       set_default_std_flags ();
       gfc_option.warn_std = 0;
       break;
