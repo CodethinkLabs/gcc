@@ -844,6 +844,24 @@ gfc_check_allocated (gfc_expr *array)
 }
 
 
+/* Attempt to promote types so that both types are equivalent, if possible */
+void
+promote_types(gfc_expr *a, gfc_expr *b)
+{
+  if(a->ts.type == b->ts.type) return;
+  if(a->ts.type == BT_REAL && b->ts.type == BT_INTEGER)
+    {
+      gfc_convert_type_warn (b, &a->ts, 2, 1);
+      return;
+    }
+  if(a->ts.type == BT_INTEGER && b->ts.type == BT_REAL)
+    {
+      gfc_convert_type_warn (a, &b->ts, 2, 1);
+    }
+}
+
+
+
 /* Common check function where the first argument must be real or
    integer and the second argument must be the same as the first.  */
 
@@ -852,6 +870,9 @@ gfc_check_a_p (gfc_expr *a, gfc_expr *p)
 {
   if (int_or_real_check (a, 0) == FAILURE)
     return FAILURE;
+
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+    promote_types(a, p);
 
   if (a->ts.type != p->ts.type)
     {
