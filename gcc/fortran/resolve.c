@@ -3501,6 +3501,11 @@ compare_shapes (gfc_expr *op1, gfc_expr *op2)
   return t;
 }
 
+static int
+is_character_based (bt type)
+{
+  return type == BT_CHARACTER || type == BT_HOLLERITH;
+}
 
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
@@ -3645,12 +3650,47 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
+
+      /* If you're comparing hollerith contants to character expresisons, convert the hollerith
+	 constant */
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && is_character_based(op1->ts.type) && is_character_based(op2->ts.type))
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_CHARACTER;
+	  ts.kind = op1->ts.kind;
+	  if (op1->ts.type == BT_HOLLERITH)
+	    gfc_convert_type_warn (op1, &ts, 2, 1);
+	  ts.type = BT_CHARACTER;
+	  ts.kind = op2->ts.kind;
+	  if (op2->ts.type == BT_HOLLERITH)
+	    gfc_convert_type_warn (op2, &ts, 2, 1);
+	}
+
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
 	  && op1->ts.kind == op2->ts.kind)
 	{
 	  e->ts.type = BT_LOGICAL;
 	  e->ts.kind = gfc_default_logical_kind;
 	  break;
+	}
+
+
+      if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts(&op1->ts) && op2->ts.type == BT_HOLLERITH)
+	{
+	  gfc_warning("Promoting argument for comparison from HOLLERITH to INTEGER at %L", &op2->where);
+	  gfc_typespec ts;
+	  ts.type = BT_INTEGER;
+	  ts.kind = 4;
+	  gfc_convert_type_warn (op2, &ts, 2, 1);
+	}
+
+      if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts(&op2->ts) && op1->ts.type == BT_HOLLERITH)
+	{
+	  gfc_warning("Promoting argument for comparison from HOLLERITH to INTEGER at %L", &op1->where);
+	  gfc_typespec ts;
+	  ts.type = BT_INTEGER;
+	  ts.kind = 4;
+	  gfc_convert_type_warn (op1, &ts, 2, 1);
 	}
 
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
