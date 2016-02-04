@@ -3615,6 +3615,30 @@ logical_to_bitwise (gfc_expr *e)
   return e;
 }
 
+/* Return true if TYPE is character based, false otherwise.  */
+
+static int
+is_character_based (bt type)
+{
+  return type == BT_CHARACTER || type == BT_HOLLERITH;
+}
+
+/* If E is a logical, convert it to an integer and issue a warning
+   for the conversion.  */
+
+static void
+convert_logical_to_integer (gfc_expr *e)
+{
+  if (e->ts.type == BT_LOGICAL)
+    {
+      /* Convert to INTEGER */
+      gfc_typespec t;
+      t.type = BT_INTEGER;
+      t.kind = 1;
+      gfc_convert_type_warn (e, &t, 2, 1);
+    }
+}
+
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
@@ -3787,12 +3811,67 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
+
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	{
+	  convert_logical_to_integer (op1);
+	  convert_logical_to_integer (op2);
+	}
+
+      /* If you're comparing hollerith contants to character expresisons,
+	 convert the hollerith constant */
+      if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	  && is_character_based (op1->ts.type)
+	  && is_character_based (op2->ts.type))
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_CHARACTER;
+	  ts.kind = op1->ts.kind;
+	  if (op1->ts.type == BT_HOLLERITH)
+	  {
+	    gfc_convert_type_warn (op1, &ts, 2, 1);
+	    gfc_warning (0, "Promoting argument for comparison from HOLLERITH "
+	                 "to CHARACTER at %L", &op1->where);
+	  }
+	  ts.type = BT_CHARACTER;
+	  ts.kind = op2->ts.kind;
+	  if (op2->ts.type == BT_HOLLERITH)
+	  {
+	    gfc_convert_type_warn (op2, &ts, 2, 1);
+	    gfc_warning (0, "Promoting argument for comparison from HOLLERITH "
+                         "to CHARACTER at %L", &op2->where);
+	  }
+	}
+
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
 	  && op1->ts.kind == op2->ts.kind)
 	{
 	  e->ts.type = BT_LOGICAL;
 	  e->ts.kind = gfc_default_logical_kind;
 	  break;
+	}
+
+      /* Numeric to hollerith comparisons */
+      if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	  && gfc_numeric_ts (&op1->ts)
+	  && (op2->ts.type == BT_HOLLERITH || op2->ts.type == BT_CHARACTER))
+	{
+	  gfc_warning (0, "Promoting argument for comparison from character type to INTEGER at %L", &op2->where);
+	  gfc_typespec ts;
+	  ts.type = BT_INTEGER;
+	  ts.kind = 4;
+	  gfc_convert_type_warn (op2, &ts, 2, 1);
+	}
+
+      if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	  && gfc_numeric_ts (&op2->ts)
+	  && (op1->ts.type == BT_HOLLERITH || op1->ts.type == BT_CHARACTER))
+	{
+	  gfc_warning (0, "Promoting argument for comparison from character type to INTEGER at %L", &op1->where);
+	  gfc_typespec ts;
+	  ts.type = BT_INTEGER;
+	  ts.kind = 4;
+	  gfc_convert_type_warn (op1, &ts, 2, 1);
 	}
 
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
@@ -3990,7 +4069,6 @@ bad_op:
 
   return false;
 }
-
 
 /************** Array resolution subroutines **************/
 
