@@ -4320,7 +4320,6 @@ bad_op:
   return false;
 }
 
-
 /************** Array resolution subroutines **************/
 
 enum compare_result
@@ -10497,6 +10496,16 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   lhs = code->expr1;
   rhs = code->expr2;
+
+  if ((gfc_numeric_ts (&lhs->ts) || lhs->ts.type == BT_LOGICAL)
+      && rhs->ts.type == BT_CHARACTER
+      && rhs->expr_type != EXPR_CONSTANT)
+    {
+      gfc_error ("Cannot convert CHARACTER into %s at %L",
+                 gfc_typename (&lhs->ts),     
+                 &rhs->where);
+      return false;
+    }
 
   if (rhs->is_boz
       && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L outside "
