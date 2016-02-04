@@ -3890,7 +3890,6 @@ impure_function_callback (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
-
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
@@ -4331,7 +4330,6 @@ bad_op:
 
   return false;
 }
-
 
 /************** Array resolution subroutines **************/
 
@@ -10693,6 +10691,16 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   lhs = code->expr1;
   rhs = code->expr2;
+
+  if ((gfc_numeric_ts (&lhs->ts) || lhs->ts.type == BT_LOGICAL)
+      && rhs->ts.type == BT_CHARACTER
+      && rhs->expr_type != EXPR_CONSTANT)
+    {
+      gfc_error ("Cannot convert CHARACTER into %s at %L",
+                 gfc_typename (&lhs->ts),     
+                 &rhs->where);
+      return false;
+    }
 
   /* Handle the case of a BOZ literal on the RHS.  */
   if (rhs->ts.type == BT_BOZ)
