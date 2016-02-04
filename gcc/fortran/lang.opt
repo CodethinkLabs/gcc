@@ -472,6 +472,10 @@ fdec-non-integer-index
 Fortran Var(flag_dec_non_integer_index)
 Enable support for non-integer substring indexes.
 
+fdec-old-init
+Fortran Var(flag_dec_old_init)
+Enable support for old style initializers in derived types.
+
 fdec-pad-with-spaces
 Fortran Var(flag_dec_pad_with_spaces)
 For character to integer conversions, use spaces for the pad rather than NUL.
