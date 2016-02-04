@@ -440,6 +440,10 @@ fdec
 Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
+fdec-blank-format-item
+Fortran Var(flag_dec_blank_format_item)
+Enable the use of blank format items in format strings.
+
 fdec-pad-with-spaces
 Fortran Var(flag_dec_pad_with_spaces)
 For character to integer conversions, use spaces for the pad rather than NUL.
