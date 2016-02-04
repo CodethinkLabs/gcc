@@ -2035,16 +2035,38 @@ variable_decl (int elem)
       if (!gfc_notify_std (GFC_STD_GNU, "Old-style "
 			   "initialization at %C"))
 	return MATCH_ERROR;
+
       else if (gfc_current_state () == COMP_DERIVED)
 	{
-	  gfc_error ("Invalid old style initialization for derived type "
-		     "component at %C");
-	  m = MATCH_ERROR;
-	  goto cleanup;
-	}
+	  if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	    {
+	      /* Attempt to match an old-style initializer which is a simple
+		 integer or character expression; this will not work with
+		 multiple values. */
+	      m = gfc_match_init_expr (&initializer);
+	      if (m == MATCH_ERROR)
+		goto cleanup;
+	      else if (m == MATCH_YES)
+		{
+		  m = gfc_match ("/");
+		  if (m != MATCH_YES)
+		    goto cleanup;
+		}
+	    }
+	  else
 
-      return match_old_style_init (name);
+	    {
+	      gfc_error ("Invalid old style initialization for derived type "
+			 "component at %C");
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
+	}
+      else
+        return match_old_style_init (name);
+
     }
+
 
   /* The double colon must be present in order to have initializers.
      Otherwise the statement is ambiguous with an assignment statement.  */
