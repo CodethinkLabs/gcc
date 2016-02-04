@@ -756,6 +756,16 @@ format_item_1:
       error = unexpected_end;
       goto syntax;
 
+    case FMT_RPAREN:
+      /* Oracle allows a blank format item. */
+      if (flag_dec_blank_format_item)
+        goto finished;
+      else
+	{
+	  error = unexpected_element;
+	  goto syntax;
+	}
+
     default:
       error = unexpected_element;
       goto syntax;
