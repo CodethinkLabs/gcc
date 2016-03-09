@@ -205,6 +205,10 @@ Wampersand
 Fortran Warning
 Warn about missing ampersand in continued character constants
 
+Wargument-mismatch
+Fortran Warning
+Warn about type mismatches between formal and actual function arguments
+
 Warray-temporaries
 Fortran Warning
 Warn about creation of array temporaries
@@ -373,6 +377,46 @@ fd-lines-as-comments
 Fortran RejectNegative
 Treat lines with 'D' in column one as comments
 
+fdec
+Fortran
+Enable all DEC/Intel language extensions.
+
+fdec-intrinsic-ints
+Fortran
+Enable kind-specific variants of integer intrinsic functions.
+
+fdec-bitwise-ops
+Fortran
+Use bitwise operators when logical operators are used with int operands.
+
+fdec-extended-int
+Fortran
+Enable extended base#value integer constants
+
+fdec-io
+Fortran
+Enable DEC IO extensions
+
+fdec-logical-xor
+Fortran
+Enable the logical .XOR. operator.
+
+fdec-math
+Fortran
+Enable additional builtin math functions.
+
+fdec-member-dot
+Fortran
+Enable dot (`.`) as a member separator (in addition to the usual `%`).
+
+fdec-static
+Fortran
+Enable STATIC and AUTOMATIC attributes.
+
+fdec-structure
+Fortran
+Enable DEC STRUCTURE extension.
+
 fdefault-double-8
 Fortran
 Set the default double precision kind to an 8 byte wide type
@@ -412,6 +456,10 @@ Specify that an external BLAS library should be used for matmul calls on large-s
 ff2c
 Fortran
 Use f2c calling convention
+
+ffeed
+Fortran
+Enable form feeds in source
 
 ffixed-form
 Fortran RejectNegative
@@ -481,6 +529,18 @@ finit-real=
 Fortran RejectNegative Joined
 -finit-real=<zero|nan|inf|-inf>	Initialize local real variables
 
+finit-derived
+Fortran
+Automatically initialize local derived type variables
+
+flazy-logicals
+Fortran
+Suppress type-checking between integers and logicals
+
+floc-rval
+Fortran
+Enable the use of %LOC as an rvalue, like the built-in LOC().
+
 fmax-array-constructor=
 Fortran RejectNegative Joined UInteger
 -fmax-array-constructor=<n>	Maximum number of objects in an array constructor
@@ -500,6 +560,10 @@ Fortran RejectNegative Joined UInteger
 fstack-arrays
 Fortran
 Put all local arrays on stack.
+
+ftype-print
+Fortran
+Interpret TYPE as an alias for PRINT
 
 fmodule-private
 Fortran

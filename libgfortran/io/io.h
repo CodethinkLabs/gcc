@@ -209,6 +209,18 @@ typedef enum
 unit_async;
 
 typedef enum
+{ SHARE_DENYRW, SHARE_DENYNONE,
+  SHARE_UNSPECIFIED
+}
+unit_share;
+
+typedef enum
+{ CC_LIST, CC_FORTRAN, CC_NONE,
+  CC_UNSPECIFIED
+}
+unit_cc;
+
+typedef enum
 { SIGN_S, SIGN_SS, SIGN_SP }
 unit_sign_s;
 
@@ -239,6 +251,9 @@ typedef struct
   CHARACTER1 (sign);
   CHARACTER2 (asynchronous);
   GFC_INTEGER_4 *newunit;
+  GFC_INTEGER_4 (readonly);
+  CHARACTER1 (share);
+  CHARACTER2 (cc);
 }
 st_parameter_open;
 
@@ -494,17 +509,20 @@ typedef struct
   unit_blank blank;
   unit_delim delim;
   unit_form form;
-  int is_notpadded;
   unit_position position;
   unit_status status;
   unit_pad pad;
   unit_convert convert;
-  int has_recl;
   unit_decimal decimal;
   unit_encoding encoding;
   unit_round round;
   unit_sign sign;
   unit_async async;
+  unit_share share;
+  unit_cc cc;
+  int is_notpadded : 1;
+  int has_recl     : 1;
+  int readonly     : 1;
 }
 unit_flags;
 

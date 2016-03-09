@@ -51,6 +51,27 @@ set_default_std_flags (void)
   gfc_option.warn_std = GFC_STD_F95_DEL | GFC_STD_LEGACY;
 }
 
+/* Set all the DEC extension flags. */
+
+static void
+set_dec_flags (int value)
+{
+    if (value) gfc_option.flag_dollar_ok = 1;
+    if (value) gfc_option.flag_d_lines = 0; /* -fd-lines-as-comments */
+    if (value) gfc_option.flag_loc_rval = 1;
+    gfc_option.flag_dec_extended_int = value;
+    gfc_option.flag_dec_structure  = value;
+    gfc_option.flag_dec_member_dot = value;
+    gfc_option.flag_dec_math = value;
+    gfc_option.flag_dec_logical_xor = value;
+    gfc_option.flag_lazy_logicals = value;
+    gfc_option.flag_dec_bitwise_ops = value;
+    gfc_option.flag_dec_io = value;
+    gfc_option.flag_dec_intrinsic_ints = value;
+    gfc_option.flag_dec_static = value;
+    gfc_option.flag_feed = value;
+    gfc_option.flag_type_print = value;
+}
 
 /* Return language mask for Fortran options.  */
 
@@ -113,6 +134,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.warn_realloc_lhs_all = 0;
   gfc_option.warn_compare_reals = 0;
   gfc_option.warn_target_lifetime = 0;
+  gfc_option.warn_argument_mismatch = 1;
   gfc_option.max_errors = 25;
 
   gfc_option.flag_all_intrinsics = 0;
@@ -155,6 +177,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_init_logical = GFC_INIT_LOGICAL_OFF;
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
+  gfc_option.flag_init_derived = 0;
   gfc_option.flag_align_commons = 1;
   gfc_option.flag_protect_parens = -1;
   gfc_option.flag_realloc_lhs = -1;
@@ -163,6 +186,9 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.fpe = 0;
   gfc_option.rtcheck = 0;
   gfc_option.coarray = GFC_FCOARRAY_NONE;
+
+  gfc_option.flag_loc_rval = 0;
+  set_dec_flags (0);
 
   set_default_std_flags ();
 
@@ -725,6 +751,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.warn_unused_dummy_argument = value;
       break;
 
+    case OPT_Wargument_mismatch:
+      gfc_option.warn_argument_mismatch = value;
+      break;
+
     case OPT_fall_intrinsics:
       gfc_option.flag_all_intrinsics = 1;
       break;
@@ -941,6 +971,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.flag_init_character_value = (char)0;
       break;
 
+    case OPT_finit_derived:
+      gfc_option.flag_init_derived = 1;
+      break;
+
     case OPT_finit_logical_:
       if (!strcasecmp (arg, "false"))
 	gfc_option.flag_init_logical = GFC_INIT_LOGICAL_FALSE;
@@ -1124,6 +1158,64 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fcoarray_:
       gfc_handle_coarray_option (arg);
+      break;
+
+    case OPT_flazy_logicals:
+      gfc_option.flag_lazy_logicals = 1;
+      gfc_option.flag_dec_bitwise_ops = 1;
+      break;
+
+    case OPT_floc_rval:
+      gfc_option.flag_loc_rval = 1;
+      break;
+
+    case OPT_fdec:
+      /* Enable all DEC extensions. */
+      set_dec_flags (1);
+      break;
+
+    case OPT_fdec_extended_int:
+      gfc_option.flag_dec_extended_int = 1;
+      break;
+
+    case OPT_fdec_structure:
+      gfc_option.flag_dec_structure = 1;
+      /* Fall-through: -fdec-structure implies -fdec-member-dot. */
+
+    case OPT_fdec_member_dot:
+      gfc_option.flag_dec_member_dot = 1;
+      break;
+
+    case OPT_fdec_math:
+      gfc_option.flag_dec_math = 1;
+      break;
+
+    case OPT_fdec_logical_xor:
+      gfc_option.flag_dec_logical_xor = 1;
+      break;
+
+    case OPT_fdec_bitwise_ops:
+      gfc_option.flag_dec_bitwise_ops = 1;
+      break;
+
+    case OPT_fdec_io:
+      gfc_option.flag_dec_io = 1;
+      break;
+
+    case OPT_fdec_intrinsic_ints:
+      gfc_option.flag_dec_intrinsic_ints = 1;
+      break;
+
+    case OPT_fdec_static:
+      gfc_option.flag_dec_static = 1;
+      break;
+
+    case OPT_ffeed:
+      gfc_option.flag_feed = 1;
+      break;
+
+    case OPT_ftype_print:
+      gfc_option.flag_type_print = 1;
       break;
     }
 

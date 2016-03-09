@@ -49,7 +49,18 @@ along with GCC; see the file COPYING3.  If not see
 #define MAX_SUBRECORD_LENGTH 2147483639   /* 2**31-9 */
 
 
-#define gfc_is_whitespace(c) ((c==' ') || (c=='\t'))
+#define gfc_is_whitespace(c) ((c==' ') || (c=='\t') \
+                              || (gfc_option.flag_feed && c=='\f'))
+
+/* Common macros to check structure-like types and flavors, since things like
+   STRUCTURES, MAPs and UNIONs are often treated similarly. */
+
+#define gfc_bt_struct(t) \
+  ((t) == BT_DERIVED || (t) == BT_UNION)
+#define gfc_fl_struct(f) \
+  ((f) == FL_DERIVED || (f) == FL_UNION || (f) == FL_STRUCT)
+#define case_struct_bt case BT_DERIVED: case BT_UNION
+#define case_struct_fl case FL_DERIVED: case FL_UNION: case FL_STRUCT
 
 /* Stringization.  */
 #define stringize(x) expand_macro(x)
@@ -202,6 +213,7 @@ typedef enum
   ST_END_FILE, ST_FINAL, ST_FLUSH, ST_END_FORALL, ST_END_FUNCTION, ST_ENDIF,
   ST_END_INTERFACE, ST_END_MODULE, ST_END_PROGRAM, ST_END_SELECT,
   ST_END_SUBROUTINE, ST_END_WHERE, ST_END_TYPE, ST_ENTRY, ST_EQUIVALENCE,
+  ST_END_STRUCTURE,
   ST_ERROR_STOP, ST_EXIT, ST_FORALL, ST_FORALL_BLOCK, ST_FORMAT, ST_FUNCTION,
   ST_GOTO, ST_IF_BLOCK, ST_IMPLICIT, ST_IMPLICIT_NONE, ST_IMPORT,
   ST_INQUIRE, ST_INTERFACE, ST_SYNC_ALL, ST_SYNC_MEMORY, ST_SYNC_IMAGES,
@@ -210,6 +222,7 @@ typedef enum
   ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WAIT,
   ST_WRITE, ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
   ST_SIMPLE_IF, ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT,
+  ST_STRUCTURE_DECL, ST_UNION, ST_END_UNION, ST_MAP, ST_END_MAP,
   ST_ENUM, ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
   ST_OMP_ATOMIC, ST_OMP_BARRIER, ST_OMP_CRITICAL, ST_OMP_END_ATOMIC,
   ST_OMP_END_CRITICAL, ST_OMP_END_DO, ST_OMP_END_MASTER, ST_OMP_END_ORDERED,
@@ -234,12 +247,12 @@ typedef enum
 interface_type;
 
 /* Symbol flavors: these are all mutually exclusive.
-   10 elements = 4 bits.  */
+   12 elements = 4 bits.  */
 typedef enum sym_flavor
 {
   FL_UNKNOWN = 0, FL_PROGRAM, FL_BLOCK_DATA, FL_MODULE, FL_VARIABLE,
   FL_PARAMETER, FL_LABEL, FL_PROCEDURE, FL_DERIVED, FL_NAMELIST,
-  FL_VOID
+  FL_UNION, FL_STRUCT, FL_VOID
 }
 sym_flavor;
 
@@ -339,6 +352,7 @@ enum gfc_isym_id
   GFC_ISYM_CONVERSION,
   GFC_ISYM_COS,
   GFC_ISYM_COSH,
+  GFC_ISYM_COTAN,
   GFC_ISYM_COUNT,
   GFC_ISYM_CPU_TIME,
   GFC_ISYM_CSHIFT,
@@ -587,6 +601,13 @@ init_local_integer;
 
 typedef enum
 {
+    GFC_INIT_DERIVED_OFF = 0,
+    GFC_INIT_DERIVED_ON
+}
+init_derived;
+
+typedef enum
+{
   GFC_FCOARRAY_NONE = 0,
   GFC_FCOARRAY_SINGLE,
   GFC_FCOARRAY_LIB
@@ -702,7 +723,7 @@ typedef struct
     optional:1, pointer:1, target:1, value:1, volatile_:1, temporary:1,
     dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1,
     implied_index:1, subref_array_pointer:1, proc_pointer:1, asynchronous:1,
-    contiguous:1;
+    contiguous:1, automatic:1;
 
   /* For CLASS containers, the pointer attribute is sometimes set internally
      even though it was not directly specified.  In this case, keep the
@@ -922,7 +943,7 @@ typedef struct
 
   union
   {
-    struct gfc_symbol *derived;	/* For derived types only.  */
+    struct gfc_symbol *derived;	/* For derived types or unions.  */
     gfc_charlen *cl;		/* For character types only.  */
     int pad;			/* For hollerith types only.  */
   }
@@ -976,6 +997,9 @@ typedef struct gfc_component
 
   /* Needed for procedure pointer components.  */
   struct gfc_typebound_proc *tb;
+
+  /* Pointer to MAP list for union types. */
+  struct gfc_symbol *maps;
 }
 gfc_component;
 
@@ -1991,7 +2015,9 @@ typedef struct
 {
   gfc_expr *unit, *file, *status, *access, *form, *recl,
     *blank, *position, *action, *delim, *pad, *iostat, *iomsg, *convert,
-    *decimal, *encoding, *round, *sign, *asynchronous, *id, *newunit;
+    *decimal, *encoding, *round, *sign, *asynchronous, *id, *newunit, *share,
+    *cc;
+  int readonly : 1;
   gfc_st_label *err;
 }
 gfc_open;
@@ -2256,6 +2282,7 @@ typedef struct
   int warn_realloc_lhs_all;
   int warn_compare_reals;
   int warn_target_lifetime;
+  int warn_argument_mismatch;
   int max_errors;
 
   int flag_all_intrinsics;
@@ -2290,6 +2317,7 @@ typedef struct
   int flag_module_private;
   int flag_recursive;
   int flag_init_local_zero;
+  int flag_init_derived;
   int flag_init_integer;
   int flag_init_integer_value;
   int flag_init_real;
@@ -2302,6 +2330,19 @@ typedef struct
   int flag_realloc_lhs;
   int flag_aggressive_function_elimination;
   int flag_frontend_optimize;
+  int flag_dec_extended_int;
+  int flag_dec_structure;
+  int flag_dec_member_dot;
+  int flag_dec_math;
+  int flag_dec_logical_xor;
+  int flag_dec_bitwise_ops;
+  int flag_dec_io;
+  int flag_dec_intrinsic_ints;
+  int flag_dec_static;
+  int flag_lazy_logicals;
+  int flag_loc_rval;
+  int flag_feed;
+  int flag_type_print;
 
   int fpe;
   int rtcheck;
@@ -2523,6 +2564,7 @@ gfc_try gfc_check_any_c_kind (gfc_typespec *);
 int gfc_validate_kind (bt, int, bool);
 int gfc_get_int_kind_from_width_isofortranenv (int size);
 int gfc_get_real_kind_from_width_isofortranenv (int size);
+tree gfc_get_union_type (gfc_symbol *);
 tree gfc_get_derived_type (gfc_symbol * derived);
 extern int gfc_index_integer_kind;
 extern int gfc_default_integer_kind;
@@ -2568,6 +2610,7 @@ gfc_try gfc_add_cray_pointee (symbol_attribute *, locus *);
 match gfc_mod_pointee_as (gfc_array_spec *);
 gfc_try gfc_add_protected (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_result (symbol_attribute *, const char *, locus *);
+gfc_try gfc_add_automatic (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_save (symbol_attribute *, save_state, const char *, locus *);
 gfc_try gfc_add_threadprivate (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_saved_common (symbol_attribute *, locus *);
@@ -2610,7 +2653,8 @@ gfc_try gfc_copy_attr (symbol_attribute *, symbol_attribute *, locus *);
 gfc_try gfc_add_component (gfc_symbol *, const char *, gfc_component **);
 gfc_symbol *gfc_use_derived (gfc_symbol *);
 gfc_symtree *gfc_use_derived_tree (gfc_symtree *);
-gfc_component *gfc_find_component (gfc_symbol *, const char *, bool, bool);
+gfc_component *gfc_find_component (gfc_symbol *, const char *, bool, bool,
+                                   gfc_ref **);
 
 gfc_st_label *gfc_get_st_label (int);
 void gfc_free_st_label (gfc_st_label *);
@@ -2786,7 +2830,9 @@ gfc_try gfc_check_pointer_assign (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_assign_symbol (gfc_symbol *, gfc_component *, gfc_expr *);
 
 bool gfc_has_default_initializer (gfc_symbol *);
-gfc_expr *gfc_default_initializer (gfc_typespec *);
+gfc_expr *gfc_default_initializer (gfc_typespec *, bool);
+gfc_expr *gfc_build_default_init_expr (gfc_typespec *, locus *);
+void gfc_apply_init (gfc_typespec *, symbol_attribute *, gfc_expr *);
 gfc_expr *gfc_get_variable_expr (gfc_symtree *);
 void gfc_add_full_array_ref (gfc_expr *, gfc_array_spec *);
 gfc_expr * gfc_lval_expr_from_sym (gfc_symbol *);
@@ -2880,6 +2926,7 @@ gfc_try gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *, mpz_t *);
 
 /* interface.c -- FIXME: some of these should be in symbol.c */
 void gfc_free_interface (gfc_interface *);
+int gfc_compare_union_types (gfc_symbol *, gfc_symbol *);
 int gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);
 int gfc_compare_types (gfc_typespec *, gfc_typespec *);
 int gfc_compare_interfaces (gfc_symbol*, gfc_symbol*, const char *, int, int,
@@ -2925,6 +2972,8 @@ void gfc_module_done_2 (void);
 void gfc_dump_module (const char *, int);
 bool gfc_check_symbol_access (gfc_symbol *);
 void gfc_free_use_stmts (gfc_use_list *);
+const char *gfc_dt_lower_string (const char *);
+const char *gfc_dt_upper_string (const char *);
 
 /* primary.c */
 symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);

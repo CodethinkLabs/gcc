@@ -45,6 +45,10 @@ extern gfc_access gfc_typebound_default_access;
 match gfc_match_special_char (gfc_char_t *);
 match gfc_match_space (void);
 match gfc_match_eos (void);
+match gfc_match_literal_int (char *, int, int *);
+match gfc_match_extended_integer (char *, int *, int *);
+match gfc_match_radix (int *);
+match gfc_match_sign (int *);
 match gfc_match_small_literal_int (int *, int *);
 match gfc_match_st_label (gfc_st_label **);
 match gfc_match_label (void);
@@ -59,6 +63,7 @@ match gfc_match_char (char);
 match gfc_match (const char *, ...);
 match gfc_match_iterator (gfc_iterator *, int);
 match gfc_match_parens (void);
+match gfc_match_member_sep(gfc_symbol *);
 
 /* Statement matchers.  */
 match gfc_match_program (void);
@@ -159,8 +164,12 @@ match gfc_match_generic (void);
 match gfc_match_function_decl (void);
 match gfc_match_entry (void);
 match gfc_match_subroutine (void);
+match gfc_match_map (void);
+match gfc_match_union (void);
+match gfc_match_structure_decl (void);
 match gfc_match_derived_decl (void);
 match gfc_match_final_decl (void);
+match gfc_match_type (gfc_statement *);
 
 match gfc_match_implicit_none (void);
 match gfc_match_implicit (void);
@@ -184,6 +193,8 @@ match gfc_match_pointer (void);
 match gfc_match_protected (void);
 match gfc_match_private (gfc_statement *);
 match gfc_match_public (gfc_statement *);
+match gfc_match_automatic (void);
+match gfc_match_static (void);
 match gfc_match_save (void);
 match gfc_match_modproc (void);
 match gfc_match_target (void);
@@ -191,6 +202,7 @@ match gfc_match_value (void);
 match gfc_match_volatile (void);
 
 /* decl.c.  */
+match gfc_match_clist_expr (gfc_expr **, gfc_typespec *, bool);
 
 /* Fortran 2003 c interop.
    TODO: some of these should be moved to another file rather than decl.c */

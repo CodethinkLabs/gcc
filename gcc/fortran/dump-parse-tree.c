@@ -47,6 +47,7 @@ static FILE *dumpfile;
 static void show_expr (gfc_expr *p);
 static void show_code_node (int, gfc_code *);
 static void show_namespace (gfc_namespace *ns);
+static void show_symbol (gfc_symbol *sym);
 
 
 /* Allow dumping of an expression in the debugger.  */
@@ -106,6 +107,10 @@ show_typespec (gfc_typespec *ts)
     {
     case BT_DERIVED:
     case BT_CLASS:
+      fprintf (dumpfile, "%s", ts->u.derived->name);
+      break;
+
+    case BT_UNION:
       fprintf (dumpfile, "%s", ts->u.derived->name);
       break;
 
@@ -700,9 +705,11 @@ show_components (gfc_symbol *sym)
 {
   gfc_component *c;
 
+  ++show_level;
   for (c = sym->components; c; c = c->next)
     {
-      fprintf (dumpfile, "(%s ", c->name);
+      show_indent ();
+      fprintf (dumpfile, "%s ", c->name);
       show_typespec (&c->ts);
       if (c->attr.allocatable)
 	fputs (" ALLOCATABLE", dumpfile);
@@ -716,10 +723,14 @@ show_components (gfc_symbol *sym)
       show_array_spec (c->as);
       if (c->attr.access)
 	fprintf (dumpfile, " %s", gfc_code2string (access_types, c->attr.access));
-      fputc (')', dumpfile);
-      if (c->next != NULL)
-	fputc (' ', dumpfile);
+      if (c->initializer)
+      {
+        fprintf (dumpfile, " (init ");
+        show_expr (c->initializer);
+        fprintf (dumpfile, ")");
+      }
     }
+  --show_level;
 }
 
 
@@ -845,13 +856,6 @@ show_symbol (gfc_symbol *sym)
   fputs ("attributes: ", dumpfile);
   show_attr (&sym->attr, sym->module);
 
-  if (sym->value)
-    {
-      show_indent ();
-      fputs ("value: ", dumpfile);
-      show_expr (sym->value);
-    }
-
   if (sym->as)
     {
       show_indent ();
@@ -871,13 +875,6 @@ show_symbol (gfc_symbol *sym)
     {
       show_indent ();
       fprintf (dumpfile, "result: %s", sym->result->name);
-    }
-
-  if (sym->components)
-    {
-      show_indent ();
-      fputs ("components: ", dumpfile);
-      show_components (sym);
     }
 
   if (sym->f2k_derived)
@@ -909,6 +906,20 @@ show_symbol (gfc_symbol *sym)
       show_indent ();
       fputs ("Formal namespace", dumpfile);
       show_namespace (sym->formal_ns);
+    }
+
+  if (sym->value)
+    {
+      show_indent ();
+      fputs ("value: ", dumpfile);
+      show_expr (sym->value);
+    }
+
+  if (sym->components)
+    {
+      show_indent ();
+      fputs ("components: ", dumpfile);
+      show_components (sym);
     }
   --show_level;
 }

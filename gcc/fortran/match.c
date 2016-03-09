@@ -111,6 +111,126 @@ gfc_op2string (gfc_intrinsic_op op)
 
 /******************** Generic matching subroutines ************************/
 
+/* Matches a member separator. With F90+ this is '%', but with
+   -fdec-member-dot we must carefully match dot ('.').
+   Because operators are spelled ".op.", "x.y.z" can be either a component
+   access (x->y)->z or a binary operation y(x,z). Here we choose to deal with
+   the "x.y.z" ambiguity in a manner consistent with Intel:
+     (1) If any user defined operator ".y." exists, this is always y(x,z)
+         (even if ".y." is the wrong type and/or x has a member y).
+     (2) Otherwise if x has a member y, and y is itself a derived type,
+         this is (x->y)->z, even if an intrinsic operator exists which 
+         can handle (x,z). 
+     (3) If x has no member y or (x->y) is not a derived type but ".y." 
+         is an intrinsic operator (such as ".eq."), this is y(x,z).
+     (4) Lastly if there is no operator ".y." and x has no member "y", it is an
+         error.  
+   It is worth noting that [fortunately] Intel does not support mixed use of
+   member accessors within a single string, nor does it support parenthesised
+   member accesses (therefore neither do we).
+   That is, even if x has component y and y has component z, the following
+   are all syntax errors:  "x%y.z"  "x.y%z"  "(x.y).z"  "(x%y)%z"
+ */
+
+match
+gfc_match_member_sep(gfc_symbol *sym)
+{
+    char name[GFC_MAX_SYMBOL_LEN + 1];
+    locus dot_loc, start_loc;
+    gfc_intrinsic_op iop;
+    match m;
+    gfc_symbol *tsym;
+    gfc_component *c;
+
+    /* Thank god; '%' is an unambiguous member separator. */
+    if (gfc_match_char ('%') == MATCH_YES)
+        return MATCH_YES;
+
+    /* Only continue if dot member separators are enabled. */
+    if (!gfc_option.flag_dec_member_dot || !sym)
+        return MATCH_NO;
+
+    tsym = NULL;
+
+    /* We may be given either a derived type variable or the derived type
+       declaration itself (which actually contains the components); 
+       if this is a member access we need the latter to check components. */
+    if (gfc_fl_struct (sym->attr.flavor))
+        tsym = sym;
+    else if (gfc_bt_struct (sym->ts.type))
+        tsym = sym->ts.u.derived;
+    else
+        return MATCH_NO;
+
+    iop = INTRINSIC_NONE;
+    name[0] = '\0';
+    m = MATCH_NO;
+
+    /* If we have to reject, come back here later. */
+    start_loc = gfc_current_locus;
+
+    /* Look for a component access next. */
+    if (gfc_match_char ('.') != MATCH_YES)
+        return MATCH_NO;
+
+    /* If we accept, come back here. */
+    dot_loc = gfc_current_locus;
+
+    /* Try to match a symbol name following '.' */
+    if (gfc_match_name (name) != MATCH_YES)
+    {
+        gfc_error ("Expected structure component or operator name "
+                   "after '.' at %C");
+        goto error;
+    }
+
+    /* If no dot follows we have "x.y" which must be a component access.
+       Ensure the leading symbol is a derived type variable. */
+    if (gfc_match_char ('.') != MATCH_YES)
+        goto yes;
+
+    /* Now we have a string "x.y.z" which could be a nested member access
+       (x->y)->z or a binary operation y on x and z. */
+
+    /* First use any user-defined operators ".y." */
+    if (gfc_find_uop (name, sym->ns) != NULL)
+        goto no;
+
+    /* Match accesses to existing derived-type components for 
+       derived-type vars: "x.y.z" = (x->y)->z */
+    c = gfc_find_component(tsym, name, false, true, NULL);
+    if (c && (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS))
+        goto yes;
+
+    /* If y is not a component or has no members, try intrinsic operators. */
+    gfc_current_locus = start_loc;
+    if (gfc_match_intrinsic_op (&iop) != MATCH_YES)
+    {
+        /* If ".y." is not an intrinsic operator but y was a valid non-
+           structure component, match and leave the trailing dot to be 
+           dealt with later. */
+        if (c)
+            goto yes;
+
+        gfc_error ("'%s' is neither a defined operator nor a "
+                   "structure component in dotted string at %C", name);
+        goto error;
+    }
+
+    /* .y. is an intrinsic operator, overriding any possible member access. */
+    goto no;
+
+    /* Return keeping the current locus consistent with the match result. */
+error:
+    m = MATCH_ERROR;
+no:
+    gfc_current_locus = start_loc;
+    return m;
+yes:
+    gfc_current_locus = dot_loc;
+    return MATCH_YES;
+}
+
 /* This function scans the current statement counting the opened and closed
    parenthesis to make sure they are balanced.  */
 
@@ -320,6 +440,219 @@ gfc_match_eos (void)
   return (flag) ? MATCH_YES : MATCH_NO;
 }
 
+/* As with gfc_check_digit, but allow any radix in [2,36]. */
+
+static int
+check_digit_extended (char c, int radix)
+{
+  int r = 0;
+  if (radix < 2 || radix > 36)
+      gfc_internal_error ("check_digit_extended(): bad radix");
+  else if (radix <= 10)
+      r = '0' <= c && c < ('0'+radix);
+  else
+      r =    ('0' <= c && c < ('0' +   radix   ))
+          || ('a' <= c && c < ('a' + (radix-10)));
+
+  return r;
+}
+
+/* Given a character and a radix, see if the character is a valid
+   digit in that radix.  */
+
+int
+gfc_check_digit (char c, int radix)
+{
+  int r;
+
+  if (gfc_option.flag_dec_extended_int)
+      return check_digit_extended (c, radix);
+
+  switch (radix)
+    {
+    case 2:
+      r = ('0' <= c && c <= '1');
+      break;
+
+    case 8:
+      r = ('0' <= c && c <= '7');
+      break;
+
+    case 10:
+      r = ('0' <= c && c <= '9');
+      break;
+
+    case 16:
+      r = ISXDIGIT (c);
+      break;
+
+    default:
+      gfc_internal_error ("gfc_check_digit(): bad radix");
+    }
+
+  return r;
+}
+
+/* Matches '+' or '-', and sets sign to 1 or -1 respectively if not NULL. */
+
+match
+gfc_match_sign (int *sign)
+{
+    match m;
+    if ((m = gfc_match_char ('+')) == MATCH_YES && sign)
+        *sign = 1;
+    else if ((m = gfc_match_char ('-')) == MATCH_YES && sign)
+        *sign = -1;
+    return m;
+}
+
+/* Match a radix as a base 10 number between 2 and 36. On MATCH_YES set
+   *radixp to the result if not NULL. (If NULL, still matches a radix.) */
+
+match
+gfc_match_radix (int *radixp)
+{
+    char radixbuf[3] = {'\0', '\0', '\0'};
+    locus old_loc;
+    int length, radix;
+    match m;
+
+    /* Get the length of a potential radix. */
+    old_loc = gfc_current_locus;
+    m = gfc_match_literal_int (NULL, 10, &length);
+    if (m != MATCH_YES)
+        return m;
+    gfc_current_locus = old_loc;
+
+    /* Base can't have more than two digits. */
+    if (length > 2)
+    {
+        gfc_error ("Base too large at %C");
+        return MATCH_ERROR;
+    }
+
+    gcc_assert (gfc_match_literal_int (radixbuf, 10, NULL) == MATCH_YES);
+    radix = atoi(radixbuf);
+
+    if (radix < 2 || radix > 36)
+    {
+        gfc_error ("Base '%d' out of range at %C", radix);
+        return MATCH_ERROR;
+    }
+
+    if (radixp)
+        *radixp = atoi (radixbuf);
+
+    return MATCH_YES;
+}
+
+/* Match the digit string part of an integer. If the buffer 
+   is NULL, we just count characters for the resolution pass returned
+   in *cnt (if not NULL). Returns whether an integer was successfully matched
+   using the given radix. */
+
+match
+gfc_match_literal_int (char *buffer, int radix, int *cnt)
+{
+  locus old_loc;
+  int length;
+  char c;
+  match m;
+
+  length = 0;
+  m = MATCH_YES;
+  old_loc = gfc_current_locus;
+  c = gfc_next_ascii_char ();
+
+  if (!gfc_check_digit (c, radix))
+  {
+    length = -1;
+    m = MATCH_NO;
+    goto done;
+  }
+
+  length++;
+  if (buffer != NULL)
+    *buffer++ = c;
+
+  for (;;)
+    {
+      old_loc = gfc_current_locus;
+      c = gfc_next_ascii_char ();
+
+      if (!gfc_check_digit (c, radix))
+	break;
+
+      if (buffer != NULL)
+	*buffer++ = c;
+      length++;
+    }
+
+
+done:
+  gfc_current_locus = old_loc;
+  if (cnt)
+      *cnt = length;
+  /* If digit belongs to another radix, we can give some helpful information */
+  if (gfc_option.flag_dec_extended_int && check_digit_extended (c, 36))
+      gfc_error ("Invalid digit '%c' in base %d integer constant at %C",
+                 c, radix);
+  return m;
+}
+
+/* Match a DEC extended 'base#value' integer if -fdec-extended-int is
+   enabled. 
+   On MATCH_YES, if not NULL:
+     buffer -> the value string
+     *radix -> the radix of the value
+     *cnt   -> the length of the value string */
+
+match
+gfc_match_extended_integer (char *buffer, int *radix, int *cnt)
+{
+  match m;
+  int base, length;
+  locus old_loc;
+  
+  base = 10;
+  old_loc = gfc_current_locus;
+  gfc_gobble_whitespace ();
+  m = gfc_match_literal_int (buffer, 10, &length);
+
+  /* If we see a '#' this is an extended base#val int; otherwise the number we
+     just matched is the number. */
+  if (gfc_peek_ascii_char () == '#' && gfc_option.flag_dec_extended_int)
+  {
+      gfc_current_locus = old_loc;
+      base = 16;
+      /* If no radix is found we default to 16. Out-of-range is an error. */
+      if (gfc_match_radix (&base) == MATCH_ERROR)
+          return MATCH_ERROR;
+      gcc_assert (gfc_match_char ('#') == MATCH_YES);
+
+      old_loc = gfc_current_locus;
+      m = gfc_match_literal_int (buffer, base, &length);
+      if (buffer)
+          buffer[length] = '\0';
+      if (m != MATCH_YES)
+      {
+          gfc_current_locus = old_loc;
+          gfc_error ("Expected base %d integer after '#' in extended integer "
+                     "constant at %C", base);
+          return MATCH_ERROR;
+      }
+  }
+
+  if (m == MATCH_YES)
+  {
+      if (radix)
+          *radix = base;
+      if (cnt)
+          *cnt = length;
+  }
+
+  return m;
+}
 
 /* Match a literal integer on the input, setting the value on
    MATCH_YES.  Literal ints occur in kind-parameters as well as
@@ -919,6 +1252,18 @@ gfc_match_intrinsic_op (gfc_intrinsic_op *result)
 	      return MATCH_YES;
 	    }
 	  break;
+
+        case 'x':
+          if (gfc_option.flag_dec_logical_xor
+              && gfc_next_ascii_char () == 'o'
+              && gfc_next_ascii_char () == 'r'
+              && gfc_next_ascii_char () == '.')
+            {
+              /* Matched ".xor." -> equivalent to ".neqv." */
+              *result = INTRINSIC_NEQV;
+              return MATCH_YES;
+            }
+          break;
 
 	default:
 	  break;
@@ -1576,6 +1921,11 @@ gfc_match_if (gfc_statement *if_type)
   match ("where", match_simple_where, ST_WHERE)
   match ("write", gfc_match_write, ST_WRITE)
 
+  if (gfc_option.flag_type_print)
+    {
+      match ("type", gfc_match_print, ST_WRITE)
+    }
+
   /* The gfc_match_assignment() above may have returned a MATCH_NO
      where the assignment was to a named constant.  Check that
      special case here.  */
@@ -1920,7 +2270,7 @@ match_derived_type_spec (gfc_typespec *ts)
   if (derived && derived->attr.flavor == FL_PROCEDURE && derived->attr.generic)
     derived = gfc_find_dt_in_generic (derived);
 
-  if (derived && derived->attr.flavor == FL_DERIVED)
+  if (derived && gfc_fl_struct (derived->attr.flavor))
     {
       ts->type = BT_DERIVED;
       ts->u.derived = derived;
@@ -5222,7 +5572,7 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
   gfc_symtree *tmp;
   int charlen = 0;
 
-  if (ts->type == BT_CLASS || ts->type == BT_DERIVED)
+  if (ts->type == BT_CLASS || gfc_bt_struct (ts->type))
     return NULL;
 
   if (select_type_stack->selector->ts.type == BT_CLASS

@@ -1056,7 +1056,7 @@ exponent:
      the d parameter before explict conversion takes place.  */
 
   if (w == 0)
-    goto bad_float;
+    goto done; /* Extension: exponent defaults to 1 when ommitted. */
 
   if (dtp->u.p.blank_status == BLANK_UNSPECIFIED)
     {
@@ -1220,7 +1220,8 @@ read_x (st_parameter_dt *dtp, int n)
       q = fbuf_getc (dtp->u.p.current_unit);
       if (q == EOF)
 	break;
-      else if (q == '\n' || q == '\r')
+      else if (dtp->u.p.current_unit->flags.cc != CC_NONE
+               && (q == '\n' || q == '\r'))
 	{
 	  /* Unexpected end of line. Set the position.  */
 	  dtp->u.p.sf_seen_eor = 1;
