@@ -40,6 +40,7 @@ const mstring flavors[] =
   minit ("VARIABLE", FL_VARIABLE), minit ("PARAMETER", FL_PARAMETER),
   minit ("LABEL", FL_LABEL), minit ("PROCEDURE", FL_PROCEDURE),
   minit ("DERIVED", FL_DERIVED), minit ("NAMELIST", FL_NAMELIST),
+  minit ("UNION", FL_UNION), minit ("STRUCTURE", FL_STRUCT),
   minit (NULL, -1)
 };
 
@@ -468,8 +469,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  case FL_BLOCK_DATA:
 	  case FL_MODULE:
 	  case FL_LABEL:
-	  case FL_DERIVED:
 	  case FL_PARAMETER:
+          case_struct_fl:
             a1 = gfc_code2string (flavors, attr->flavor);
             a2 = save;
 	    goto conflict;
@@ -748,7 +749,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
       break;
 
-    case FL_DERIVED:
+    case_struct_fl:
       conf2 (dummy);
       conf2 (pointer);
       conf2 (target);
@@ -1538,7 +1539,7 @@ gfc_add_flavor (symbol_attribute *attr, sym_flavor f, const char *name,
 {
 
   if ((f == FL_PROGRAM || f == FL_BLOCK_DATA || f == FL_MODULE
-       || f == FL_PARAMETER || f == FL_LABEL || f == FL_DERIVED
+       || f == FL_PARAMETER || f == FL_LABEL || gfc_fl_struct (f)
        || f == FL_NAMELIST) && check_used (attr, name, where))
     return false;
 
@@ -1786,7 +1787,7 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
   if (flavor == FL_PROGRAM || flavor == FL_BLOCK_DATA || flavor == FL_MODULE
       || flavor == FL_LABEL
       || (flavor == FL_PROCEDURE && sym->attr.subroutine)
-      || flavor == FL_DERIVED || flavor == FL_NAMELIST)
+      || gfc_fl_struct (flavor) || flavor == FL_NAMELIST)
     {
       gfc_error ("Symbol %qs at %L cannot have a type", sym->name, where);
       return false;
@@ -1955,6 +1956,11 @@ gfc_add_component (gfc_symbol *sym, const char *name,
 {
   gfc_component *p, *tail;
 
+  /* Check for existing components with the same name, but not for union
+     components or containers. Unions and maps are anonymous so they have
+     unique internal names which will never conflict.
+     Don't use gfc_find_component here because it calls gfc_use_derived,
+     but the derived type may not be fully defined yet. */
   tail = NULL;
 
   for (p = sym->components; p; p = p->next)
@@ -1970,7 +1976,7 @@ gfc_add_component (gfc_symbol *sym, const char *name,
     }
 
   if (sym->attr.extension
-	&& gfc_find_component (sym->components->ts.u.derived, name, true, true))
+	&& gfc_find_component (sym->components->ts.u.derived, name, true, true, NULL))
     {
       gfc_error_1 ("Component '%s' at %C already in the parent type "
 		 "at %L", name, &sym->components->ts.u.derived->declared_at);
@@ -2061,7 +2067,7 @@ gfc_use_derived (gfc_symbol *sym)
       return NULL;
     }
 
-  if (s == NULL || s->attr.flavor != FL_DERIVED)
+  if (s == NULL || !gfc_fl_struct (s->attr.flavor))
     goto bad;
 
   /* Get rid of symbol sym, translating all references to s.  */
@@ -2094,29 +2100,109 @@ bad:
   return NULL;
 }
 
+   
+static gfc_component *
+find_union_component (gfc_symbol *un, const char *name,
+                      bool noaccess, gfc_ref **ref)
+{
+  gfc_component *m, *check;
+  gfc_ref *sref, *tmp;
+
+  for (m = un->components; m; m = m->next)
+  {
+    check = gfc_find_component (m->ts.u.derived, name, noaccess, true, &tmp);
+    if (check == NULL)
+      continue;
+
+    /* Found it somewhere in m; chain the refs together. */
+    if (ref)
+    {
+      /* Map ref. */
+      sref = gfc_get_ref ();
+      sref->type = REF_COMPONENT;
+      sref->u.c.component = m;
+      sref->u.c.sym = m->ts.u.derived;
+      sref->next = tmp;
+
+      *ref = sref;
+    }
+    /* Other checks (such as access) were done in the recursive calls.
+       Now we are done! */
+    return check;
+  }
+  return NULL;
+}
+
 
 /* Given a derived type node and a component name, try to locate the
    component structure.  Returns the NULL pointer if the component is
    not found or the components are private.  If noaccess is set, no access
-   checks are done.  */
+   checks are done. Unless silent is set, a gfc_error is generated when the
+   component cannot be found or accessed.
+   
+   If ref is not NULL, *ref is set to represent the chain of components
+   required to get to the ultimate component.
+
+   If the component is simply a direct subcomponent, or is inherited from a
+   parent derived type in the given derived type, this is a single ref with its
+   component set to the returned component.
+
+   Otherwise, *ref is constructed as a chain of subcomponents. This occurs
+   when the component is found through an implicit chain of nested union and
+   map components. Unions and maps are "anonymous" substructures in FORTRAN
+   which cannot be explicitly referenced, but the reference chain must be
+   considered as in C for backend translation to correctly compute layouts.
+   (For example, x.a may refer to x->(UNION)->(MAP)->(UNION)->(MAP)->a). */
 
 gfc_component *
 gfc_find_component (gfc_symbol *sym, const char *name,
-		    bool noaccess, bool silent)
+		    bool noaccess, bool silent, gfc_ref **ref)
 {
-  gfc_component *p;
+  gfc_component *p, *check;
+  gfc_ref *sref = NULL, *tmp = NULL;
 
   if (name == NULL || sym == NULL)
     return NULL;
 
-  sym = gfc_use_derived (sym);
+  if (sym->attr.flavor == FL_DERIVED)
+    sym = gfc_use_derived (sym);
+  else
+    gcc_assert (gfc_fl_struct (sym->attr.flavor));
 
   if (sym == NULL)
     return NULL;
 
+  /* Handle UNIONs specially. */
+  if (sym->attr.flavor == FL_UNION)
+    return find_union_component (sym, name, noaccess, ref);
+
+  if (ref) *ref = NULL;
   for (p = sym->components; p; p = p->next)
-    if (strcmp (p->name, name) == 0)
+  {
+    /* Nest search into union's maps. */
+    if (p->ts.type == BT_UNION)
+    {
+      check = find_union_component (p->ts.u.derived, name, noaccess, &tmp);
+      if (check != NULL)
+      {
+        /* Union ref. */
+        if (ref)
+        {
+          sref = gfc_get_ref ();
+          sref->type = REF_COMPONENT;
+          sref->u.c.component = p;
+          sref->u.c.sym = p->ts.u.derived;
+          sref->next = tmp;
+          *ref = sref;
+        }
+        return check;
+      }
+    }
+    else if (strcmp (p->name, name) == 0)
       break;
+
+    continue;
+  }
 
   if (p && sym->attr.use_assoc && !noaccess)
     {
@@ -2133,12 +2219,14 @@ gfc_find_component (gfc_symbol *sym, const char *name,
 	}
     }
 
+  /* Look in the parent type. */
   if (p == NULL
+        && sym->attr.flavor == FL_DERIVED
 	&& sym->attr.extension
 	&& sym->components->ts.type == BT_DERIVED)
     {
       p = gfc_find_component (sym->components->ts.u.derived, name,
-			      noaccess, silent);
+			      noaccess, silent, ref);
       /* Do not overwrite the error.  */
       if (p == NULL)
 	return p;
@@ -2147,6 +2235,25 @@ gfc_find_component (gfc_symbol *sym, const char *name,
   if (p == NULL && !silent)
     gfc_error ("%qs at %C is not a member of the %qs structure",
 	       name, sym->name);
+
+  /* Component was found; build the ultimate component reference. */
+  if (p != NULL && ref)
+  {
+    tmp = gfc_get_ref ();
+    tmp->type = REF_COMPONENT;
+    tmp->u.c.component = p;
+    tmp->u.c.sym = sym;
+    /* Link the final component ref to the end of the chain of subrefs. */
+    if (sref)
+    {
+      *ref = sref;
+      for (; sref->next; sref = sref->next)
+        ;
+      sref->next = tmp;
+    }
+    else
+      *ref = tmp;
+  }
 
   return p;
 }
@@ -3228,11 +3335,9 @@ gfc_restore_last_undo_checkpoint (void)
 	  /* The derived type is saved in the symtree with the first
 	     letter capitalized; the all lower-case version to the
 	     derived type contains its associated generic function.  */
-	  if (p->attr.flavor == FL_DERIVED)
-	    gfc_delete_symtree (&p->ns->sym_root, gfc_get_string ("%c%s",
-                        (char) TOUPPER ((unsigned char) p->name[0]),
-                        &p->name[1]));
-	  else
+	  if (gfc_fl_struct (p->attr.flavor))
+	    gfc_delete_symtree (&p->ns->sym_root,gfc_dt_upper_string (p->name));
+          else
 	    gfc_delete_symtree (&p->ns->sym_root, p->name);
 
 	  gfc_release_symbol (p);
@@ -3991,7 +4096,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
         }
       
       /* BIND(C) derived types must have interoperable components.  */
-      if (curr_comp->ts.type == BT_DERIVED
+      if (gfc_bt_struct (curr_comp->ts.type)
 	  && curr_comp->ts.u.derived->ts.is_iso_c != 1 
           && curr_comp->ts.u.derived != derived_sym)
         {
@@ -4408,6 +4513,8 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	  gfc_dt_list **dt_list_ptr = NULL;
 	  gfc_component *tmp_comp = NULL;
 
+	  hidden_name = gfc_dt_upper_string (tmp_sym->name);
+
 	  /* Generate real derived type.  */
 	  if (hidden)
 	    dt_sym = tmp_sym;
@@ -4630,14 +4737,20 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
   bool is_class2 = (ts2->type == BT_CLASS);
   bool is_derived1 = (ts1->type == BT_DERIVED);
   bool is_derived2 = (ts2->type == BT_DERIVED);
+  bool is_union1 = (ts1->type == BT_UNION);
+  bool is_union2 = (ts2->type == BT_UNION);
 
   if (is_class1
       && ts1->u.derived->components
       && ts1->u.derived->components->ts.u.derived->attr.unlimited_polymorphic)
     return 1;
 
-  if (!is_derived1 && !is_derived2 && !is_class1 && !is_class2)
+  if (!is_derived1 && !is_derived2 && !is_class1 && !is_class2
+      && !is_union1 && !is_union2)
     return (ts1->type == ts2->type);
+
+  if (is_union1 && is_union2)
+    return gfc_compare_union_types (ts1->u.derived, ts2->u.derived);
 
   if (is_derived1 && is_derived2)
     return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
@@ -4700,12 +4813,12 @@ gfc_find_dt_in_generic (gfc_symbol *sym)
 {
   gfc_interface *intr = NULL;
 
-  if (!sym || sym->attr.flavor == FL_DERIVED)
+  if (!sym || gfc_fl_struct (sym->attr.flavor))
     return sym;
 
   if (sym->attr.generic)
     for (intr = sym->generic; intr; intr = intr->next)
-      if (intr->sym->attr.flavor == FL_DERIVED)
+      if (gfc_fl_struct (intr->sym->attr.flavor))
         break;
   return intr ? intr->sym : NULL;
 }

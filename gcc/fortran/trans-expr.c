@@ -2172,6 +2172,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
   tree tmp;
   tree decl;
   tree field;
+  tree context;
 
   c = ref->u.c.component;
 
@@ -2182,15 +2183,20 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
   field = c->backend_decl;
   gcc_assert (field && TREE_CODE (field) == FIELD_DECL);
   decl = se->expr;
+  context = DECL_FIELD_CONTEXT (field);
 
   /* Components can correspond to fields of different containing
      types, as components are created without context, whereas
      a concrete use of a component has the type of decl as context.
      So, if the type doesn't match, we search the corresponding
      FIELD_DECL in the parent type.  To not waste too much time
-     we cache this result in norestrict_decl.  */
+     we cache this result in norestrict_decl. 
+     On the other hand, if the context is a UNION or a MAP (a
+     RECORD_TYPE within a UNION_TYPE) always use the given FIELD_DECL. */
 
-  if (DECL_FIELD_CONTEXT (field) != TREE_TYPE (decl))
+  if (context != TREE_TYPE (decl) 
+      && !(   TREE_CODE (TREE_TYPE (field)) == UNION_TYPE /* field is union */
+           || TREE_CODE (context) == UNION_TYPE))         /* field is map */
     {
       tree f2 = c->norestrict_decl;
       if (!f2 || DECL_FIELD_CONTEXT (f2) != TREE_TYPE (decl))
@@ -6402,8 +6408,8 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
     {
       switch (ts->type)
 	{
-	case BT_DERIVED:
 	case BT_CLASS:
+        case_struct_bt:
 	  gfc_init_se (&se, NULL);
 	  if (ts->type == BT_CLASS && expr->expr_type == EXPR_NULL)
 	    gfc_conv_structure (&se, gfc_class_initializer (ts, expr), 1);
@@ -6547,7 +6553,7 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
   gfc_add_modify (&block, dest, se.expr);
 
   /* Deal with arrays of derived types with allocatable components.  */
-  if (cm->ts.type == BT_DERIVED
+  if (gfc_bt_struct (cm->ts.type)
 	&& cm->ts.u.derived->attr.alloc_comp)
     tmp = gfc_copy_alloc_comp (cm->ts.u.derived,
 			       se.expr, dest,
@@ -6908,7 +6914,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
 			fold_convert (TREE_TYPE (tmp), se.expr));
       gfc_add_block_to_block (&block, &se.post);
     }
-  else if (expr->ts.type == BT_DERIVED && expr->ts.f90_type != BT_VOID)
+  else if (gfc_bt_struct (cm->ts.type))
     {
       if (expr->expr_type != EXPR_STRUCTURE)
 	{
@@ -7067,6 +7073,23 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       return;
     }
 
+  /* Though unions appear to have multiple map components, they must only
+     have a single initializer since each map overlaps. */
+  if (expr->ts.type == BT_UNION)
+  {
+    c = gfc_constructor_first (expr->value.constructor);
+    cm = c->n.component;
+    val = gfc_conv_initializer (c->expr, &expr->ts,
+                                TREE_TYPE (cm->backend_decl),
+                                cm->attr.dimension, cm->attr.pointer,
+                                cm->attr.proc_pointer);
+    val = unshare_expr_without_location (val);
+
+    /* Append it to the constructor list.  */
+    CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
+    goto finish;
+  }
+
   cm = expr->ts.u.derived->components;
 
   for (c = gfc_constructor_first (expr->value.constructor);
@@ -7113,6 +7136,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
 	}
     }
+finish:
   se->expr = build_constructor (type, v);
   if (init)
     TREE_CONSTANT (se->expr) = 1;
@@ -7913,7 +7937,7 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       gfc_trans_string_copy (&block, llen, lse->expr, ts.kind, rlen,
 			     rse->expr, ts.kind);
     }
-  else if (ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
+  else if (gfc_bt_struct (ts.type) && ts.u.derived->attr.alloc_comp)
     {
       tree tmp_var = NULL_TREE;
       cond = NULL_TREE;
@@ -7966,7 +7990,7 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 	  gfc_add_expr_to_block (&block, tmp);
 	}
     }
-  else if (ts.type == BT_DERIVED || ts.type == BT_CLASS)
+  else if (gfc_bt_struct (ts.type) || ts.type == BT_CLASS)
     {
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);
@@ -9116,7 +9140,7 @@ copyable_array_p (gfc_expr * expr)
     case BT_CHARACTER:
       return false;
 
-    case BT_DERIVED:
+    case_struct_bt:
       return !expr->ts.u.derived->attr.alloc_comp;
 
     default:

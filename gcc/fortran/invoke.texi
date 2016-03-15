@@ -227,6 +227,17 @@ given they are treated as if the first column contained a blank.  If the
 @option{-fd-lines-as-comments} option is given, they are treated as
 comment lines.
 
+@item -fdec-member-dot
+@opindex @code{fdec-member-dot}
+Enable dot (@code{.}) as a member separator (in addition to the usual @code{%}).
+This is enabled automatically with @option{-fdec-structure}.
+
+@item -fdec-structure
+@opindex @code{fdec-structure}
+Enable DEC old-style @code{STRUCTURE} and @code{RECORD}. This is provided for
+compatibility; Fortran 90 derived types should be used instead where
+possible. This implies @option{-fdec-member-dot}.
+
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
 @cindex @code{$}

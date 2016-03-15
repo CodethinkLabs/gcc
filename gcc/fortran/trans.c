@@ -1381,6 +1381,115 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 }
 
 
+/* Build a call to a FINAL procedure, which finalizes "var".  */
+
+tree
+gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
+		      bool fini_coarray, gfc_expr *class_size)
+{
+  stmtblock_t block;
+  gfc_se se;
+  tree final_fndecl, array, size, tmp;
+
+  gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
+  gcc_assert (var);
+
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr (&se, final_wrapper);
+  final_fndecl = se.expr;
+  if (POINTER_TYPE_P (TREE_TYPE (final_fndecl)))
+    final_fndecl = build_fold_indirect_ref_loc (input_location, final_fndecl);
+
+  if (gfc_bt_struct (ts.type))
+    {
+      tree elem_size;
+
+      gcc_assert (!class_size);
+      elem_size = gfc_typenode_for_spec (&ts);
+      elem_size = TYPE_SIZE_UNIT (elem_size);
+      size = fold_convert (gfc_array_index_type, elem_size);
+
+      gfc_init_se (&se, NULL);
+      se.want_pointer = 1;
+      if (var->rank || gfc_expr_attr (var).dimension)
+	{
+	  se.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&se, var);
+	  array = se.expr;
+	  if (!POINTER_TYPE_P (TREE_TYPE (array)))
+	    array = gfc_build_addr_expr (NULL, array);
+	}
+      else
+	{
+	  symbol_attribute attr;
+	  gfc_clear_attr (&attr);
+	  gfc_conv_expr (&se, var);
+	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
+	  array = se.expr;
+	  if (TREE_CODE (array) == ADDR_EXPR
+	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (array, 0))))
+	    tmp = TREE_OPERAND (array, 0);
+
+	  gfc_init_se (&se, NULL);
+	  array = gfc_conv_scalar_to_descriptor (&se, array, attr);
+	  array = gfc_build_addr_expr (NULL, array);
+	  gcc_assert (se.post.head == NULL_TREE);
+	}
+    }
+  else
+    {
+      gfc_expr *array_expr;
+      gcc_assert (class_size);
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, class_size);
+      gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
+      size = se.expr;
+
+      array_expr = gfc_copy_expr (var);
+      gfc_add_data_component (array_expr);
+      gfc_init_se (&se, NULL);
+      se.want_pointer = 1;
+      if (array_expr->rank || gfc_expr_attr (array_expr).dimension)
+	{
+	  se.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&se, var);
+	  array = se.expr;
+	  if (! POINTER_TYPE_P (TREE_TYPE (array)))
+	    array = gfc_build_addr_expr (NULL, array);
+	}
+      else
+	{
+	  symbol_attribute attr;
+
+	  gfc_clear_attr (&attr);
+	  gfc_conv_expr (&se, array_expr);
+	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
+	  array = se.expr;
+	  if (TREE_CODE (array) == ADDR_EXPR
+	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (array, 0))))
+	    tmp = TREE_OPERAND (array, 0);
+
+	  /* attr: Argument is neither a pointer/allocatable,
+	     i.e. no copy back needed */
+	  gfc_init_se (&se, NULL);
+	  array = gfc_conv_scalar_to_descriptor (&se, array, attr);
+	  array = gfc_build_addr_expr (NULL, array);
+	  gcc_assert (se.post.head == NULL_TREE);
+	}
+      gfc_free_expr (array_expr);
+    }
+
+  gfc_start_block (&block);
+  gfc_add_block_to_block (&block, &se.pre);
+  tmp = build_call_expr_loc (input_location,
+			     final_fndecl, 3, array,
+			     size, fini_coarray ? boolean_true_node
+						: boolean_false_node);
+  gfc_add_block_to_block (&block, &se.post);
+  gfc_add_expr_to_block (&block, tmp);
+  return gfc_finish_block (&block);
+}
+
 /* Generate code for deallocation of allocatable scalars (variables or
    components). Before the object itself is freed, any allocatable
    subcomponents are being deallocated.  */
@@ -1436,8 +1545,12 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, bool can_fail,
   gfc_start_block (&non_null);
 
   /* Free allocatable components.  */
+<<<<<<< 28d6c85b1611a57586a18eef935362d3a5a81588
   finalizable = gfc_add_finalizer_call (&non_null, expr);
   if (!finalizable && ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
+=======
+  if (gfc_bt_struct (ts.type) && ts.u.derived->attr.alloc_comp)
+>>>>>>> STRUCTURE, UNION and MAP support.
     {
       tmp = build_fold_indirect_ref_loc (input_location, pointer);
       tmp = gfc_deallocate_alloc_comp (ts.u.derived, tmp, 0);
