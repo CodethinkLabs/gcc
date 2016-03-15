@@ -60,7 +60,7 @@ match gfc_match (const char *, ...);
 match gfc_match_iterator (gfc_iterator *, int);
 match gfc_match_parens (void);
 match gfc_match_type_spec (gfc_typespec *);
-
+match gfc_match_member_sep(gfc_symbol *);
 
 /* Statement matchers.  */
 match gfc_match_program (void);
@@ -203,8 +203,12 @@ match gfc_match_generic (void);
 match gfc_match_function_decl (void);
 match gfc_match_entry (void);
 match gfc_match_subroutine (void);
+match gfc_match_map (void);
+match gfc_match_union (void);
+match gfc_match_structure_decl (void);
 match gfc_match_derived_decl (void);
 match gfc_match_final_decl (void);
+match gfc_match_type (gfc_statement *);
 
 match gfc_match_implicit_none (void);
 match gfc_match_implicit (void);
@@ -236,6 +240,7 @@ match gfc_match_value (void);
 match gfc_match_volatile (void);
 
 /* decl.c.  */
+match gfc_match_clist_expr (gfc_expr **, gfc_typespec *, bool);
 
 /* Fortran 2003 c interop.
    TODO: some of these should be moved to another file rather than decl.c */

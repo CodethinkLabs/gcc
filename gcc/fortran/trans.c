@@ -902,7 +902,7 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   if (POINTER_TYPE_P (TREE_TYPE (final_fndecl)))
     final_fndecl = build_fold_indirect_ref_loc (input_location, final_fndecl);
 
-  if (ts.type == BT_DERIVED)
+  if (gfc_bt_struct (ts.type))
     {
       tree elem_size;
 
@@ -989,7 +989,6 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   gfc_add_expr_to_block (&block, tmp);
   return gfc_finish_block (&block);
 }
-
 
 bool
 gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
@@ -1381,6 +1380,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 }
 
 
+
 /* Generate code for deallocation of allocatable scalars (variables or
    components). Before the object itself is freed, any allocatable
    subcomponents are being deallocated.  */
@@ -1437,7 +1437,7 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, bool can_fail,
 
   /* Free allocatable components.  */
   finalizable = gfc_add_finalizer_call (&non_null, expr);
-  if (!finalizable && ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
+  if (!finalizable && gfc_bt_struct(ts.type) && ts.u.derived->attr.alloc_comp)
     {
       tmp = build_fold_indirect_ref_loc (input_location, pointer);
       tmp = gfc_deallocate_alloc_comp (ts.u.derived, tmp, 0);

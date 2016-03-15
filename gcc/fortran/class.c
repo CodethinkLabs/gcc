@@ -78,12 +78,11 @@ insert_component_ref (gfc_typespec *ts, gfc_ref **ref, const char * const name)
   gcc_assert (ts->type == BT_DERIVED || ts->type == BT_CLASS);
   type_sym = ts->u.derived;
 
-  new_ref = gfc_get_ref ();
-  new_ref->type = REF_COMPONENT;
-  new_ref->next = *ref;
-  new_ref->u.c.sym = type_sym;
-  new_ref->u.c.component = gfc_find_component (type_sym, name, true, true);
+  gfc_find_component (type_sym, name, true, true, &new_ref);
   gcc_assert (new_ref->u.c.component);
+  while (new_ref->next)
+    new_ref = new_ref->next;
+  new_ref->next = *ref;
 
   if (new_ref->next)
     {
@@ -206,8 +205,9 @@ gfc_fix_class_refs (gfc_expr *e)
 void
 gfc_add_component_ref (gfc_expr *e, const char *name)
 {
+  gfc_component *c;
   gfc_ref **tail = &(e->ref);
-  gfc_ref *next = NULL;
+  gfc_ref *ref, *next = NULL;
   gfc_symbol *derived = e->symtree->n.sym->ts.u.derived;
   while (*tail != NULL)
     {
@@ -241,10 +241,13 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
   (*tail)->next = next;
   (*tail)->type = REF_COMPONENT;
   (*tail)->u.c.sym = derived;
-  (*tail)->u.c.component = gfc_find_component (derived, name, true, true);
+  (*tail)->u.c.component = gfc_find_component (derived, name, true, true, tail);
   gcc_assert((*tail)->u.c.component);
+  for (ref = *tail; ref->next; ref = ref->next)
+    ;
+  ref->next = next;
   if (!next)
-    e->ts = (*tail)->u.c.component->ts;
+    e->ts = c->ts;
 }
 
 
@@ -477,8 +480,7 @@ get_unique_type_string (char *string, gfc_symbol *derived)
   if (derived->attr.unlimited_polymorphic)
     strcpy (dt_name, "STAR");
   else
-    strcpy (dt_name, derived->name);
-  dt_name[0] = TOUPPER (dt_name[0]);
+    strcpy (dt_name, gfc_dt_upper_string (derived->name));
   if (derived->attr.unlimited_polymorphic)
     sprintf (string, "_%s", dt_name);
   else if (derived->module)
@@ -751,7 +753,7 @@ add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
   if (tb->non_overridable)
     return;
 
-  c = gfc_find_component (vtype, name, true, true);
+  c = gfc_find_component (vtype, name, true, true, NULL);
 
   if (c == NULL)
     {
@@ -820,7 +822,7 @@ copy_vtab_proc_comps (gfc_symbol *declared, gfc_symbol *vtype)
 
   for (cmp = vtab->ts.u.derived->components; cmp; cmp = cmp->next)
     {
-      if (gfc_find_component (vtype, cmp->name, true, true))
+      if (gfc_find_component (vtype, cmp->name, true, true, NULL))
 	continue;
 
       add_proc_comp (vtype, cmp->name, cmp->tb);
@@ -2320,7 +2322,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  gfc_set_sym_referenced (def_init);
 		  def_init->ts.type = BT_DERIVED;
 		  def_init->ts.u.derived = derived;
-		  def_init->value = gfc_default_initializer (&def_init->ts);
+		  def_init->value = gfc_default_initializer (&def_init->ts,
+                                                             false);
 
 		  c->initializer = gfc_lval_expr_from_sym (def_init);
 		}
@@ -2407,7 +2410,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 
 have_vtype:
 	  vtab->ts.u.derived = vtype;
-	  vtab->value = gfc_default_initializer (&vtab->ts);
+	  vtab->value = gfc_default_initializer (&vtab->ts, false);
 	}
     }
 
@@ -2677,7 +2680,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      c->initializer = gfc_get_null_expr (NULL);
 	    }
 	  vtab->ts.u.derived = vtype;
-	  vtab->value = gfc_default_initializer (&vtab->ts);
+	  vtab->value = gfc_default_initializer (&vtab->ts, false);
 	}
     }
 
