@@ -498,7 +498,6 @@ decode_statement (void)
       match ("sync all", gfc_match_sync_all, ST_SYNC_ALL);
       match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
       match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
-      match ("structure", gfc_match_structure_decl, ST_DERIVED_DECL);
       break;
 
     case 't':

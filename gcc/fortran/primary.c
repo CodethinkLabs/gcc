@@ -30,9 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 
 int matching_actual_arglist = 0;
 
-/* A list of intrinsic operation names from matchexp.c */
-extern const char* const badops[];
-
 /* Matches a kind-parameter expression, which is either a named
    symbolic constant or a nonnegative integer constant.  If
    successful, sets the kind value to the correct integer.
@@ -1848,7 +1845,6 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   gfc_symbol *sym = primary->symtree->n.sym;
   match m;
   bool unknown;
-  locus old_locus;
 
   tail = NULL;
 
@@ -1946,10 +1942,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       return MATCH_ERROR;
     }
 
-  old_locus = gfc_current_locus;
-
   if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
-      || gfc_match_structure_access_operator () != MATCH_YES)
+      || gfc_match_char ('%') != MATCH_YES)
     goto check_substring;
 
   sym = sym->ts.u.derived;
@@ -1958,7 +1952,6 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
     {
       gfc_try t;
       gfc_symtree *tbp;
-      int is_operation_name = 0;
 
       m = gfc_match_name (name);
       if (m == MATCH_NO)
@@ -2018,21 +2011,6 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
 	  break;
 	}
-
-      /* If this is a reserved name, we should reject this and continue parsing */
-      for (int i=0; badops[i] != NULL; i++)
-        {
-          if (strcmp (name, badops[i])==0)
-            {
-              is_operation_name = 1; break;
-            }
-        }
-
-      if (is_operation_name || gfc_find_uop (name, NULL))
-        {
-          gfc_current_locus = old_locus;
-          break; /* Equivalent to jumping to check_substring */
-        }
 
       component = gfc_find_component (sym, name, false, false);
       if (component == NULL)

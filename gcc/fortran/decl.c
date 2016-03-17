@@ -2654,9 +2654,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   match m;
   char c;
   bool seen_deferred_kind, matched_type;
-  char closed_type_string[3];
-  char closing_character;
-  const char *dt_name, *fn_name;
+  const char *dt_name;
 
   /* A belt and braces check that the typespec is correctly being treated
      as a deferred characteristic association.  */
@@ -2689,27 +2687,14 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     }
 
 
-  closing_character = ')';
   m = gfc_match (" type (");
-  if(m != MATCH_YES)
-    {
-      m = gfc_match (" record (");
-      if(m != MATCH_YES)
-	{
-	  m = gfc_match (" record /");
-	  if(m == MATCH_YES)
-	    closing_character = '/';
-	}
-    }
-
   matched_type = (m == MATCH_YES);
   if (matched_type)
     {
       gfc_gobble_whitespace ();
       if (gfc_peek_ascii_char () == '*')
 	{
-	  snprintf(closed_type_string, 3, "*%c", closing_character);
-	  if ((m = gfc_match (closed_type_string)) != MATCH_YES)
+	  if ((m = gfc_match ("*)")) != MATCH_YES)
 	    return m;
 	  if (gfc_current_state () == COMP_DERIVED)
 	    {
@@ -2749,7 +2734,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       else
 	m = MATCH_YES;
 
-      if (matched_type && m == MATCH_YES && gfc_match_char (closing_character) != MATCH_YES)
+      if (matched_type && m == MATCH_YES && gfc_match_char (')') != MATCH_YES)
 	m = MATCH_ERROR;
 
       return m;
@@ -2773,7 +2758,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	  && gfc_notify_std (GFC_STD_F2008, "TYPE with "
 			  "intrinsic-type-spec at %C") == FAILURE)
 	return MATCH_ERROR;
-      if (matched_type && gfc_match_char (closing_character) != MATCH_YES)
+      if (matched_type && gfc_match_char (')') != MATCH_YES)
 	return MATCH_ERROR;
 
       ts->type = BT_REAL;
@@ -2804,7 +2789,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 			  "intrinsic-type-spec at %C") == FAILURE)
 	return MATCH_ERROR;
 
-      if (matched_type && gfc_match_char (closing_character) != MATCH_YES)
+      if (matched_type && gfc_match_char (')') != MATCH_YES)
 	return MATCH_ERROR;
 
       ts->type = BT_COMPLEX;
@@ -2821,7 +2806,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     }
 
   if (matched_type)
-    m = gfc_match_char (closing_character);
+    m = gfc_match_char (')');
 
   if (m == MATCH_YES)
     ts->type = BT_DERIVED;
@@ -2899,30 +2884,14 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   dt_name = gfc_get_string ("%c%s",
 			    (char) TOUPPER ((unsigned char) name[0]),
 			    (const char*)&name[1]);
-
-  fn_name = gfc_get_string ("%s", (const char*)name);
-
   sym = NULL;
   dt_sym = NULL;
   if (ts->kind != -1)
     {
-      /* Look for the derived type and the initializer function. If the type has
-	 the 'structure' tag, it came from a STRUCTURE keyword, and as such the
-	 initializer function is obfuscated. */
-
-      int find_dt_sym_err = gfc_find_symbol (dt_name, NULL, 0, &dt_sym);
-      if (dt_sym != NULL && dt_sym->attr.structure)
+      gfc_get_ha_symbol (name, &sym);
+      if (sym->generic && gfc_find_symbol (dt_name, NULL, 0, &dt_sym))
 	{
-	  fn_name = gfc_get_string ("%s_SI", (const char*) name);
-	  if (gfc_find_symbol(fn_name, NULL, 0, &sym) || sym == NULL) {
-	    gfc_error ("No initializer was defined for type '%s' at %C", name);
-	    return MATCH_ERROR;
-	  }
-	}
-      gfc_get_ha_symbol (fn_name, &sym);
-      if (sym->generic && find_dt_sym_err)
-	{
-	  gfc_error ("Type name '%s' at %C is ambiguous", fn_name);
+	  gfc_error ("Type name '%s' at %C is ambiguous", name);
 	  return MATCH_ERROR;
 	}
       if (sym->generic && !dt_sym)
@@ -2932,7 +2901,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     {
       int iface = gfc_state_stack->previous->state != COMP_INTERFACE
 		    || gfc_current_ns->has_import_set;
-      gfc_find_symbol (fn_name, NULL, iface, &sym);
+      gfc_find_symbol (name, NULL, iface, &sym);
       if (sym && sym->generic && gfc_find_symbol (dt_name, NULL, 1, &dt_sym))
 	{
 	  gfc_error ("Type name '%s' at %C is ambiguous", name);
@@ -6255,13 +6224,8 @@ gfc_match_end (gfc_statement *st)
   /* Verify that we've got the sort of end-block that we're expecting.  */
   if (gfc_match (target) != MATCH_YES)
     {
-      /* Also accept 'structure' to end types. This isn't an ideal way of doing
-         this check, but it keeps the delta small. */
-      if (*st != ST_END_TYPE || gfc_match (" structure") != MATCH_YES)
-	{
-	  gfc_error ("Expecting %s statement at %C", gfc_ascii_statement (*st));
-	  goto cleanup;
-	}
+      gfc_error ("Expecting %s statement at %C", gfc_ascii_statement (*st));
+      goto cleanup;
     }
 
   /* If we're at the end, make sure a block name wasn't required.  */
@@ -7678,7 +7642,7 @@ gfc_get_type_attr_spec (symbol_attribute *attr, char *name)
    already to be known as a derived type yet have no components.  */
 
 match
-gfc_match_derived_or_structure_decl (int initializer_flag)
+gfc_match_derived_decl (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   char parent[GFC_MAX_SYMBOL_LEN + 1];
@@ -7689,7 +7653,6 @@ gfc_match_derived_or_structure_decl (int initializer_flag)
   match is_type_attr_spec = MATCH_NO;
   bool seen_attr = false;
   gfc_interface *intr = NULL, *head;
-  const char* fn_name;
 
   if (gfc_current_state () == COMP_DERIVED)
     return MATCH_NO;
@@ -7725,11 +7688,7 @@ gfc_match_derived_or_structure_decl (int initializer_flag)
 
   m = gfc_match (" %n%t", name);
   if (m != MATCH_YES)
-    {
-      m = gfc_match (" /%n/%t", name);
-      if (m != MATCH_YES)
-	return m;
-    }
+    return m;
 
   /* Make sure the name is not the name of an intrinsic type.  */
   if (gfc_is_intrinsic_typename (name))
@@ -7739,16 +7698,7 @@ gfc_match_derived_or_structure_decl (int initializer_flag)
       return MATCH_ERROR;
     }
 
-  if (initializer_flag)
-    {
-      fn_name = name;
-    }
-  else
-    {
-      fn_name = gfc_get_string ("%s_SI", name);
-    }
-
-  if (gfc_get_symbol (fn_name, NULL, &gensym))
+  if (gfc_get_symbol (name, NULL, &gensym))
     return MATCH_ERROR;
 
   if (!gensym->attr.generic && gensym->ts.type != BT_UNKNOWN)
@@ -7779,9 +7729,9 @@ gfc_match_derived_or_structure_decl (int initializer_flag)
     {
       /* Use upper case to save the actual derived-type symbol.  */
       gfc_get_symbol (gfc_get_string ("%c%s",
-			(char) TOUPPER ((unsigned char) name[0]),
-			 &name[1]), NULL, &sym);
-      sym->name = gfc_get_string (name);
+			(char) TOUPPER ((unsigned char) gensym->name[0]),
+			&gensym->name[1]), NULL, &sym);
+      sym->name = gfc_get_string (gensym->name);
       head = gensym->generic;
       intr = gfc_get_interface ();
       intr->sym = sym;
@@ -7809,10 +7759,6 @@ gfc_match_derived_or_structure_decl (int initializer_flag)
 	   && gfc_add_access (&sym->attr, gensym->attr.access, sym->name, NULL)
 	      == FAILURE)
     return MATCH_ERROR;
-
-  /* If we specified an initializer, this is a derived type, otherwise it's a
-     legacy structure */
-  sym->attr.structure =  initializer_flag ? 0 : 1;
 
   if (sym->attr.access != ACCESS_UNKNOWN
       && gensym->attr.access == ACCESS_UNKNOWN)
@@ -7870,17 +7816,6 @@ gfc_match_derived_or_structure_decl (int initializer_flag)
   return MATCH_YES;
 }
 
-match
-gfc_match_derived_decl (void)
-{
-  return gfc_match_derived_or_structure_decl (1);
-}
-
-match
-gfc_match_structure_decl (void)
-{
-  return gfc_match_derived_or_structure_decl (0);
-}
 
 /* Cray Pointees can be declared as:
       pointer (ipt, a (n,m,...,*))  */
