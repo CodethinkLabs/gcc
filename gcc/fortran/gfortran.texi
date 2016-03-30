@@ -1365,9 +1365,9 @@ extensions.
 
 @menu
 * Extensions implemented in GNU Fortran::
+* Optional DEC extension support::
 * Extensions not implemented in GNU Fortran::
 @end menu
-
 
 @node Extensions implemented in GNU Fortran
 @section Extensions implemented in GNU Fortran
@@ -2078,7 +2078,7 @@ AUTOMATIC forces all variable declared with it to be on the stack.
 AUTOMATIC overrides -fno-automatic.
 
 @node Optional DEC extension support
-@subsection Optional DEC extension support
+@section Optional DEC extension support
 @cindex extensions, dec
 
 Long long ago in a land far far away, in the time before Fortran standards
@@ -2115,7 +2115,7 @@ described here.
 @end menu
 
 @node STRUCTURE and RECORD
-@subsubsection @code{STRUCTURE} and @code{RECORD}
+@subsection @code{STRUCTURE} and @code{RECORD}
 @cindex @code{STRUCTURE}
 @cindex @code{RECORD}
 
@@ -2259,7 +2259,7 @@ those described in @ref{Old-style variable initialization}.
 @end itemize
 
 @node UNION and MAP
-@subsubsection @code{UNION} and @code{MAP}
+@subsection @code{UNION} and @code{MAP}
 @cindex @code{UNION}
 @cindex @code{MAP}
 
@@ -2359,6 +2359,31 @@ a.rx = z'AABBCCCCFFFFFFFF'
 !  a.h ==   z'BB'
 !  a.l == z'AA'
 @end example
+
+
+@node Extensions not implemented in GNU Fortran
+@section Extensions not implemented in GNU Fortran
+@cindex extensions, not implemented
+
+The long history of the Fortran language, its wide use and broad
+userbase, the large number of different compiler vendors and the lack of
+some features crucial to users in the first standards have lead to the
+existence of a number of important extensions to the language.  While
+some of the most useful or popular extensions are supported by the GNU
+Fortran compiler, not all existing extensions are supported.  This section
+aims at listing these extensions and offering advice on how best make
+code that uses them running with the GNU Fortran compiler.
+
+@c More can be found here:
+@c   -- http://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Missing-Features.html
+@c   -- the list of Fortran and libgfortran bugs closed as WONTFIX:
+@c      http://tinyurl.com/2u4h5y
+
+@menu
+* ENCODE and DECODE statements::
+* Variable FORMAT expressions::
+* Alternate complex function syntax::
+@end menu
 
 @node ENCODE and DECODE statements
 @subsection @code{ENCODE} and @code{DECODE} statements
@@ -2465,7 +2490,6 @@ well as @code{COMPLEX*16 FUNCTION name()}.  Both are non-standard, legacy
 extensions.  @command{gfortran} accepts the latter form, which is more
 common, but not the former.
 
-
 @node Volatile COMMON blocks
 @subsection Volatile @code{COMMON} blocks
 @cindex @code{VOLATILE}
@@ -2476,7 +2500,6 @@ Some Fortran compilers, including @command{g77}, let the user declare
 invalid standard Fortran syntax and is not supported by
 @command{gfortran}.  Note that @command{gfortran} accepts
 @code{VOLATILE} variables in @code{COMMON} blocks since revision 4.3.
-
 
 
 @c ---------------------------------------------------------------------
@@ -2499,7 +2522,6 @@ This chapter is about mixed-language interoperability, but also applies
 if one links Fortran code compiled by different compilers.  In most cases,
 use of the C Binding features of the Fortran 2003 standard is sufficient,
 and their use is highly recommended.
-
 
 @node Interoperability with C
 @section Interoperability with C
