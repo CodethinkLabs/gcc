@@ -1427,7 +1427,6 @@ extensions.
 * Extensions not implemented in GNU Fortran::
 @end menu
 
-
 @node Extensions implemented in GNU Fortran
 @section Extensions implemented in GNU Fortran
 @cindex extensions, implemented
@@ -2727,7 +2726,6 @@ For compatibility, GNU Fortran supports a default exponent of zero in real
 constants with @option{-fdec}.  For example, @code{9e} would be
 interpreted as @code{9e0}, rather than an error.
 
-
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
 @cindex extensions, not implemented
@@ -2742,7 +2740,7 @@ aims at listing these extensions and offering advice on how best make
 code that uses them running with the GNU Fortran compiler.
 
 @c More can be found here:
-@c   -- https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Missing-Features.html
+@c   -- http://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Missing-Features.html
 @c   -- the list of Fortran and libgfortran bugs closed as WONTFIX:
 @c      http://tinyurl.com/2u4h5y
 
@@ -2863,7 +2861,6 @@ well as @code{COMPLEX*16 FUNCTION name()}.  Both are non-standard, legacy
 extensions.  @command{gfortran} accepts the latter form, which is more
 common, but not the former.
 
-
 @node Volatile COMMON blocks
 @subsection Volatile @code{COMMON} blocks
 @cindex @code{VOLATILE}
@@ -2909,7 +2906,6 @@ This chapter is about mixed-language interoperability, but also applies
 if one links Fortran code compiled by different compilers.  In most cases,
 use of the C Binding features of the Fortran 2003 standard is sufficient,
 and their use is highly recommended.
-
 
 @node Interoperability with C
 @section Interoperability with C
