@@ -131,8 +131,16 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   sign_t sign;
 
   ft = f->format;
-  w = width;
-  d = precision;
+  if (f->u.real.w == DEFAULT_WIDTH)
+    {
+      w = width;
+      d = precision;
+    }
+  else
+    {
+      w = f->u.real.w;
+      d = f->u.real.d;
+    }
   p = dtp->u.p.scale_factor;
 
   rchar = '5';
@@ -1271,13 +1279,14 @@ write_float (st_parameter_dt *dtp, const fnode *f, const char *source, \
   precision = 0;
   width = 0;
 
-  if(f->u.real.w == -1)
-    { // Set defaults based on size (and type also, but that's TODO)
-      switch(len) {
+  if (f->u.real.w == DEFAULT_WIDTH)
+    { /* Set defaults based on size (and type also, but that's TODO) */
+      switch(len)
+        {
             case 4: width = 15; precision = 7; break;
 	    case 8: width = 25; precision = 16; break;
 	    case 16: width = 42; precision = 33; break;
-      }
+        }
     }
 
   if (width == 0)
