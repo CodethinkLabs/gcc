@@ -959,6 +959,11 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	      goto finished;
 	    }
 	}
+      else if (u == FMT_ZERO)
+	{
+	  fmt->error = posint_required;
+	  goto finished;
+	}
       else if (u != FMT_POSINT)
 	{
 	  fmt->error = posint_required;
