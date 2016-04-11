@@ -925,6 +925,11 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	      break;
 	    }
 	}
+      else if (u == FMT_ZERO)
+	{
+	  fmt->error = posint_required;
+	  goto finished;
+	}
       else if (u != FMT_POSINT)
 	{
 	  tail->u.real.w = DEFAULT_WIDTH;
