@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-foracle-support" }
+! { dg-options "-fdec-structure" }
 ! Tests the VAX STRUCTURE and RECORD statements.
 ! These are syntactic sugar for TYPE statements.
 
