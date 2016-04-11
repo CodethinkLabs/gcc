@@ -3725,19 +3725,30 @@ resolve_operator (gfc_expr *e)
 	  convert_logical_to_integer(op1);
 	  convert_logical_to_integer(op2);
 	}
-      /* If you're comparing hollerith contants to character expresisons, convert the hollerith
-	 constant */
-      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && is_character_based(op1->ts.type) && is_character_based(op2->ts.type))
+
+      /* If you're comparing hollerith contants to character expresisons,
+	 convert the hollerith constant */
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY &&
+	  is_character_based(op1->ts.type) && is_character_based(op2->ts.type)
+	  )
 	{
 	  gfc_typespec ts;
 	  ts.type = BT_CHARACTER;
 	  ts.kind = op1->ts.kind;
 	  if (op1->ts.type == BT_HOLLERITH)
-	    gfc_convert_type_warn (op1, &ts, 2, 1);
+	    {
+	      gfc_convert_type_warn (op1, &ts, 2, 1);
+	      gfc_warning("Promoting argument for comparison from HOLLERITH "
+		          "to CHARACTER at %L", &op1->where);
+	    }
 	  ts.type = BT_CHARACTER;
 	  ts.kind = op2->ts.kind;
 	  if (op2->ts.type == BT_HOLLERITH)
-	    gfc_convert_type_warn (op2, &ts, 2, 1);
+	    {
+	      gfc_convert_type_warn (op2, &ts, 2, 1);
+	      gfc_warning("Promoting argument for comparison from "
+			  "HOLLERITH to CHARACTER at %L", &op2->where);
+	    }
 	}
 
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
