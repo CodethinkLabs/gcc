@@ -3702,9 +3702,12 @@ resolve_operator (gfc_expr *e)
 	  convert_logical_to_integer(op1);
 	  convert_logical_to_integer(op2);
 	}
-      /* If you're comparing hollerith contants to character expresisons, convert the hollerith
-	 constant */
-      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && is_character_based(op1->ts.type) && is_character_based(op2->ts.type))
+
+      /* If you're comparing hollerith contants to character expresisons,
+	 convert the hollerith constant */
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY &&
+	  is_character_based(op1->ts.type) && is_character_based(op2->ts.type)
+	  )
 	{
 	  gfc_typespec ts;
 	  ts.type = BT_CHARACTER;
