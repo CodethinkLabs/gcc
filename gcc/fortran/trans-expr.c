@@ -6914,7 +6914,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
 			fold_convert (TREE_TYPE (tmp), se.expr));
       gfc_add_block_to_block (&block, &se.post);
     }
-  else if (gfc_bt_struct (cm->ts.type))
+  else if (gfc_bt_struct (expr->ts.type))
     {
       if (expr->expr_type != EXPR_STRUCTURE)
 	{
