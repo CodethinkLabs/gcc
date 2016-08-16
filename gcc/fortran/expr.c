@@ -1279,7 +1279,7 @@ find_component_ref (gfc_constructor_base base, gfc_ref *ref)
   /* For extended types, check if the desired component is in one of the
    * parent types.  */
   while (ext > 0 && gfc_find_component (dt->components->ts.u.derived,
-					pick->name, true, true))
+					pick->name, true, true, NULL))
     {
       dt = dt->components->ts.u.derived;
       c = gfc_constructor_first (c->expr->value.constructor);
@@ -3352,7 +3352,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 	return true;
 
       if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && gfc_numeric_ts (&lvalue->ts) && rvalue->ts.type == BT_CHARACTER)
-	return SUCCESS;
+	return true;
 
       if (lvalue->ts.type == BT_LOGICAL && rvalue->ts.type == BT_LOGICAL)
 	return true;
@@ -4015,7 +4015,7 @@ get_last_init (gfc_symbol *uniont, gfc_component **mapp)
 
     if (init)
     {
-      gfc_warning_now ("Initializer in map at %L overwritten by initializer in "
+      gfc_warning_now (0, "Initializer in map at %L overwritten by initializer in "
                        "map at %L in union", &init->where, &init2->where);
       gfc_free_expr (init);
     }
