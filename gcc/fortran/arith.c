@@ -2311,7 +2311,7 @@ character2representation (gfc_expr *result, gfc_expr *src)
 
   if (src_len > result_len)
     {
-      gfc_warning ("The character constant at %L is too long to convert to %s",
+      gfc_warning (0, "The character constant at %L is too long to convert to %s",
 		   &src->where, gfc_typename(&result->ts));
     }
 
