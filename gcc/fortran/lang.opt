@@ -370,7 +370,7 @@ Fortran Undocumented Var(flag_allow_leading_underscore)
 ; For internal use only: allow the first character of symbol names to be an underscore
 
 funderspecified-arrays
-Fortran
+Fortran Var(flag_underspecified_arrays)
 Allow references to arrays with fewer dimensions than they were declared with.
 
 fautomatic

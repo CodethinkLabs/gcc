@@ -730,9 +730,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.flag_dec_structure = 1;
       break;
 
-    case OPT_funderspecified_arrays:
-      gfc_option.flag_underspecified_arrays = 1;
-      break;
     }
 
   Fortran_handle_option_auto (&global_options, &global_options_set, 

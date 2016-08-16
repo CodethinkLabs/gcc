@@ -4168,7 +4168,7 @@ compare_spec_to_ref (gfc_array_ref *ar)
   if (ar->type == AR_FULL)
     return true;
 
-  if (as->rank > ar->dimen && gfc_option.flag_underspecified_arrays)
+  if (as->rank > ar->dimen && flag_underspecified_arrays)
     {
       /* Add in the missing dimensions, assuming they are the lower bound
          of that dimension if not specified. */
