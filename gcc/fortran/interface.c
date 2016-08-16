@@ -2141,12 +2141,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
       && actual->ts.type != BT_HOLLERITH
       && formal->ts.type != BT_ASSUMED
-<<<<<<< 2385d328ad04410d75b539d036f9877a119e01a9
       && !(formal->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
-      && !gfc_compare_types_promotable (&formal->ts, &actual->ts)
-=======
       && !gfc_compare_types_generic (&formal->ts, &actual->ts, mtype)
->>>>>>> Refine the promotion of smaller ints during a function call.
       && !(formal->ts.type == BT_DERIVED && actual->ts.type == BT_CLASS
 	   && gfc_compare_derived_types (formal->ts.u.derived,
 					 CLASS_DATA (actual)->ts.u.derived)))
@@ -3525,13 +3521,8 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 
   dummy_args = gfc_sym_get_dummy_args (sym);
 
-<<<<<<< 2385d328ad04410d75b539d036f9877a119e01a9
-  if (!compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental, where))
-    return false;
-=======
   if (!compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental, where, MATCH_PROMOTABLE))
-    return FAILURE;
->>>>>>> Refine the promotion of smaller ints during a function call.
+    return false;
 
   if (!check_intents (dummy_args, *ap))
     return false;
