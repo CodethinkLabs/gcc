@@ -675,7 +675,7 @@ gfc_match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
         {
           /* Make sure types of elements match */
           if(ts && !gfc_compare_types (&expr->ts, ts)
-                && gfc_convert_type (expr, ts, 1) == FAILURE)
+                && !gfc_convert_type (expr, ts, 1))
             goto cleanup;
 
           gfc_constructor_append_expr (&array_head,
@@ -712,8 +712,8 @@ gfc_match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
     expr->shape = gfc_get_shape (expr->rank);
 
     /* Validate sizes. */
-    gcc_assert (gfc_array_size (expr, &size) == SUCCESS);
-    gcc_assert (spec_size (as, &repeat) == SUCCESS);
+    gcc_assert (gfc_array_size (expr, &size));
+    gcc_assert (spec_size (as, &repeat));
     cmp = mpz_cmp (size, repeat);
     if (cmp < 0)
       gfc_error ("Not enough elements in array initializer at %C");
@@ -725,7 +725,7 @@ gfc_match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
 
   /* Make sure scalar types match. */
   else if (!gfc_compare_types (&expr->ts, ts)
-           && gfc_convert_type (expr, ts, 1) == FAILURE)
+           && !gfc_convert_type (expr, ts, 1))
     goto cleanup;
 
   if (expr->ts.u.cl)
@@ -8077,7 +8077,7 @@ gfc_get_type_attr_spec (symbol_attribute *attr, char *name)
    Other parameters are a message to prefix errors with, the name of the new 
    type to be created, and the flavor to add to the resulting symbol. */
 
-static gfc_try
+static bool
 get_struct_decl (const char *name, sym_flavor fl, locus *decl,
                  gfc_symbol **result)
 {
@@ -8090,7 +8090,7 @@ get_struct_decl (const char *name, sym_flavor fl, locus *decl,
     where = gfc_current_locus;
 
   if (gfc_get_symbol (name, NULL, &sym))
-    return FAILURE;
+    return false;
 
   sym->declared_at = where;
 
@@ -8100,18 +8100,18 @@ get_struct_decl (const char *name, sym_flavor fl, locus *decl,
   {
     gfc_error ("Type definition of '%s' at %C was already defined at %L", 
                sym->name, &sym->declared_at);
-    return FAILURE;
+    return false;
   }
 
   if (!sym)
   {
     gfc_internal_error ("Failed to create structure type '%s' at %C", name);
-    return FAILURE;
+    return false;
   }
 
   if (sym->attr.flavor != fl
-      && gfc_add_flavor (&sym->attr, fl, sym->name, NULL) == FAILURE)
-    return FAILURE;
+      && !gfc_add_flavor (&sym->attr, fl, sym->name, NULL))
+    return false;
 
   if (!sym->hash_value)
       /* Set the hash for the compound name for this type.  */
@@ -8129,7 +8129,7 @@ get_struct_decl (const char *name, sym_flavor fl, locus *decl,
 
   if (result) *result = sym;
 
-  return SUCCESS;
+  return true;
 }
 
 match
@@ -8159,7 +8159,7 @@ gfc_match_map (void)
     /* Make up a unique name for the map to store it in the symbol table. */
     snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "MM$%u", gfc_map_id++);
 
-    if (get_struct_decl (name, FL_STRUCT, &old_loc, &sym) == FAILURE)
+    if (!get_struct_decl (name, FL_STRUCT, &old_loc, &sym))
       return MATCH_ERROR;
 
     gfc_new_block = sym;
@@ -8193,7 +8193,7 @@ gfc_match_union (void)
     }
 
     snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "UU$%u", gfc_union_id++);
-    if (get_struct_decl (name, FL_UNION, &old_loc, &sym) == FAILURE)
+    if (!get_struct_decl (name, FL_UNION, &old_loc, &sym))
       return MATCH_ERROR;
 
     gfc_new_block = sym;
@@ -8271,7 +8271,7 @@ gfc_match_structure_decl (void)
     }
 
     sprintf (name, gfc_dt_upper_string (name));
-    if (get_struct_decl (name, FL_STRUCT, &where, &sym) == FAILURE)
+    if (!get_struct_decl (name, FL_STRUCT, &where, &sym))
       return MATCH_ERROR;
 
     gfc_new_block = sym;

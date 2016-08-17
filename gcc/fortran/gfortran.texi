@@ -1407,6 +1407,7 @@ without warning.
 * AUTOMATIC statement::
 * STRUCTURE and RECORD::
 * UNION and MAP::
+* Optional DEC extension support::
 @end menu
 
 @node Old-style kind specifications
@@ -2260,15 +2261,8 @@ section on @ref{UNION and MAP}.
 those described in @ref{Old-style variable initialization}.
 @end itemize
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 @node UNION and MAP
 @subsection @code{UNION} and @code{MAP}
-=======
-@node UNION and MAP
-@subsubsection @code{UNION} and @code{MAP}
->>>>>>> fb0f10b... STRUCTURE, UNION and MAP support.
 @cindex @code{UNION}
 @cindex @code{MAP}
 
