@@ -2102,7 +2102,6 @@ described here.
 @menu
 * STRUCTURE and RECORD::
 * UNION and MAP::
-* ENCODE and DECODE statements::
 * Variable FORMAT expressions::
 @c * Q edit descriptor::
 @c * AUTOMATIC statement::
@@ -2111,7 +2110,6 @@ described here.
 @c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
 @c * Omitted arguments in procedure call::
 * Alternate complex function syntax::
-* Volatile COMMON blocks::
 @end menu
 
 @node STRUCTURE and RECORD
@@ -2383,6 +2381,7 @@ code that uses them running with the GNU Fortran compiler.
 * ENCODE and DECODE statements::
 * Variable FORMAT expressions::
 * Alternate complex function syntax::
+* Volatile COMMON blocks::
 @end menu
 
 @node ENCODE and DECODE statements

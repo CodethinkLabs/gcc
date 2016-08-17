@@ -1668,7 +1668,7 @@ got_match:
   if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && expr->ts.type != BT_LOGICAL)
     {
       p->expr1 = gfc_ne (expr, gfc_get_int_expr (1, &gfc_current_locus, 0), INTRINSIC_NE);
-      gfc_warning_now ("The type of condition in this IF statement isn't LOGICAL; it will be true if it evaluates to nonzero.", expr->ts.type);
+      gfc_warning_now (0, "The type of condition in this IF statement isn't LOGICAL; it will be true if it evaluates to nonzero.", expr->ts.type);
     }
   else
     {

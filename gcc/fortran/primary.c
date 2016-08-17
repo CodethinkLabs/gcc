@@ -2782,7 +2782,7 @@ gfc_match_rvalue (gfc_expr **result)
   }
   if (!symtree || symtree->n.sym->attr.flavor != FL_STRUCT)
   {
-    if (gfc_find_state (COMP_INTERFACE) == SUCCESS
+    if (gfc_find_state (COMP_INTERFACE)
         && !gfc_current_ns->has_import_set)
       i = gfc_get_sym_tree (name, NULL, &symtree, false);
     else

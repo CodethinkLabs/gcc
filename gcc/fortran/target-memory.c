@@ -621,7 +621,7 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
 
     /* TODO: Handle BT_UNION ? */
     case BT_UNION:
-      gfc_warning_now ("Union binary representation unimplemented");
+      gfc_warning_now (0, "Union binary representation unimplemented");
       break;
 
     default:

@@ -448,7 +448,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  case FL_NAMELIST:
 	    gfc_error ("Namelist group name at %L cannot have the "
 		       "AUTOMATIC attribute", where);
-	    return FAILURE;
+	    return false;
 	    break;
 	  case FL_PROCEDURE:
 	  case FL_VARIABLE:
@@ -1180,17 +1180,17 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
   return check_conflict (attr, name, where);
 }
 
-gfc_try
+bool
 gfc_add_automatic (symbol_attribute *attr,  const char *name, locus *where)
 {
 
   if (check_used (attr, name, where))
-    return FAILURE;
+    return false;
 
-  if (gfc_notify_std (GFC_STD_LEGACY,
+  if (!gfc_notify_std (GFC_STD_LEGACY,
 		      "AUTOMATIC attribute specified at %L",
-		      where) == FAILURE)
-    return FAILURE;
+		      where))
+    return false;
 
   attr->automatic = 1;
   return check_conflict (attr, name, where);
@@ -4513,8 +4513,6 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	  gfc_dt_list **dt_list_ptr = NULL;
 	  gfc_component *tmp_comp = NULL;
 
-	  hidden_name = gfc_dt_upper_string (tmp_sym->name);
-
 	  /* Generate real derived type.  */
 	  if (hidden)
 	    dt_sym = tmp_sym;
@@ -4523,10 +4521,8 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	      const char *hidden_name;
 	      gfc_interface *intr, *head;
 
-	      hidden_name = gfc_get_string ("%c%s",
-					    (char) TOUPPER ((unsigned char)
-							      tmp_sym->name[0]),
-					    &tmp_sym->name[1]);
+	      hidden_name = gfc_dt_upper_string (tmp_sym->name);
+
 	      tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root,
 					      hidden_name);
 	      gcc_assert (tmp_symtree == NULL);
