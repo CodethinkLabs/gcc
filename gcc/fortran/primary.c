@@ -2749,12 +2749,16 @@ gfc_match_rvalue (gfc_expr **result)
 
   m = MATCH_NO;
   if (gfc_option.flag_loc_rval)
-  {
-    /* Let %LOC() act as a valid rvalue; treat it like GFC_ISYM_LOC */
-    m = gfc_match ("%%loc");
-    if (m == MATCH_YES)
-        strcpy (name, "loc");
-  }
+    {
+      /* Let %LOC() act as a valid rvalue; treat it like GFC_ISYM_LOC */
+      m = gfc_match ("%%loc");
+      if (m == MATCH_YES)
+	strcpy (name, "loc");
+    }
+
+  m = gfc_match_name (name);
+  if (m != MATCH_YES)
+    return m;
 
   if (gfc_find_state (COMP_INTERFACE)
       && !gfc_current_ns->has_import_set)
@@ -3041,12 +3045,10 @@ gfc_match_rvalue (gfc_expr **result)
 	 via an IMPLICIT statement.  This can't wait for the
 	 resolution phase.  */
 
-      old_loc = gfc_current_locus;
       if (gfc_match_member_sep (sym) == MATCH_YES
 	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, sym->ns);
-      gfc_current_locus = old_loc;
 
       /* If the symbol has a (co)dimension attribute, the expression is a
 	 variable.  */
@@ -3383,7 +3385,6 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym->name, implicit_ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, implicit_ns);
-      gfc_current_locus = old_loc;
     }
 
   expr = gfc_get_expr ();
