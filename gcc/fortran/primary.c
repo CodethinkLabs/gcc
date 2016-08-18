@@ -3045,7 +3045,8 @@ gfc_match_rvalue (gfc_expr **result)
 	 via an IMPLICIT statement.  This can't wait for the
 	 resolution phase.  */
 
-      if (gfc_match_member_sep (sym) == MATCH_YES
+      if (gfc_peek_ascii_char () == '%'
+	  //if (gfc_match_member_sep (sym) == MATCH_YES // What is 'sym' here?
 	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, sym->ns);
@@ -3381,7 +3382,8 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       else
 	implicit_ns = sym->ns;
 
-      if (gfc_match_member_sep (sym) == MATCH_YES
+      if (gfc_peek_ascii_char() == '%'
+	  //if (gfc_match_member_sep (sym) == MATCH_YES // gfc_match_member_sep doesn't peek
 	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym->name, implicit_ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, implicit_ns);
