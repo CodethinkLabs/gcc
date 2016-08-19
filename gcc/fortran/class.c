@@ -237,12 +237,8 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
   else
     /* Avoid losing memory.  */
     gfc_free_ref_list (*tail);
-  (*tail) = gfc_get_ref();
-  (*tail)->next = next;
-  (*tail)->type = REF_COMPONENT;
-  (*tail)->u.c.sym = derived;
-  (*tail)->u.c.component = gfc_find_component (derived, name, true, true, tail);
-  gcc_assert((*tail)->u.c.component);
+  c = gfc_find_component (derived, name, true, true, tail);
+  gcc_assert(c);
   for (ref = *tail; ref->next; ref = ref->next)
     ;
   ref->next = next;
