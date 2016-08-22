@@ -1147,6 +1147,9 @@ resolve_structure_cons (gfc_expr *expr, int init)
 
   /* See if the user is trying to invoke a structure constructor for one of
      the iso_c_binding derived types.  */
+  /* DISABLED TEMPORARILY - this is not present in GCC6 master, so I don't
+     believe it's necessary. */
+  /*
   if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
       && expr->ts.u.derived->ts.is_iso_c && cons
       && (cons->expr == NULL || cons->expr->expr_type != EXPR_NULL))
@@ -1155,7 +1158,8 @@ resolve_structure_cons (gfc_expr *expr, int init)
 		 expr->ts.u.derived->name, &(expr->where));
       return false;
     }
-
+  */
+  
   /* Return if structure constructor is c_null_(fun)prt.  */
   if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
       && expr->ts.u.derived->ts.is_iso_c && cons
