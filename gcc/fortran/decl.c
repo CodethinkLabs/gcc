@@ -1733,7 +1733,33 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	}
     }
 
-  if (!gfc_add_component (gfc_current_block(), name, &c))
+  /* If we are in a nested union/map definition, gfc_add_component will not
+     properly find repeated components because they are implicitly chained.
+     Since union and map blocks are not actually linked as components of their
+     parent structures until after they are parsed, we must traverse up the
+     parse stack until we find the top level structure declaration, searching
+     for the component in each block along the way. */
+  s = gfc_state_stack;
+  if (s->state == COMP_UNION || s->state == COMP_MAP)
+  {
+    while (s->state == COMP_UNION || s->state == COMP_MAP
+           || gfc_comp_is_derived (s->state))
+    {
+      c = gfc_find_component (s->sym, name, true, true, NULL);
+      if (c != NULL)
+      {
+        gfc_error_now ("Component '%s' at %C already declared at %L",
+                       name, &c->loc);
+        return false;
+      }
+      /* Break after we've searched the ultimate parent of the current union. */
+      if (s->state == COMP_DERIVED || s->state == COMP_STRUCTURE)
+        break;
+      s = s->previous;
+    }
+  }
+
+  if (!gfc_add_component (gfc_current_block (), name, &c))
     return false;
 
   c->ts = current_ts;
@@ -1754,51 +1780,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
     }
   *as = NULL;
 
-  /* Should this ever get more complicated, combine with similar section
-     in add_init_expr_to_sym into a separate function.  */
-  if (c->ts.type == BT_CHARACTER && !c->attr.pointer && c->initializer
-      && c->ts.u.cl
-      && c->ts.u.cl->length && c->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-    {
-      int len;
-
-      gcc_assert (c->ts.u.cl && c->ts.u.cl->length);
-      gcc_assert (c->ts.u.cl->length->expr_type == EXPR_CONSTANT);
-      gcc_assert (c->ts.u.cl->length->ts.type == BT_INTEGER);
-
-      len = mpz_get_si (c->ts.u.cl->length->value.integer);
-
-      if (c->initializer->expr_type == EXPR_CONSTANT)
-	gfc_set_constant_character_len (len, c->initializer, -1);
-      else if (mpz_cmp (c->ts.u.cl->length->value.integer,
-			c->initializer->ts.u.cl->length->value.integer))
-	{
-	  gfc_constructor *ctor;
-	  ctor = gfc_constructor_first (c->initializer->value.constructor);
-
-	  if (ctor)
-	    {
-	      int first_len;
-	      bool has_ts = (c->initializer->ts.u.cl
-			     && c->initializer->ts.u.cl->length_from_typespec);
-
-	      /* Remember the length of the first element for checking
-		 that all elements *in the constructor* have the same
-		 length.  This need not be the length of the LHS!  */
-	      gcc_assert (ctor->expr->expr_type == EXPR_CONSTANT);
-	      gcc_assert (ctor->expr->ts.type == BT_CHARACTER);
-	      first_len = ctor->expr->value.character.length;
-
-	      for ( ; ctor; ctor = gfc_constructor_next (ctor))
-		if (ctor->expr->expr_type == EXPR_CONSTANT)
-		{
-		  gfc_set_constant_character_len (len, ctor->expr,
-						  has_ts ? -1 : first_len);
-		  ctor->expr->ts.u.cl->length = gfc_copy_expr (c->ts.u.cl->length);
-		}
-	    }
-	}
-    }
+  gfc_apply_init (&c->ts, &c->attr, c->initializer);
 
   /* Check array components.  */
   if (!c->attr.dimension)
