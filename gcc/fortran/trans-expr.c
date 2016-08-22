@@ -6720,7 +6720,7 @@ alloc_scalar_allocatable_for_subcomponent_assignment (stmtblock_t *block,
       /* Ensure that cm->ts.u.cl->backend_decl is a componentref to _%s_length
 	 component.  */
       sprintf (name, "_%s_length", cm->name);
-      strlen = gfc_find_component (sym, name, true, true);
+      strlen = gfc_find_component (sym, name, true, true, NULL);
       lhs_cl_size = fold_build3_loc (input_location, COMPONENT_REF,
 				     gfc_charlen_type_node,
 				     TREE_OPERAND (comp, 0),

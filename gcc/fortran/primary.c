@@ -2000,7 +2000,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  break;
 	}
 
-      component = gfc_find_component (sym, name, false, false);
+      component = gfc_find_component (sym, name, false, false, NULL);
       if (component == NULL)
 	return MATCH_ERROR;
 
@@ -2499,11 +2499,11 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
       /* Find the current component in the structure definition and check
 	     its access is not private.  */
       if (comp)
-	this_comp = gfc_find_component (sym, comp->name, false, false);
+	this_comp = gfc_find_component (sym, comp->name, false, false, NULL);
       else
 	{
 	  this_comp = gfc_find_component (sym, (const char *)comp_tail->name,
-					  false, false);
+					  false, false, NULL);
 	  comp = NULL; /* Reset needed!  */
 	}
 

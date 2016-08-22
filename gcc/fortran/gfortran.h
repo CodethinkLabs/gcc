@@ -2810,7 +2810,8 @@ bool gfc_copy_attr (symbol_attribute *, symbol_attribute *, locus *);
 bool gfc_add_component (gfc_symbol *, const char *, gfc_component **);
 gfc_symbol *gfc_use_derived (gfc_symbol *);
 gfc_symtree *gfc_use_derived_tree (gfc_symtree *);
-gfc_component *gfc_find_component (gfc_symbol *, const char *, bool, bool);
+gfc_component *gfc_find_component (gfc_symbol *, const char *, bool, bool,
+                                   gfc_ref **);
 
 gfc_st_label *gfc_get_st_label (int);
 void gfc_free_st_label (gfc_st_label *);

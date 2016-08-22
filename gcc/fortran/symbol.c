@@ -1970,7 +1970,7 @@ gfc_add_component (gfc_symbol *sym, const char *name,
     }
 
   if (sym->attr.extension
-	&& gfc_find_component (sym->components->ts.u.derived, name, true, true))
+	&& gfc_find_component (sym->components->ts.u.derived, name, true, true, NULL))
     {
       gfc_error_1 ("Component '%s' at %C already in the parent type "
 		 "at %L", name, &sym->components->ts.u.derived->declared_at);
@@ -2094,29 +2094,109 @@ bad:
   return NULL;
 }
 
+   
+static gfc_component *
+find_union_component (gfc_symbol *un, const char *name,
+                      bool noaccess, gfc_ref **ref)
+{
+  gfc_component *m, *check;
+  gfc_ref *sref, *tmp;
+
+  for (m = un->components; m; m = m->next)
+  {
+    check = gfc_find_component (m->ts.u.derived, name, noaccess, true, &tmp);
+    if (check == NULL)
+      continue;
+
+    /* Found it somewhere in m; chain the refs together. */
+    if (ref)
+    {
+      /* Map ref. */
+      sref = gfc_get_ref ();
+      sref->type = REF_COMPONENT;
+      sref->u.c.component = m;
+      sref->u.c.sym = m->ts.u.derived;
+      sref->next = tmp;
+
+      *ref = sref;
+    }
+    /* Other checks (such as access) were done in the recursive calls.
+       Now we are done! */
+    return check;
+  }
+  return NULL;
+}
+
 
 /* Given a derived type node and a component name, try to locate the
    component structure.  Returns the NULL pointer if the component is
    not found or the components are private.  If noaccess is set, no access
-   checks are done.  */
+   checks are done. Unless silent is set, a gfc_error is generated when the
+   component cannot be found or accessed.
+   
+   If ref is not NULL, *ref is set to represent the chain of components
+   required to get to the ultimate component.
+
+   If the component is simply a direct subcomponent, or is inherited from a
+   parent derived type in the given derived type, this is a single ref with its
+   component set to the returned component.
+
+   Otherwise, *ref is constructed as a chain of subcomponents. This occurs
+   when the component is found through an implicit chain of nested union and
+   map components. Unions and maps are "anonymous" substructures in FORTRAN
+   which cannot be explicitly referenced, but the reference chain must be
+   considered as in C for backend translation to correctly compute layouts.
+   (For example, x.a may refer to x->(UNION)->(MAP)->(UNION)->(MAP)->a). */
 
 gfc_component *
 gfc_find_component (gfc_symbol *sym, const char *name,
-		    bool noaccess, bool silent)
+		    bool noaccess, bool silent, gfc_ref **ref)
 {
-  gfc_component *p;
+  gfc_component *p, *check;
+  gfc_ref *sref = NULL, *tmp = NULL;
 
   if (name == NULL || sym == NULL)
     return NULL;
 
-  sym = gfc_use_derived (sym);
+  if (sym->attr.flavor == FL_DERIVED)
+    sym = gfc_use_derived (sym);
+  else
+    gcc_assert (gfc_fl_struct (sym->attr.flavor));
 
   if (sym == NULL)
     return NULL;
 
+  /* Handle UNIONs specially. */
+  if (sym->attr.flavor == FL_UNION)
+    return find_union_component (sym, name, noaccess, ref);
+
+  if (ref) *ref = NULL;
   for (p = sym->components; p; p = p->next)
-    if (strcmp (p->name, name) == 0)
+  {
+    /* Nest search into union's maps. */
+    if (p->ts.type == BT_UNION)
+    {
+      check = find_union_component (p->ts.u.derived, name, noaccess, &tmp);
+      if (check != NULL)
+      {
+        /* Union ref. */
+        if (ref)
+        {
+          sref = gfc_get_ref ();
+          sref->type = REF_COMPONENT;
+          sref->u.c.component = p;
+          sref->u.c.sym = p->ts.u.derived;
+          sref->next = tmp;
+          *ref = sref;
+        }
+        return check;
+      }
+    }
+    else if (strcmp (p->name, name) == 0)
       break;
+
+    continue;
+  }
 
   if (p && sym->attr.use_assoc && !noaccess)
     {
@@ -2138,7 +2218,7 @@ gfc_find_component (gfc_symbol *sym, const char *name,
 	&& sym->components->ts.type == BT_DERIVED)
     {
       p = gfc_find_component (sym->components->ts.u.derived, name,
-			      noaccess, silent);
+			      noaccess, silent, NULL);
       /* Do not overwrite the error.  */
       if (p == NULL)
 	return p;

@@ -1279,7 +1279,7 @@ find_component_ref (gfc_constructor_base base, gfc_ref *ref)
   /* For extended types, check if the desired component is in one of the
    * parent types.  */
   while (ext > 0 && gfc_find_component (dt->components->ts.u.derived,
-					pick->name, true, true))
+					pick->name, true, true, NULL))
     {
       dt = dt->components->ts.u.derived;
       c = gfc_constructor_first (c->expr->value.constructor);
