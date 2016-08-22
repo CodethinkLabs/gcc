@@ -3757,6 +3757,7 @@ match_attr_spec (void)
 
   current_as = NULL;
   colon_seen = 0;
+  attr_seen = 0;
 
   /* See if we get all of the keywords up to the final double colon.  */
   for (d = GFC_DECL_BEGIN; d != GFC_DECL_END; d++)
@@ -4104,6 +4105,8 @@ match_attr_spec (void)
     {
       if (seen[d] == 0)
 	continue;
+      else
+        attr_seen = 1;
 
       if (gfc_comp_is_derived (gfc_current_state ())
 	  && d != DECL_DIMENSION && d != DECL_CODIMENSION
@@ -4296,6 +4299,7 @@ cleanup:
   gfc_current_locus = start;
   gfc_free_array_spec (current_as);
   current_as = NULL;
+  attr_seen = 0;
   return m;
 }
 
@@ -8326,7 +8330,11 @@ gfc_match_derived_decl (void)
       return MATCH_ERROR;
     }
 
-  m = gfc_match (" %n%t", name);
+  m = gfc_match (" %n", name);
+  if (m != MATCH_YES)
+    return m;
+  where = gfc_current_locus;
+  m = gfc_match_eos ();
   if (m != MATCH_YES)
     return m;
 
@@ -8380,6 +8388,7 @@ gfc_match_derived_decl (void)
       intr->next = head;
       gensym->generic = intr;
       gensym->attr.if_source = IFSRC_DECL;
+      gensym->declared_at = where;
     }
 
   /* The symbol may already have the derived attribute without the
@@ -8447,6 +8456,13 @@ gfc_match_derived_decl (void)
 
   /* Take over the ABSTRACT attribute.  */
   sym->attr.abstract = attr.abstract;
+
+  /* Normally the type is expected to have been completely parsed by the time
+     a field declaration with this type is seen. For unions, maps, and nested
+     structure declarations, we need to indicate that it is okay that we
+     haven't seen any components yet. This will be updated after the structure
+     is fully parsed. */
+  sym->attr.zero_comp = sym->components == NULL;
 
   gfc_new_block = sym;
 
