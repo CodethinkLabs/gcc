@@ -1769,7 +1769,7 @@ match_pointer_init (gfc_expr **init, int procptr)
 {
   match m;
 
-  if (gfc_pure (NULL) && gfc_state_stack->state != COMP_DERIVED)
+  if (gfc_pure (NULL) && !gfc_comp_is_derived(gfc_state_stack->state))
     {
       gfc_error ("Initialization of pointer at %C is not allowed in "
 		 "a PURE procedure");
@@ -1973,7 +1973,8 @@ variable_decl (int elem)
   /*  If this symbol has already shown up in a Cray Pointer declaration,
       and this is not a component declaration,
       then we want to set the type & bail out.  */
-  if (flag_cray_pointer && gfc_current_state () != COMP_DERIVED)
+  if (flag_cray_pointer
+      && !gfc_comp_is_derived (gfc_current_state ()))
     {
       gfc_find_symbol (name, gfc_current_ns, 1, &sym);
       if (sym != NULL && sym->attr.cray_pointee)
@@ -2038,7 +2039,7 @@ variable_decl (int elem)
      For components of derived types, it is not true, so we don't
      create a symbol for those yet.  If we fail to create the symbol,
      bail out.  */
-  if (gfc_current_state () != COMP_DERIVED
+  if (!gfc_comp_is_derived (gfc_current_state ())
       && !build_sym (name, cl, cl_deferred, &as, &var_locus))
     {
       m = MATCH_ERROR;
@@ -2139,7 +2140,7 @@ variable_decl (int elem)
 	    }
 
 	  if (current_attr.flavor != FL_PARAMETER && gfc_pure (NULL)
-	      && gfc_state_stack->state != COMP_DERIVED)
+	      && !gfc_comp_is_derived (gfc_state_stack->state))
 	    {
 	      gfc_error ("Initialization of variable at %C is not allowed in "
 			 "a PURE procedure");
@@ -2147,7 +2148,7 @@ variable_decl (int elem)
 	    }
 
 	  if (current_attr.flavor != FL_PARAMETER
-	      && gfc_state_stack->state != COMP_DERIVED)
+	      && !gfc_comp_is_derived(gfc_state_stack->state))
 	    gfc_unset_implicit_pure (gfc_current_ns->proc_name);
 
 	  if (m != MATCH_YES)
@@ -2156,7 +2157,7 @@ variable_decl (int elem)
     }
 
   if (initializer != NULL && current_attr.allocatable
-	&& gfc_current_state () == COMP_DERIVED)
+	&& gfc_comp_is_derived (gfc_current_state ()))
     {
       gfc_error ("Initialization of allocatable component at %C is not "
 		 "allowed");
@@ -2167,7 +2168,7 @@ variable_decl (int elem)
   /* Add the initializer.  Note that it is fine if initializer is
      NULL here, because we sometimes also need to check if a
      declaration *must* have an initialization expression.  */
-  if (gfc_current_state () != COMP_DERIVED)
+  if (!gfc_comp_is_derived (gfc_current_state ()))
     t = add_init_expr_to_sym (name, &initializer, &var_locus);
   else
     {
@@ -2720,7 +2721,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	{
 	  if ((m = gfc_match ("*)")) != MATCH_YES)
 	    return m;
-	  if (gfc_current_state () == COMP_DERIVED)
+	  if (gfc_comp_is_derived (gfc_current_state ()))
 	    {
 	      gfc_error ("Assumed type at %C is not allowed for components");
 	      return MATCH_ERROR;
@@ -3838,7 +3839,7 @@ match_attr_spec (void)
       if (seen[d] == 0)
 	continue;
 
-      if (gfc_current_state () == COMP_DERIVED
+      if (gfc_comp_is_derived (gfc_current_state ())
 	  && d != DECL_DIMENSION && d != DECL_CODIMENSION
 	  && d != DECL_POINTER   && d != DECL_PRIVATE
 	  && d != DECL_PUBLIC && d != DECL_CONTIGUOUS && d != DECL_NONE)
@@ -4433,7 +4434,7 @@ gfc_match_data_decl (void)
     return m;
 
   if ((current_ts.type == BT_DERIVED || current_ts.type == BT_CLASS)
-	&& gfc_current_state () != COMP_DERIVED)
+	&& !gfc_comp_is_derived(gfc_current_state ()))
     {
       sym = gfc_use_derived (current_ts.u.derived);
 
@@ -4462,7 +4463,7 @@ gfc_match_data_decl (void)
       && !current_ts.u.derived->attr.zero_comp)
     {
 
-      if (current_attr.pointer && gfc_current_state () == COMP_DERIVED)
+      if (current_attr.pointer && gfc_comp_is_derived (gfc_current_state ()))
 	goto ok;
 
       gfc_find_symbol (current_ts.u.derived->name,
@@ -7788,9 +7789,10 @@ gfc_match_derived_decl (void)
   match m;
   match is_type_attr_spec = MATCH_NO;
   bool seen_attr = false;
+  locus where;
   gfc_interface *intr = NULL, *head;
 
-  if (gfc_current_state () == COMP_DERIVED)
+  if (gfc_comp_is_derived (gfc_current_state ()))
     return MATCH_NO;
 
   name[0] = '\0';
