@@ -2358,6 +2358,61 @@ gfc_get_ppc_type (gfc_component* c)
   return build_pointer_type (build_function_type_list (t, NULL_TREE));
 }
 
+/* Build a tree node for a union type. Requires building each map
+   structure which is an element of the union. */
+
+tree
+gfc_get_union_type (gfc_symbol *un)
+{
+    gfc_component *map = NULL;
+    tree typenode = NULL, map_type = NULL, map_field = NULL;
+    tree *chain = NULL;
+
+    if (un->backend_decl)
+    {
+      if (TYPE_FIELDS (un->backend_decl) || un->attr.proc_pointer_comp)
+        return un->backend_decl;
+      else
+        typenode = un->backend_decl;
+    }
+    else
+    {
+      typenode = make_node (UNION_TYPE);
+      TYPE_NAME (typenode) = get_identifier (un->name);
+    }
+
+    /* Add each contained MAP as a field. */
+    for (map = un->components; map; map = map->next)
+    {
+        gcc_assert (map->ts.type == BT_DERIVED);
+
+        /* The map's type node, which is defined within this union's context. */
+        map_type = gfc_get_derived_type (map->ts.u.derived);
+        TYPE_CONTEXT (map_type) = typenode;
+
+        /* The map field's declaration. */
+        map_field = gfc_add_field_to_struct(typenode, get_identifier(map->name),
+                                            map_type, &chain);
+        if (map->loc.lb)
+          gfc_set_decl_location (map_field, &map->loc);
+        else if (un->declared_at.lb)
+          gfc_set_decl_location (map_field, &un->declared_at);
+
+        DECL_PACKED (map_field) |= TYPE_PACKED (typenode);
+        DECL_NAMELESS(map_field) = true;
+
+        /* We should never clobber another backend declaration for this map,
+           because each map component is unique. */
+        if (!map->backend_decl)
+          map->backend_decl = map_field;
+    }
+
+    un->backend_decl = typenode;
+    gfc_finish_type (typenode);
+
+    return typenode;
+}
+
 
 /* Build a tree node for a derived type.  If there are equal
    derived types, with different local names, these are built
