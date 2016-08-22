@@ -1649,7 +1649,8 @@ simplify_const_ref (gfc_expr *p)
 
 	    case AR_FULL:
 	      if (p->ref->next != NULL
-		  && (p->ts.type == BT_CHARACTER || p->ts.type == BT_DERIVED))
+		  && (p->ts.type == BT_CHARACTER 
+                      || gfc_bt_struct (p->ts.type)))
 		{
 		  for (c = gfc_constructor_first (p->value.constructor);
 		       c; c = gfc_constructor_next (c))
@@ -1659,7 +1660,7 @@ simplify_const_ref (gfc_expr *p)
 			return false;
 		    }
 
-		  if (p->ts.type == BT_DERIVED
+		  if (gfc_bt_struct (p->ts.type)
 			&& p->ref->next
 			&& (c = gfc_constructor_first (p->value.constructor)))
 		    {
@@ -3925,7 +3926,7 @@ gfc_has_default_initializer (gfc_symbol *der)
 
   gcc_assert (der->attr.flavor == FL_DERIVED);
   for (c = der->components; c; c = c->next)
-    if (c->ts.type == BT_DERIVED)
+    if (gfc_bt_struct (c->ts.type))
       {
         if (!c->attr.pointer
 	     && gfc_has_default_initializer (c->ts.u.derived))

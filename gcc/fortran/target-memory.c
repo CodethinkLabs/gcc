@@ -117,10 +117,10 @@ gfc_element_size (gfc_expr *e)
 
     case BT_HOLLERITH:
       return e->representation.length;
-    case BT_DERIVED:
     case BT_CLASS:
     case BT_VOID:
     case BT_ASSUMED:
+    case_struct_bt:
       {
 	/* Determine type size without clobbering the typespec for ISO C
 	   binding types.  */
@@ -662,7 +662,7 @@ expr_to_char (gfc_expr *e, unsigned char *data, unsigned char *chk, size_t len)
 
   /* Take a derived type, one component at a time, using the offsets from the backend
      declaration.  */
-  if (e->ts.type == BT_DERIVED)
+  if (gfc_bt_struct (e->ts.type))
     {
       for (c = gfc_constructor_first (e->value.constructor),
 	   cmp = e->ts.u.derived->components;

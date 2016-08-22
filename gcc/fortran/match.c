@@ -5184,7 +5184,7 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
   gfc_symtree *tmp;
   int charlen = 0;
 
-  if (ts->type == BT_CLASS || ts->type == BT_DERIVED)
+  if (ts->type == BT_CLASS || gfc_bt_struct (ts->type))
     return NULL;
 
   if (select_type_stack->selector->ts.type == BT_CLASS

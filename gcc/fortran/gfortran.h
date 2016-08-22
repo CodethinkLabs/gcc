@@ -64,6 +64,16 @@ not after.
 
 #define gfc_is_whitespace(c) ((c==' ') || (c=='\t'))
 
+/* Common macros to check structure-like types and flavors, since things like
+   STRUCTURES, MAPs and UNIONs are often treated similarly. */
+
+#define gfc_bt_struct(t) \
+  ((t) == BT_DERIVED || (t) == BT_UNION)
+#define gfc_fl_struct(f) \
+  ((f) == FL_DERIVED || (f) == FL_UNION || (f) == FL_STRUCT)
+#define case_struct_bt case BT_DERIVED: case BT_UNION
+#define case_struct_fl case FL_DERIVED: case FL_UNION: case FL_STRUCT
+
 /* Stringization.  */
 #define stringize(x) expand_macro(x)
 #define expand_macro(x) # x
@@ -215,6 +225,7 @@ typedef enum
   ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WAIT,
   ST_WRITE, ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
   ST_SIMPLE_IF, ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT,
+  ST_STRUCTURE_DECL, ST_UNION, ST_END_UNION, ST_MAP, ST_END_MAP,
   ST_ENUM, ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
   ST_OACC_PARALLEL_LOOP, ST_OACC_END_PARALLEL_LOOP, ST_OACC_PARALLEL,
   ST_OACC_END_PARALLEL, ST_OACC_KERNELS, ST_OACC_END_KERNELS, ST_OACC_DATA,
@@ -267,12 +278,12 @@ typedef enum
 interface_type;
 
 /* Symbol flavors: these are all mutually exclusive.
-   10 elements = 4 bits.  */
+   12 elements = 4 bits.  */
 typedef enum sym_flavor
 {
   FL_UNKNOWN = 0, FL_PROGRAM, FL_BLOCK_DATA, FL_MODULE, FL_VARIABLE,
   FL_PARAMETER, FL_LABEL, FL_PROCEDURE, FL_DERIVED, FL_NAMELIST,
-  FL_VOID
+  FL_UNION, FL_STRUCT, FL_VOID
 }
 sym_flavor;
 
@@ -976,7 +987,7 @@ typedef struct
 
   union
   {
-    struct gfc_symbol *derived;	/* For derived types only.  */
+    struct gfc_symbol *derived;	/* For derived types or unions.  */
     gfc_charlen *cl;		/* For character types only.  */
     int pad;			/* For hollerith types only.  */
   }
