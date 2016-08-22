@@ -7156,7 +7156,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	 using _copy and trans_call. It is convenient to exploit that
 	 when the allocated type is different from the declared type but
 	 no SOURCE exists by setting expr3.  */
-      code->expr3 = gfc_default_initializer (&code->ext.alloc.ts);
+      code->expr3 = gfc_default_initializer (&code->ext.alloc.ts, false);
     }
   else if (!code->expr3)
     {
@@ -7172,7 +7172,8 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       if (ts.type == BT_CLASS)
 	ts = ts.u.derived->components->ts;
 
-      if (gfc_bt_struct (ts.type) && (init_e = gfc_default_initializer (&ts)))
+      if (gfc_bt_struct (ts.type) && (init_e = gfc_default_initializer (&ts,
+                                                                        false)))
 	{
 	  gfc_code *init_st = gfc_get_code (EXEC_INIT_ASSIGN);
 	  init_st->loc = code->loc;
@@ -7185,7 +7186,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   else if (code->expr3->mold && code->expr3->ts.type == BT_DERIVED)
     {
       /* Default initialization via MOLD (non-polymorphic).  */
-      gfc_expr *rhs = gfc_default_initializer (&code->expr3->ts);
+	gfc_expr *rhs = gfc_default_initializer (&code->expr3->ts, false);
       if (rhs != NULL)
 	{
 	  gfc_resolve_expr (rhs);
@@ -10871,6 +10872,34 @@ build_init_assign (gfc_symbol *sym, gfc_expr *init)
   init_st->expr2 = init;
 }
 
+/* Whether or not we can create an initializer for the given symbol.  */
+
+static bool
+can_create_init (gfc_symbol *sym)
+{
+  symbol_attribute *a;
+  if (!sym)
+    return false;
+  a = &sym->attr;
+
+  /* These symbols should never have a default initialization.  */
+  return !(
+       a->allocatable
+    || a->external
+    || a->pointer
+    || a->in_equivalence
+    || a->in_common
+    || a->data
+    || sym->module
+    || a->cray_pointee
+    || a->cray_pointer
+    || sym->assoc
+    || (!a->referenced && !a->result)
+    || (a->dummy && a->intent != INTENT_OUT)
+    || (a->function && sym != sym->result)
+  );
+} 
+
 /* Assign the default initializer to a derived type variable or result.  */
 
 static void
@@ -10882,7 +10911,7 @@ apply_default_init (gfc_symbol *sym)
     return;
 
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived)
-    init = gfc_default_initializer (&sym->ts);
+    init = gfc_default_initializer (&sym->ts, can_create_init (sym));
 
   if (init == NULL && sym->ts.type != BT_CLASS)
     return;
@@ -11238,7 +11267,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
   if (!(sym->value || sym->attr.pointer || sym->attr.allocatable)
       && (!no_init_flag || sym->attr.intent == INTENT_OUT))
     {
-      sym->value = gfc_default_initializer (&sym->ts);
+      sym->value = gfc_default_initializer (&sym->ts, can_create_init (sym));
     }
 
   return true;
