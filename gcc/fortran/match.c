@@ -1858,7 +1858,7 @@ match_derived_type_spec (gfc_typespec *ts)
   if (derived && derived->attr.flavor == FL_PROCEDURE && derived->attr.generic)
     derived = gfc_find_dt_in_generic (derived);
 
-  if (derived && derived->attr.flavor == FL_DERIVED)
+  if (derived && gfc_fl_struct (derived->attr.flavor))
     {
       ts->type = BT_DERIVED;
       ts->u.derived = derived;

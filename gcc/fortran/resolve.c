@@ -537,7 +537,7 @@ static void
 find_arglists (gfc_symbol *sym)
 {
   if (sym->attr.if_source == IFSRC_UNKNOWN || sym->ns != gfc_current_ns
-      || sym->attr.flavor == FL_DERIVED || sym->attr.intrinsic)
+      || gfc_fl_struct (sym->attr.flavor)  || sym->attr.intrinsic)
     return;
 
   resolve_formal_arglist (sym);
@@ -1568,7 +1568,7 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
   gfc_namespace* real_context;
 
   if (sym->attr.flavor == FL_PROGRAM
-      || sym->attr.flavor == FL_DERIVED)
+      || gfc_fl_struct (sym->attr.flavor))
     return false;
 
   gcc_assert (sym->attr.flavor == FL_PROCEDURE);
@@ -2555,7 +2555,7 @@ resolve_generic_f (gfc_expr *expr)
 generic:
       if (!intr)
 	for (intr = sym->generic; intr; intr = intr->next)
-	  if (intr->sym->attr.flavor == FL_DERIVED)
+	  if (gfc_fl_struct (intr->sym->attr.flavor))
 	    break;
 
       if (sym->ns->parent == NULL)
@@ -10638,7 +10638,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
   const char *module;
 
   if (!sym || !sym->attr.is_bind_c || sym->attr.is_iso_c
-      || sym->attr.flavor == FL_DERIVED || !sym->binding_label)
+      || gfc_fl_struct (sym->attr.flavor) || !sym->binding_label)
     return;
 
   gsym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
@@ -11205,7 +11205,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
       gfc_find_symbol (sym->ts.u.derived->name, sym->ns, 0, &s);
       if (s && s->attr.generic)
 	s = gfc_find_dt_in_generic (s);
-      if (s && s->attr.flavor != FL_DERIVED)
+      if (s && !gfc_fl_struct (s->attr.flavor))
 	{
 	  gfc_error_1 ("The type '%s' cannot be host associated at %L "
 		     "because it is blocked by an incompatible object "
@@ -14662,8 +14662,8 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
 
   for (; c ; c = c->next)
     {
-      if (c->ts.type == BT_DERIVED
-	  && (!resolve_equivalence_derived(c->ts.u.derived, sym, e)))
+      if (gfc_bt_struct (c->ts.type)
+	  && (resolve_equivalence_derived (c->ts.u.derived, sym, e) == false))
 	return false;
 
       /* Shall not be an object of sequence derived type containing a pointer

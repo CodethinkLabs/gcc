@@ -3924,7 +3924,7 @@ gfc_has_default_initializer (gfc_symbol *der)
 {
   gfc_component *c;
 
-  gcc_assert (der->attr.flavor == FL_DERIVED);
+  gcc_assert (gfc_fl_struct (der->attr.flavor));
   for (c = der->components; c; c = c->next)
     if (gfc_bt_struct (c->ts.type))
       {

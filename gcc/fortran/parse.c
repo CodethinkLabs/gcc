@@ -4776,9 +4776,9 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
       if (!st || (st->n.sym->attr.dummy && ns == st->n.sym->ns))
 	goto fixup_contained;
 
-      if ((st->n.sym->attr.flavor == FL_DERIVED
+      if ((gfc_fl_struct (st->n.sym->attr.flavor)
 	   && sym->attr.generic && sym->attr.function)
-	  ||(sym->attr.flavor == FL_DERIVED
+	  ||(gfc_fl_struct (sym->attr.flavor)
 	     && st->n.sym->attr.generic && st->n.sym->attr.function))
 	goto fixup_contained;
 

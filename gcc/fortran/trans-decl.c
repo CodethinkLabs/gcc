@@ -752,14 +752,14 @@ gfc_get_module_backend_decl (gfc_symbol *sym)
 	  st->n.sym = sym;
 	  sym->refs++;
 	}
-      else if (sym->attr.flavor == FL_DERIVED)
+      else if (gfc_fl_struct (sym->attr.flavor))
 	{
 	  if (s && s->attr.flavor == FL_PROCEDURE)
 	    {
 	      gfc_interface *intr;
 	      gcc_assert (s->attr.generic);
 	      for (intr = s->generic; intr; intr = intr->next)
-		if (intr->sym->attr.flavor == FL_DERIVED)
+		if (gfc_fl_struct (intr->sym->attr.flavor))
 		  {
 		    s = intr->sym;
 		    break;
@@ -4439,7 +4439,7 @@ gfc_create_module_variable (gfc_symbol * sym)
       && sym->ts.type == BT_DERIVED)
     sym->backend_decl = gfc_typenode_for_spec (&(sym->ts));
 
-  if (sym->attr.flavor == FL_DERIVED
+  if (gfc_fl_struct (sym->attr.flavor)
       && sym->backend_decl
       && TREE_CODE (sym->backend_decl) == RECORD_TYPE)
     {

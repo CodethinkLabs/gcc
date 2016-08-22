@@ -468,8 +468,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  case FL_BLOCK_DATA:
 	  case FL_MODULE:
 	  case FL_LABEL:
-	  case FL_DERIVED:
 	  case FL_PARAMETER:
+          case_struct_fl:
             a1 = gfc_code2string (flavors, attr->flavor);
             a2 = save;
 	    goto conflict;
@@ -748,7 +748,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
       break;
 
-    case FL_DERIVED:
+    case_struct_fl:
       conf2 (dummy);
       conf2 (pointer);
       conf2 (target);
@@ -1538,7 +1538,7 @@ gfc_add_flavor (symbol_attribute *attr, sym_flavor f, const char *name,
 {
 
   if ((f == FL_PROGRAM || f == FL_BLOCK_DATA || f == FL_MODULE
-       || f == FL_PARAMETER || f == FL_LABEL || f == FL_DERIVED
+       || f == FL_PARAMETER || f == FL_LABEL || gfc_fl_struct (f)
        || f == FL_NAMELIST) && check_used (attr, name, where))
     return false;
 
@@ -1786,7 +1786,7 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
   if (flavor == FL_PROGRAM || flavor == FL_BLOCK_DATA || flavor == FL_MODULE
       || flavor == FL_LABEL
       || (flavor == FL_PROCEDURE && sym->attr.subroutine)
-      || flavor == FL_DERIVED || flavor == FL_NAMELIST)
+      || gfc_fl_struct (flavor) || flavor == FL_NAMELIST)
     {
       gfc_error ("Symbol %qs at %L cannot have a type", sym->name, where);
       return false;
@@ -2061,7 +2061,7 @@ gfc_use_derived (gfc_symbol *sym)
       return NULL;
     }
 
-  if (s == NULL || s->attr.flavor != FL_DERIVED)
+  if (s == NULL || !gfc_fl_struct (s->attr.flavor))
     goto bad;
 
   /* Get rid of symbol sym, translating all references to s.  */
@@ -3228,11 +3228,9 @@ gfc_restore_last_undo_checkpoint (void)
 	  /* The derived type is saved in the symtree with the first
 	     letter capitalized; the all lower-case version to the
 	     derived type contains its associated generic function.  */
-	  if (p->attr.flavor == FL_DERIVED)
-	    gfc_delete_symtree (&p->ns->sym_root, gfc_get_string ("%c%s",
-                        (char) TOUPPER ((unsigned char) p->name[0]),
-                        &p->name[1]));
-	  else
+	  if (gfc_fl_struct (p->attr.flavor))
+	    gfc_delete_symtree (&p->ns->sym_root,gfc_dt_upper_string (p->name));
+          else
 	    gfc_delete_symtree (&p->ns->sym_root, p->name);
 
 	  gfc_release_symbol (p);
@@ -4698,12 +4696,12 @@ gfc_find_dt_in_generic (gfc_symbol *sym)
 {
   gfc_interface *intr = NULL;
 
-  if (!sym || sym->attr.flavor == FL_DERIVED)
+  if (!sym || gfc_fl_struct (sym->attr.flavor))
     return sym;
 
   if (sym->attr.generic)
     for (intr = sym->generic; intr; intr = intr->next)
-      if (intr->sym->attr.flavor == FL_DERIVED)
+      if (gfc_fl_struct (intr->sym->attr.flavor))
         break;
   return intr ? intr->sym : NULL;
 }

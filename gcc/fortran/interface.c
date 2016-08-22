@@ -1586,7 +1586,7 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 	 functions or subroutines.  */
       if (((!p->sym->attr.function && !p->sym->attr.subroutine)
 	   || !p->sym->attr.if_source)
-	  && p->sym->attr.flavor != FL_DERIVED)
+	  && !gfc_fl_struct (p->sym->attr.flavor))
 	{
 	  if (p->sym->attr.external)
 	    gfc_error ("Procedure %qs in %s at %L has no explicit interface",
@@ -1600,17 +1600,21 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 
       /* Verify that procedures are either all SUBROUTINEs or all FUNCTIONs.  */
       if ((psave->sym->attr.function && !p->sym->attr.function
-	   && p->sym->attr.flavor != FL_DERIVED)
+	   && !gfc_fl_struct (p->sym->attr.flavor))
 	  || (psave->sym->attr.subroutine && !p->sym->attr.subroutine))
 	{
-	  if (p->sym->attr.flavor != FL_DERIVED)
+	  if (!gfc_fl_struct (p->sym->attr.flavor))
 	    gfc_error ("In %s at %L procedures must be either all SUBROUTINEs"
 		       " or all FUNCTIONs", interface_name,
 		       &p->sym->declared_at);
-	  else
+	  else if (p->sym->attr.flavor == FL_DERIVED)
 	    gfc_error ("In %s at %L procedures must be all FUNCTIONs as the "
 		       "generic name is also the name of a derived type",
 		       interface_name, &p->sym->declared_at);
+          else
+            gfc_error ("In %s at %L procedures must be all FUNCTIONs as the "
+                       "generic name is also the name of a structure type",
+                       interface_name, &p->sym->declared_at);
 	  return 1;
 	}
 
@@ -1667,8 +1671,8 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 	if (p->sym->name == q->sym->name && p->sym->module == q->sym->module)
 	  continue;
 
-	if (p->sym->attr.flavor != FL_DERIVED
-	    && q->sym->attr.flavor != FL_DERIVED
+	if (!gfc_fl_struct (p->sym->attr.flavor)
+	    && !gfc_fl_struct (q->sym->attr.flavor)
 	    && gfc_compare_interfaces (p->sym, q->sym, q->sym->name,
 				       generic_flag, 0, NULL, 0, NULL, NULL))
 	  {
@@ -3525,12 +3529,12 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
     {
       for (; intr; intr = intr->next)
 	{
-	  if (intr->sym->attr.flavor == FL_DERIVED)
+	  if (gfc_fl_struct (intr->sym->attr.flavor))
 	    continue;
 	  if (sub_flag && intr->sym->attr.function)
 	    continue;
 	  if (!sub_flag && intr->sym->attr.subroutine)
-	continue;
+	    continue;
 
 	  if (gfc_arglist_matches_symbol (ap, intr->sym, mtypes[i]))
 	    {

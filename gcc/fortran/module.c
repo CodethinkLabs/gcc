@@ -4128,7 +4128,7 @@ mio_symbol (gfc_symbol *sym)
   
   mio_integer (&(sym->intmod_sym_id));
 
-  if (sym->attr.flavor == FL_DERIVED)
+  if (gfc_fl_struct (sym->attr.flavor))
     mio_integer (&(sym->hash_value));
 
   if (sym->formal_ns
@@ -4928,7 +4928,7 @@ read_module (void)
 	 can be used in expressions in the module.  To avoid the module loading
 	 failing, we need to associate the module's component pointer indexes
 	 with the existing symbol's component pointers.  */
-      if (sym->attr.flavor == FL_DERIVED)
+      if (gfc_fl_struct (sym->attr.flavor))
 	{
 	  gfc_component *c;
 
@@ -5411,7 +5411,7 @@ write_symbol (int n, gfc_symbol *sym)
 
   mio_integer (&n);
 
-  if (sym->attr.flavor == FL_DERIVED)
+  if (gfc_fl_struct (sym->attr.flavor))
     {
       const char *name;
       name = gfc_dt_upper_string (sym->name);
