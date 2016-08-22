@@ -3712,14 +3712,23 @@ resolve_operator (gfc_expr *e)
 	  )
 	{
 	  gfc_typespec ts;
+	  gfc_convert_type_warn (op1, &ts, 2, 1);
 	  ts.type = BT_CHARACTER;
 	  ts.kind = op1->ts.kind;
 	  if (op1->ts.type == BT_HOLLERITH)
-	    gfc_convert_type_warn (op1, &ts, 2, 1);
+	    {
+	      gfc_convert_type_warn (op1, &ts, 2, 1);
+	      gfc_warning(0, "Promoting argument for comparison from HOLLERITH "
+		          "to CHARACTER at %L", &op1->where);
+	    }
 	  ts.type = BT_CHARACTER;
 	  ts.kind = op2->ts.kind;
 	  if (op2->ts.type == BT_HOLLERITH)
-	    gfc_convert_type_warn (op2, &ts, 2, 1);
+	    {
+	      gfc_convert_type_warn (op2, &ts, 2, 1);
+	      gfc_warning(0, "Promoting argument for comparison from "
+			  "HOLLERITH to CHARACTER at %L", &op2->where);
+	    }
 	}
 
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER

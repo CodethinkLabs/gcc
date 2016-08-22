@@ -1121,6 +1121,10 @@ gfc_typenode_for_spec (gfc_typespec * spec)
 					     gfc_index_one_node);
       break;
 
+    case BT_UNION:
+      basetype = gfc_get_union_type (spec->u.derived);
+      break;
+
     case BT_DERIVED:
     case BT_CLASS:
       basetype = gfc_get_derived_type (spec->u.derived);

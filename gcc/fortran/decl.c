@@ -4020,7 +4020,8 @@ match_attr_spec (void)
 	  if (d == DECL_ALLOCATABLE)
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2003, "ALLOCATABLE "
-				   "attribute at %C in a TYPE definition"))
+				  "attribute at %C in a %s definition",
+				   gfc_ascii_comp_state(gfc_current_state())))
 		{
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -4028,8 +4029,8 @@ match_attr_spec (void)
 	    }
 	  else
 	    {
-	      gfc_error ("Attribute at %L is not allowed in a TYPE definition",
-			 &seen_at[d]);
+	      gfc_error ("Attribute at %L is not allowed in a %s definition",
+			&seen_at[d], gfc_ascii_comp_state(gfc_current_state()));
 	      m = MATCH_ERROR;
 	      goto cleanup;
 	    }
@@ -4042,13 +4043,14 @@ match_attr_spec (void)
 	    attr = "PRIVATE";
 	  else
 	    attr = "PUBLIC";
-	  if (gfc_current_state () == COMP_DERIVED
+	  if (gfc_comp_is_derived (gfc_current_state ())
 	      && gfc_state_stack->previous
 	      && gfc_state_stack->previous->state == COMP_MODULE)
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2003, "Attribute %s "
-				   "at %L in a TYPE definition", attr, 
-				   &seen_at[d]))
+				   "at %L in a %s definition", attr,
+				   &seen_at[d],
+				   gfc_ascii_comp_state(gfc_current_state())))
 		{
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -5546,6 +5548,7 @@ gfc_match_procedure (void)
     case COMP_INTERFACE:
       m = match_procedure_in_interface ();
       break;
+    case COMP_STRUCTURE:
     case COMP_DERIVED:
       m = match_ppc_decl ();
       break;
@@ -5822,6 +5825,10 @@ gfc_match_entry (void)
 	    gfc_error ("ENTRY statement at %C cannot appear within "
 		       "an INTERFACE");
 	    break;
+          case COMP_STRUCTURE:
+            gfc_error ("ENTRY statement at %C cannot appear within "
+                       "a STRUCTURE block");
+            break;
 	  case COMP_DERIVED:
 	    gfc_error ("ENTRY statement at %C cannot appear within "
 		       "a DERIVED TYPE block");
@@ -6445,6 +6452,24 @@ gfc_match_end (gfc_statement *st)
     case COMP_INTERFACE:
       *st = ST_END_INTERFACE;
       target = " interface";
+      eos_ok = 0;
+      break;
+
+    case COMP_MAP:
+      *st = ST_END_MAP;
+      target = " map";
+      eos_ok = 0;
+      break;
+
+    case COMP_UNION:
+      *st = ST_END_UNION;
+      target = " union";
+      eos_ok = 0;
+      break;
+
+    case COMP_STRUCTURE:
+      *st = ST_END_STRUCTURE;
+      target = " structure";
       eos_ok = 0;
       break;
 

@@ -387,6 +387,119 @@ gfc_match_end_interface (void)
 }
 
 
+static int
+compare_components (gfc_component *cmp1, gfc_component *cmp2,
+    gfc_symbol *derived1, gfc_symbol *derived2)
+{
+  gfc_symbol *d1, *d2;
+  bool anonymous = false;
+
+  d1 = cmp1->ts.u.derived;
+  d2 = cmp2->ts.u.derived;
+  if (   (d1 && (d1->attr.flavor == FL_STRUCT || d1->attr.flavor == FL_UNION)
+          && ISUPPER (cmp1->name[1]))
+      || (d2 && (d2->attr.flavor == FL_STRUCT || d2->attr.flavor == FL_UNION)
+          && ISUPPER (cmp1->name[1])))
+    anonymous = true;
+
+  if (!anonymous && strcmp (cmp1->name, cmp2->name) != 0)
+    return 0;
+
+  if (cmp1->attr.access != cmp2->attr.access)
+    return 0;
+
+  if (cmp1->attr.pointer != cmp2->attr.pointer)
+    return 0;
+
+  if (cmp1->attr.dimension != cmp2->attr.dimension)
+    return 0;
+
+ if (cmp1->attr.allocatable != cmp2->attr.allocatable)
+    return 0;
+
+  if (cmp1->attr.dimension && gfc_compare_array_spec (cmp1->as, cmp2->as) == 0)
+    return 0;
+
+  /* Make sure that link lists do not put this function into an
+     endless recursive loop!  */
+  if (!(cmp1->ts.type == BT_DERIVED && derived1 == cmp1->ts.u.derived)
+        && !(cmp2->ts.type == BT_DERIVED && derived2 == cmp2->ts.u.derived)
+        && gfc_compare_types (&cmp1->ts, &cmp2->ts) == 0)
+    return 0;
+
+  else if ((cmp1->ts.type == BT_DERIVED && derived1 == cmp1->ts.u.derived)
+            && !(cmp1->ts.type == BT_DERIVED && derived1 == cmp1->ts.u.derived))
+    return 0;
+
+  else if (!(cmp1->ts.type == BT_DERIVED && derived1 == cmp1->ts.u.derived)
+            && (cmp1->ts.type == BT_DERIVED && derived1 == cmp1->ts.u.derived))
+    return 0;
+
+  return 1;
+}
+
+
+/* Compare two union types by comparing the components of their maps.
+   Because unions and maps are anonymous their types get special internal
+   names; therefore the usual derived type comparison will fail on them.
+
+   Returns nonzero if equal, as with gfc_compare_derived_types. Also as with
+   gfc_compare_derived_types, 'equal' is closer to meaning 'duplicate
+   definitions' than 'equivalent structure'. */
+
+int
+gfc_compare_union_types (gfc_symbol *un1, gfc_symbol *un2)
+{
+  gfc_component *map1, *map2, *cmp1, *cmp2;
+
+  if (un1->attr.flavor != FL_UNION || un2->attr.flavor != FL_UNION)
+    return 0;
+
+  map1 = un1->components;
+  map2 = un2->components;
+
+  /* In terms of 'equality' here we are worried about types which are
+     declared the same in two places, not types that represent equivalent
+     structures. (This is common because of FORTRAN's weird scoping rules.)
+     Though two unions with their maps in different orders could be equivalent,
+     we will say they are not equal for the purposes of this test; therefore
+     we compare the maps sequentially. */
+  for (;;)
+  {
+    cmp1 = map1->ts.u.derived->components;
+    cmp2 = map2->ts.u.derived->components;
+    for (;;)
+    {
+      /* No two fields will ever point to the same map type unless they are
+         the same component, because one map field is created with its type
+         declaration. Therefore don't worry about recursion here. */
+      /* TODO: worry about recursion into parent types of the unions? */
+      if (compare_components (cmp1, cmp2,
+            map1->ts.u.derived, map2->ts.u.derived) == 0)
+        return 0;
+
+      cmp1 = cmp1->next;
+      cmp2 = cmp2->next;
+
+      if (cmp1 == NULL && cmp2 == NULL)
+        break;
+      if (cmp1 == NULL || cmp2 == NULL)
+        return 0;
+    }
+
+    map1 = map1->next;
+    map2 = map2->next;
+
+    if (map1 == NULL && map2 == NULL)
+      break;
+    if (map1 == NULL || map2 == NULL)
+      return 0;
+  }
+
+  return 1;
+}
+
+
 /* Compare two derived types using the criteria in 4.4.2 of the standard,
    recursing through gfc_compare_types for the components.  */
 
@@ -498,10 +611,14 @@ gfc_compare_types_generic (gfc_typespec *ts1, gfc_typespec *ts2, enum match_type
       && (ts1->u.derived->attr.sequence || ts1->u.derived->attr.is_bind_c))
     return 1;
 
+  if (ts1->type == BT_UNION && ts2->type == BT_UNION)
+    return gfc_compare_union_types (ts1->u.derived, ts2->u.derived);
+
   if (ts1->type != ts2->type
-      && ((ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
-	  || (ts2->type != BT_DERIVED && ts2->type != BT_CLASS)))
+      && (   (ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
+          || (ts2->type != BT_DERIVED && ts2->type != BT_CLASS)))
     return 0;
+
   if (ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
     {
     if (mtype == MATCH_PROMOTABLE)

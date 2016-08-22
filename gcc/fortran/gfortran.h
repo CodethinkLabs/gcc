@@ -1042,6 +1042,9 @@ typedef struct gfc_component
 
   /* Needed for procedure pointer components.  */
   struct gfc_typebound_proc *tb;
+
+  /* Pointer to MAP list for union types. */
+  struct gfc_symbol *maps;
 }
 gfc_component;
 
