@@ -2016,9 +2016,44 @@ variable_decl (int elem)
   /* When we get here, we've just matched a list of attributes and
      maybe a type and a double colon.  The next thing we expect to see
      is the name of the symbol.  */
-  m = gfc_match_name (name);
+
+  /* If we are parsing a structure, we allow the name of the symbol to
+     be '%FILL', which gives it an anonymous (inaccessible) name. */
+  m = MATCH_NO;
+  gfc_gobble_whitespace ();
+  if (gfc_peek_ascii_char () == '%')
+  {
+    gfc_next_ascii_char ();
+    m = gfc_match ("fill");
+  }
   if (m != MATCH_YES)
-    goto cleanup;
+  {
+    m = gfc_match_name (name);
+    if (m != MATCH_YES)
+      goto cleanup;
+  }
+  else 
+  {
+    m = MATCH_ERROR;
+    if (!gfc_option.flag_dec_structure)
+    {
+      gfc_error ("%%FILL at %C is an extension, enable with -fdec-structure");
+      goto cleanup;
+    }
+    if (gfc_current_state () != COMP_STRUCTURE)
+    {
+      gfc_error ("Unnamed field at %C only allowed in a STRUCTURE block");
+      goto cleanup;
+    }
+    if (attr_seen)
+    {
+      gfc_error ("Unnamed field at %C may not have attributes");
+      goto cleanup;
+    }
+    /* The unique anonymous name is an invalid fortran identifier. */
+    sprintf (name, "%%FILL%d", fill_id++);
+    m = MATCH_YES;
+  }
 
   var_locus = gfc_current_locus;
 
@@ -2095,6 +2130,14 @@ variable_decl (int elem)
       if (m == MATCH_ERROR)
 	goto cleanup;
     }
+
+  /* Fill components may not have initializers. */
+  if (name[0] == '%' && gfc_match_eos () != MATCH_YES) 
+  {
+    gfc_error ("Unnamed field at %C may not have initializers");
+    m = MATCH_ERROR;
+    goto cleanup;
+  }
 
   /*  If this symbol has already shown up in a Cray Pointer declaration,
       and this is not a component declaration,
@@ -2225,12 +2268,25 @@ variable_decl (int elem)
 		}
 	    }
 	}
+      /* For derived type components, read the initializer as a special
+         expression and let the rest of this function apply the initializer
+         as usual. */
+      else if (gfc_comp_is_derived (gfc_current_state ()))
+	{
+	  m = gfc_match_clist_expr (&initializer, &current_ts, as);
+	  if (m == MATCH_NO)
+	    gfc_error ("Syntax error in old style initialization of "
+		       "structure component %s at %C", name);
+	  if (m != MATCH_YES)
+	    goto cleanup;
+	}
+
+      /* Otherwise we treat the old style initialization just like a
+         DATA declaration for the current variable. */
       else
         return match_old_style_init (name);
-
     }
-
-
+  
   /* The double colon must be present in order to have initializers.
      Otherwise the statement is ambiguous with an assignment statement.  */
   if (colon_seen)
@@ -2302,6 +2358,12 @@ variable_decl (int elem)
 	  && !current_attr.pointer && !initializer)
 	initializer = gfc_default_initializer (&current_ts, false);
       t = build_struct (name, cl, &initializer, &as);
+
+      /* If we match a nested structure definition we expect to see the
+         body even if the component declarations blow up, so we need to keep
+         the structure type around.  */
+      if (gfc_new_block && gfc_new_block->attr.flavor == FL_STRUCT)
+        gfc_commit_symbol (gfc_new_block);
     }
 
   m = (t) ? MATCH_YES : MATCH_ERROR;
