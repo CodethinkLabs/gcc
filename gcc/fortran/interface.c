@@ -506,12 +506,22 @@ gfc_compare_union_types (gfc_symbol *un1, gfc_symbol *un2)
 int
 gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
 {
-  gfc_component *dt1, *dt2;
+  gfc_component *cmp1, *cmp2;
+  bool anonymous = false;
 
   if (derived1 == derived2)
     return 1;
 
   gcc_assert (derived1 && derived2);
+
+  /* MAP and anonymous STRUCTURE types have internal names of the form
+     mM* and sS* (we can get away with this because source names are converted
+     to lowercase). Compare anonymous type names specially because each
+     gets a unique name when it is declared. */
+  anonymous = (derived1->name[0] == derived2->name[0]
+      && derived1->name[1] && derived2->name[1] && derived2->name[2]
+      && derived1->name[1] == (char) TOUPPER (derived1->name[0])
+      && derived2->name[1] == (char) TOUPPER (derived2->name[0]));
 
   /* Special case for comparing derived types across namespaces.  If the
      true names and module names are the same and the module name is
@@ -521,11 +531,13 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       && strcmp (derived1->module, derived2->module) == 0)
     return 1;
 
-  /* Compare type via the rules of the standard.  Both types must have
-     the SEQUENCE or BIND(C) attribute to be equal.  */
-
-  if (strcmp (derived1->name, derived2->name))
+  if (strcmp (derived1->name, derived2->name) != 0 && !anonymous)
     return 0;
+
+  /* Compare type via the rules of the standard.  Both types must have
+     the SEQUENCE or BIND(C) attribute to be equal. STRUCTUREs are special
+     because they can be anonymous; therefore two structures with different
+     names may be equal.  */
 
   if (derived1->component_access == ACCESS_PRIVATE
       || derived2->component_access == ACCESS_PRIVATE)
@@ -535,53 +547,30 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       && !(derived1->attr.is_bind_c && derived2->attr.is_bind_c))
     return 0;
 
-  dt1 = derived1->components;
-  dt2 = derived2->components;
+  if ((derived1->attr.zero_comp && !derived2->attr.zero_comp)
+      || (!derived1->attr.zero_comp && derived2->attr.zero_comp))
+    return 0;
+
+  if (derived1->attr.zero_comp || derived2->attr.zero_comp)
+    return 1;
+
+  cmp1 = derived1->components;
+  cmp2 = derived2->components;
 
   /* Since subtypes of SEQUENCE types must be SEQUENCE types as well, a
      simple test can speed things up.  Otherwise, lots of things have to
      match.  */
   for (;;)
     {
-      if (strcmp (dt1->name, dt2->name) != 0)
-	return 0;
+      if (!compare_components (cmp1, cmp2, derived1, derived2))
+        return 0;
 
-      if (dt1->attr.access != dt2->attr.access)
-	return 0;
+      cmp1 = cmp1->next;
+      cmp2 = cmp2->next;
 
-      if (dt1->attr.pointer != dt2->attr.pointer)
-	return 0;
-
-      if (dt1->attr.dimension != dt2->attr.dimension)
-	return 0;
-
-     if (dt1->attr.allocatable != dt2->attr.allocatable)
-	return 0;
-
-      if (dt1->attr.dimension && gfc_compare_array_spec (dt1->as, dt2->as) == 0)
-	return 0;
-
-      /* Make sure that link lists do not put this function into an
-	 endless recursive loop!  */
-      if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
-	    && !(dt2->ts.type == BT_DERIVED && derived2 == dt2->ts.u.derived)
-	    && gfc_compare_types (&dt1->ts, &dt2->ts) == 0)
-	return 0;
-
-      else if ((dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
-		&& !(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived))
-	return 0;
-
-      else if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
-		&& (dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived))
-	return 0;
-
-      dt1 = dt1->next;
-      dt2 = dt2->next;
-
-      if (dt1 == NULL && dt2 == NULL)
+      if (cmp1 == NULL && cmp2 == NULL)
 	break;
-      if (dt1 == NULL || dt2 == NULL)
+      if (cmp1 == NULL || cmp2 == NULL)
 	return 0;
     }
 
@@ -632,7 +621,7 @@ gfc_compare_types_generic (gfc_typespec *ts1, gfc_typespec *ts2, enum match_type
   if (gfc_type_compatible (ts1, ts2))
     return 1;
 
-  return gfc_compare_derived_types (ts1->u.derived ,ts2->u.derived);
+  return 0;
 }
 
 int
