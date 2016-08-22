@@ -40,6 +40,7 @@ const mstring flavors[] =
   minit ("VARIABLE", FL_VARIABLE), minit ("PARAMETER", FL_PARAMETER),
   minit ("LABEL", FL_LABEL), minit ("PROCEDURE", FL_PROCEDURE),
   minit ("DERIVED", FL_DERIVED), minit ("NAMELIST", FL_NAMELIST),
+  minit ("UNION", FL_UNION), minit ("STRUCTURE", FL_STRUCT),
   minit (NULL, -1)
 };
 
@@ -1955,6 +1956,11 @@ gfc_add_component (gfc_symbol *sym, const char *name,
 {
   gfc_component *p, *tail;
 
+  /* Check for existing components with the same name, but not for union
+     components or containers. Unions and maps are anonymous so they have
+     unique internal names which will never conflict.
+     Don't use gfc_find_component here because it calls gfc_use_derived,
+     but the derived type may not be fully defined yet. */
   tail = NULL;
 
   for (p = sym->components; p; p = p->next)

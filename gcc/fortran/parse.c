@@ -1616,6 +1616,15 @@ gfc_ascii_statement (gfc_statement st)
     case ST_DEALLOCATE:
       p = "DEALLOCATE";
       break;
+    case ST_MAP:
+      p = "MAP";
+      break;
+    case ST_UNION:
+      p = "UNION";
+      break;
+    case ST_STRUCTURE_DECL:
+      p = "STRUCTURE";
+      break;
     case ST_DERIVED_DECL:
       p = _("derived type declaration");
       break;
@@ -1675,6 +1684,15 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_END_WHERE:
       p = "END WHERE";
+      break;
+    case ST_END_STRUCTURE:
+      p = "END STRUCTURE";
+      break;
+    case ST_END_UNION:
+      p = "END UNION";
+      break;
+    case ST_END_MAP:
+      p = "END MAP";
       break;
     case ST_END_TYPE:
       p = "END TYPE";
@@ -2412,6 +2430,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
 
     case ST_PUBLIC:
     case ST_PRIVATE:
+    case ST_STRUCTURE_DECL:
     case ST_DERIVED_DECL:
     case ST_OACC_DECLARE:
     case_decl:
@@ -3240,6 +3259,7 @@ loop:
     case ST_PARAMETER:
     case ST_PUBLIC:
     case ST_PRIVATE:
+    case ST_STRUCTURE_DECL:
     case ST_DERIVED_DECL:
     case_decl:
 declSt:

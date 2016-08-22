@@ -335,9 +335,9 @@ gfc_copy_expr (gfc_expr *p)
 
 	case BT_HOLLERITH:
 	case BT_LOGICAL:
-	case BT_DERIVED:
 	case BT_CLASS:
 	case BT_ASSUMED:
+        case_struct_bt:
 	  break;		/* Already done.  */
 
 	case BT_PROCEDURE:

@@ -2172,6 +2172,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
   tree tmp;
   tree decl;
   tree field;
+  tree context;
 
   c = ref->u.c.component;
 

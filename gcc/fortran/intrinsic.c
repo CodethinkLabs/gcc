@@ -4705,7 +4705,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	       && ts->type == BT_INTEGER)
 	{
 	  if (warn_conversion_extra || warn_conversion)
-	    gfc_warning_now (0, "Conversion from %s to %s at %L",
+	    gfc_warning_now (OPT_Wconversion, "Conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
 	}

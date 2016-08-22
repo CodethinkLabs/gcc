@@ -291,6 +291,9 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
   if (source == NULL)
     return 0;
 
+  /* Assumed no union will end up here. */
+  gcc_assert (source->ts.type != BT_UNION);
+
   if (source->expr_type == EXPR_ARRAY)
     return encode_array (source, buffer, buffer_size);
 
@@ -614,6 +617,11 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
       result->representation.length =
         gfc_interpret_derived (buffer, buffer_size, result);
       gcc_assert (result->representation.length >= 0);
+      break;
+
+    /* TODO: Handle BT_UNION ? */
+    case BT_UNION:
+      gfc_warning_now (0, "Union binary representation unimplemented");
       break;
 
     default:
