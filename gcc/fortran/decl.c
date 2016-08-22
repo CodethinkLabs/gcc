@@ -3050,9 +3050,57 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     m = gfc_match_char (')');
 
   if (m == MATCH_YES)
+  {
     ts->type = BT_DERIVED;
+    /* Don't need all the extra derived-type stuff for structures. */
+    if (gfc_find_symbol (gfc_dt_upper_string (name), NULL, 1, &sym))
+    {
+      gfc_error ("Type name '%s' at %C is ambiguous", name);
+      return MATCH_ERROR;
+    }
+    if (sym && sym->attr.flavor == FL_STRUCT)
+    {
+      ts->u.derived = sym;
+      return MATCH_YES;
+    }
+  }
   else
     {
+      /* Match RECORD declarations. */
+      m = match_record_decl (name);
+      if (m == MATCH_YES)
+      {
+        ts->type = BT_DERIVED;
+        /* Don't need all the extra derived-type stuff for structures. */
+        if (gfc_find_symbol (gfc_dt_upper_string (name), NULL, 1, &sym))
+        {
+          gfc_error ("Type name '%s' at %C is ambiguous", name);
+          return MATCH_ERROR;
+        }
+        if (sym && sym->attr.flavor == FL_STRUCT)
+        {
+          ts->u.derived = sym;
+          return MATCH_YES;
+        }
+        goto derived;
+      }
+
+      /* Match ad-hoc STRUCTURE declarations; only valid within another
+         derived/structure declaration. */
+      m = gfc_match (" structure");
+      if (m == MATCH_YES && gfc_comp_is_derived (gfc_current_state ()))
+      {
+        m = gfc_match_structure_decl ();
+        if (m == MATCH_YES)
+        {
+          /* gfc_new_block updated by match_structure_decl() */
+          ts->type = BT_DERIVED;
+          ts->u.derived = gfc_new_block;
+          return MATCH_YES;
+        }
+        return MATCH_ERROR;
+      }
+
       /* Match CLASS declarations.  */
       m = gfc_match (" class ( * )");
       if (m == MATCH_ERROR)
@@ -3100,6 +3148,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	return MATCH_ERROR;
     }
 
+derived:
   /* Defer association of the derived type until the end of the
      specification block.  However, if the derived type can be
      found, add it to the typespec.  */
