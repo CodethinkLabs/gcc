@@ -4416,10 +4416,8 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	      const char *hidden_name;
 	      gfc_interface *intr, *head;
 
-	      hidden_name = gfc_get_string ("%c%s",
-					    (char) TOUPPER ((unsigned char)
-							      tmp_sym->name[0]),
-					    &tmp_sym->name[1]);
+	      hidden_name = gfc_dt_upper_string (tmp_sym->name);
+
 	      tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root,
 					      hidden_name);
 	      gcc_assert (tmp_symtree == NULL);
