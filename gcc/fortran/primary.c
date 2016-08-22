@@ -1912,25 +1912,30 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   if (equiv_flag)
     return MATCH_YES;
 
-  if (sym->ts.type == BT_UNKNOWN && gfc_peek_ascii_char () == '%'
+  sep = gfc_peek_ascii_char ();
+  m = gfc_match_member_sep (sym);
+  if(m == MATCH_ERROR)
+      return MATCH_ERROR;
+
+  if (sym->ts.type == BT_UNKNOWN && m == MATCH_YES
       && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
     gfc_set_default_type (sym, 0, sym->ns);
 
-  if (sym->ts.type == BT_UNKNOWN && gfc_match_char ('%') == MATCH_YES)
+  if (sym->ts.type == BT_UNKNOWN && m == MATCH_YES)
     {
       gfc_error ("Symbol %qs at %C has no IMPLICIT type", sym->name);
       return MATCH_ERROR;
     }
   else if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
-	   && gfc_match_char ('%') == MATCH_YES)
+          && m == MATCH_YES)
     {
-      gfc_error ("Unexpected %<%%%> for nonderived-type variable %qs at %C",
-		 sym->name);
+      gfc_error ("Unexpected %<%%%> for nonderived-type variable "
+                 "%qs at %C", sep, sym->name);
       return MATCH_ERROR;
     }
 
   if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
-      || gfc_match_char ('%') != MATCH_YES)
+      || m != MATCH_YES)
     goto check_substring;
 
   sym = sym->ts.u.derived;
