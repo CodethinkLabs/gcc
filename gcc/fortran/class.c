@@ -78,12 +78,11 @@ insert_component_ref (gfc_typespec *ts, gfc_ref **ref, const char * const name)
   gcc_assert (ts->type == BT_DERIVED || ts->type == BT_CLASS);
   type_sym = ts->u.derived;
 
-  new_ref = gfc_get_ref ();
-  new_ref->type = REF_COMPONENT;
-  new_ref->next = *ref;
-  new_ref->u.c.sym = type_sym;
-  new_ref->u.c.component = gfc_find_component (type_sym, name, true, true, NULL);
+  gfc_find_component (type_sym, name, true, true, &new_ref);
   gcc_assert (new_ref->u.c.component);
+  while (new_ref->next)
+    new_ref = new_ref->next;
+  new_ref->next = *ref;
 
   if (new_ref->next)
     {
@@ -206,8 +205,9 @@ gfc_fix_class_refs (gfc_expr *e)
 void
 gfc_add_component_ref (gfc_expr *e, const char *name)
 {
+  gfc_component *c;
   gfc_ref **tail = &(e->ref);
-  gfc_ref *next = NULL;
+  gfc_ref *ref, *next = NULL;
   gfc_symbol *derived = e->symtree->n.sym->ts.u.derived;
   while (*tail != NULL)
     {
@@ -243,8 +243,11 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
   (*tail)->u.c.sym = derived;
   (*tail)->u.c.component = gfc_find_component (derived, name, true, true, tail);
   gcc_assert((*tail)->u.c.component);
+  for (ref = *tail; ref->next; ref = ref->next)
+    ;
+  ref->next = next;
   if (!next)
-    e->ts = (*tail)->u.c.component->ts;
+    e->ts = c->ts;
 }
 
 
