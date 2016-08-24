@@ -2874,7 +2874,7 @@ check_component (gfc_symbol *sym, gfc_component *c, gfc_component **lockp,
                "subcomponent exists)", c->name, &c->loc, sym->name);
 
   if (sym->attr.lock_comp && coarray && !lock_type)
-    gfc_error ("Noncoarray component %s at %L of type LOCK_TYPE or with "
+    gfc_error_1 ("Noncoarray component %s at %L of type LOCK_TYPE or with "
                "subcomponent of type LOCK_TYPE must have a codimension or "
                "be a subcomponent of a coarray. (Variables of type %s may "
                "not have a codimension as %s at %L has a codimension or a "
