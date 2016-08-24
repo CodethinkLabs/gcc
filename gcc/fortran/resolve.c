@@ -12953,7 +12953,7 @@ resolve_component (gfc_component *c, void *data)
       char name[GFC_MAX_SYMBOL_LEN+9];
       gfc_component *strlen;
       sprintf (name, "_%s_length", c->name);
-      strlen = gfc_find_component (sym, name, true, true);
+      strlen = gfc_find_component (sym, name, true, true, NULL);
       if (strlen == NULL)
 	{
 	  if (!gfc_add_component (sym, name, &strlen))
@@ -13069,14 +13069,14 @@ static bool
 resolve_fl_union (gfc_symbol *sym)
 {
   gfc_component *map;
-  gfc_try success;
+  bool success;
 
   gcc_assert (sym->attr.flavor == FL_UNION);
 
   success = true;
   for (map = sym->components; map; map = map->next)
     {
-      if (resolve_component (map, (void *)sym) == false)
+      int res = resolve_component (map, (void *)sym);
       if (res == FAIL_CONTINUE)
 	success = false;
       else if (res == FAIL_STOP)
