@@ -13582,14 +13582,14 @@ static bool
 resolve_fl_union (gfc_symbol *sym)
 {
   gfc_component *map;
-  gfc_try success;
+  bool success;
 
   gcc_assert (sym->attr.flavor == FL_UNION);
 
   success = true;
   for (map = sym->components; map; map = map->next)
     {
-      if (resolve_component (map, (void *)sym) == false)
+      int res = resolve_component (map, (void *)sym);
       if (res == FAIL_CONTINUE)
 	success = false;
       else if (res == FAIL_STOP)
