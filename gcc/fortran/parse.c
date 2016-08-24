@@ -2736,11 +2736,10 @@ check_component (gfc_component *c, gfc_symbol *sym, gfc_component **lockp)
       sym->attr.coarray_comp = 1;
     }
  
-  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp)
+  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp && !c->attr.pointer)
     {
       coarray = true;
-      if (!pointer && !allocatable)
-        sym->attr.coarray_comp = 1;
+      sym->attr.coarray_comp = 1;
     }
 
   /* Looking for lock_type components.  */
@@ -2793,7 +2792,7 @@ check_component (gfc_component *c, gfc_symbol *sym, gfc_component **lockp)
                "subcomponent exists)", c->name, &c->loc, sym->name);
 
   if (sym->attr.lock_comp && coarray && !lock_type)
-    gfc_error ("Noncoarray component %s at %L of type LOCK_TYPE or with "
+    gfc_error_1 ("Noncoarray component %s at %L of type LOCK_TYPE or with "
                "subcomponent of type LOCK_TYPE must have a codimension or "
                "be a subcomponent of a coarray. (Variables of type %s may "
                "not have a codimension as %s at %L has a codimension or a "
