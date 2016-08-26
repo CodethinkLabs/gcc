@@ -4277,7 +4277,7 @@ compare_spec_to_ref (gfc_array_ref *ar)
   if (ar->type == AR_FULL)
     return true;
 
-  if (as->rank > ar->dimen)
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && as->rank > ar->dimen)
     {
       /* Add in the missing dimensions, assuming they are the lower bound
          of that dimension if not specified. */
