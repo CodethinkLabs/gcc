@@ -2245,14 +2245,7 @@ variable_decl (int elem)
 
       else if (gfc_current_state () == COMP_DERIVED)
 	{
-	  if(!gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
-	    {
-	      gfc_error ("Invalid old style initialization for derived type "
-			 "component at %C");
-	      m = MATCH_ERROR;
-	      goto cleanup;
-	    }
-	  else
+	  if(gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 	    {
 	      /* Attempt to match an old-style initializer which is a simple
 		 integer or character expression; this will not work with
@@ -2266,6 +2259,14 @@ variable_decl (int elem)
 		  if (m != MATCH_YES)
 		    goto cleanup;
 		}
+	    }
+	  else
+
+	    {
+	      gfc_error ("Invalid old style initialization for derived type "
+			 "component at %C");
+	      m = MATCH_ERROR;
+	      goto cleanup;
 	    }
 	}
       /* For derived type components, read the initializer as a special
