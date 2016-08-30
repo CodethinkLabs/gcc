@@ -1,5 +1,5 @@
 ! { dg-do compile }
-!
+! { dg-options "-std=extra-legacy" }!
 ! Checks that under-specified arrays (referencing arrays with fewer
 ! dimensions than the array spec) generates a warning.
 !
