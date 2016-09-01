@@ -3737,7 +3737,6 @@ resolve_operator (gfc_expr *e)
 	  )
 	{
 	  gfc_typespec ts;
-	  gfc_convert_type_warn (op1, &ts, 2, 1);
 	  ts.type = BT_CHARACTER;
 	  ts.kind = op1->ts.kind;
 	  if (op1->ts.type == BT_HOLLERITH)
