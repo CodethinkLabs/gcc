@@ -1405,8 +1405,6 @@ without warning.
 * Argument list functions::
 * Read/Write after EOF marker::
 * AUTOMATIC statement::
-* STRUCTURE and RECORD::
-* UNION and MAP::
 * Optional DEC extension support::
 @end menu
 
@@ -2079,8 +2077,6 @@ AUTOMATIC forces all variable declared with it to be on the stack.
 
 AUTOMATIC overrides -fno-automatic.
 
-<<<<<<< HEAD
-=======
 @node Optional DEC extension support
 @subsection Optional DEC extension support
 @cindex extensions, dec
@@ -2106,17 +2102,14 @@ described here.
 @menu
 * STRUCTURE and RECORD::
 * UNION and MAP::
-* Variable FORMAT expressions::
 @c * Q edit descriptor::
 @c * AUTOMATIC statement::
 @c * TYPE and ACCEPT I/O Statements::
 @c * .XOR. operator::
 @c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
 @c * Omitted arguments in procedure call::
-* Alternate complex function syntax::
 @end menu
 
->>>>>>> fb0f10b... STRUCTURE, UNION and MAP support.
 @node STRUCTURE and RECORD
 @subsubsection @code{STRUCTURE} and @code{RECORD}
 @cindex @code{STRUCTURE}
@@ -2262,7 +2255,7 @@ those described in @ref{Old-style variable initialization}.
 @end itemize
 
 @node UNION and MAP
-@subsection @code{UNION} and @code{MAP}
+@subsubsection @code{UNION} and @code{MAP}
 @cindex @code{UNION}
 @cindex @code{MAP}
 
