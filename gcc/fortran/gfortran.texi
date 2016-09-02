@@ -1463,6 +1463,7 @@ without warning.
 * AUTOMATIC statement::
 * STRUCTURE and RECORD::
 * UNION and MAP::
+* Optional DEC extension support::
 @end menu
 
 @node Old-style kind specifications
@@ -2131,9 +2132,9 @@ AUTOMATIC forces all variable declared with it to be on the stack.
 
 AUTOMATIC overrides -fno-automatic.
 
-@node Extensions not implemented in GNU Fortran
-@section Extensions not implemented in GNU Fortran
-@cindex extensions, not implemented
+@node Optional DEC extension support
+@subsection Optional DEC extension support
+@cindex extensions, dec
 
 The long history of the Fortran language, its wide use and broad
 userbase, the large number of different compiler vendors and the lack of
@@ -2305,7 +2306,7 @@ the initializer list.
 @end itemize
 
 @node UNION and MAP
-@subsection @code{UNION} and @code{MAP}
+@subsubsection @code{UNION} and @code{MAP}
 @cindex @code{UNION}
 @cindex @code{MAP}
 
