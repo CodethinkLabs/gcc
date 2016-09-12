@@ -1697,7 +1697,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
       gfc_add_expr_to_block (block, tmp);
     }
 
-  if (ts->type == BT_DERIVED && ts->u.derived->components)
+  if (gfc_bt_struct (ts->type) && ts->u.derived->components)
     {
       gfc_component *cmp;
 
@@ -2223,7 +2223,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 
       break;
 
-    case BT_DERIVED:
+    case_struct_bt:
       if (ts->u.derived->components == NULL)
 	return;
 
@@ -2342,7 +2342,7 @@ gfc_trans_transfer (gfc_code * code)
 	  gcc_assert (ref && ref->type == REF_ARRAY);
 	}
 
-      if (expr->ts.type != BT_DERIVED
+      if (!gfc_bt_struct (expr->ts.type)
 	    && ref && ref->next == NULL
 	    && !is_subref_array (expr))
 	{

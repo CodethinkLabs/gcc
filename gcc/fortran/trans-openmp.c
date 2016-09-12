@@ -1482,7 +1482,7 @@ gfc_trans_omp_array_reduction_or_udr (tree c, gfc_omp_namelist *n, locus where)
   else if (udr->initializer_ns == NULL)
     {
       gcc_assert (sym->ts.type == BT_DERIVED);
-      e2 = gfc_default_initializer (&sym->ts);
+      e2 = gfc_default_initializer (&sym->ts, false);
       gcc_assert (e2);
       t = gfc_resolve_expr (e2);
       gcc_assert (t);

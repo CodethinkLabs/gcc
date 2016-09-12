@@ -109,6 +109,10 @@ show_typespec (gfc_typespec *ts)
       fprintf (dumpfile, "%s", ts->u.derived->name);
       break;
 
+    case BT_UNION:
+      fprintf (dumpfile, "%s", ts->u.derived->name);
+      break;
+
     case BT_CHARACTER:
       if (ts->u.cl)
 	show_expr (ts->u.cl->length);

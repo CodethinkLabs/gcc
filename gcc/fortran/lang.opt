@@ -412,6 +412,18 @@ fd-lines-as-comments
 Fortran RejectNegative
 Treat lines with 'D' in column one as comments
 
+fdec-member-dot
+Fortran
+Enable dot (`.`) as a member separator (in addition to the usual `%`).
+
+fdec-static
+Fortran
+Enable STATIC and AUTOMATIC attributes.
+
+fdec-structure
+Fortran
+Enable DEC STRUCTURE extension.
+
 fdefault-double-8
 Fortran Var(flag_default_double)
 Set the default double precision kind to an 8 byte wide type
@@ -541,6 +553,14 @@ Enum(gfc_init_local_real) String(inf) Value(GFC_INIT_REAL_INF)
 
 EnumValue
 Enum(gfc_init_local_real) String(-inf) Value(GFC_INIT_REAL_NEG_INF)
+
+finit-derived
+Fortran
+Automatically initialize local derived type variables
+
+floc-rval
+Fortran
+Enable the use of %LOC as an rvalue, like the built-in LOC().
 
 fmax-array-constructor=
 Fortran RejectNegative Joined UInteger Var(flag_max_array_constructor) Init(65535)
