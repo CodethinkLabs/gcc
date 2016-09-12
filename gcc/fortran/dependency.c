@@ -2153,7 +2153,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 
 	      /* Now deal with the loop reversal logic:  This only works on
 		 ranges and is activated by setting
-				reverse[n] == GFC_ENABLE_REVERSE
+				reverse[m] == GFC_ENABLE_REVERSE
 		 The ability to reverse or not is set by previous conditions
 		 in this dimension.  If reversal is not activated, the
 		 value GFC_DEP_BACKWARD is reset to GFC_DEP_OVERLAP.  */
