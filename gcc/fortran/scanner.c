@@ -80,6 +80,7 @@ static struct gfc_file_change
 size_t file_changes_cur, file_changes_count;
 size_t file_changes_allocated;
 
+static bool include_line (gfc_char_t *line, int test_only);
 
 /* Functions dealing with our wide characters (gfc_char_t) and
    sequences of such characters.  */
@@ -1797,6 +1798,12 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
       *buffer++ = c;
       i++;
 
+      if (maxlen > 0 && gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && include_line (*pbuf, 1))
+	{
+	  gfc_warning_now(0, "An include line longer than 72 characters is nonstandard.");
+	  maxlen = 0;
+	}
+
       if (maxlen == 0 || preprocessor_flag)
 	{
 	  if (i >= buflen)
@@ -2055,7 +2062,7 @@ static bool load_file (const char *, const char *, bool);
    processed or true if we matched an include.  */
 
 static bool
-include_line (gfc_char_t *line)
+include_line (gfc_char_t *line, int test_only)
 {
   gfc_char_t quote, *c, *begin, *stop;
   char *filename;
@@ -2085,6 +2092,11 @@ include_line (gfc_char_t *line)
   if (gfc_wide_strncasecmp (c, "include", 7))
     return false;
 
+  if (test_only)
+    {
+      return true;
+    }
+  
   c += 7;
   while (*c == ' ' || *c == '\t')
     c++;
@@ -2274,7 +2286,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	 but the first line that's not a preprocessor line.  */
       first_line = false;
 
-      if (include_line (line))
+      if (include_line (line, 0))
 	{
 	  current_file->line++;
 	  continue;
