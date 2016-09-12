@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "debug.h"
+#include "arith.h"
 
 /* Current statement label.  Zero means no statement label.  Because new_st
    can get wiped during statement matching, we have to keep it separate.  */
@@ -3514,6 +3515,13 @@ parse_if_block (void)
   d = add_statement ();
 
   d->expr1 = top->expr1;
+
+  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && top->expr1->ts.type != BT_LOGICAL)
+    {
+      d->expr1 = gfc_ne (top->expr1, gfc_get_int_expr (1, &gfc_current_locus, 0), INTRINSIC_NE);
+      gfc_warning_now (0, "The type of condition in this IF statement isn't LOGICAL; it will be true if it evaluates to nonzero.");
+    }
+
   top->expr1 = NULL;
   top->block = d;
 
