@@ -117,10 +117,10 @@ gfc_element_size (gfc_expr *e)
 
     case BT_HOLLERITH:
       return e->representation.length;
-    case BT_DERIVED:
     case BT_CLASS:
     case BT_VOID:
     case BT_ASSUMED:
+    case_struct_bt:
       {
 	/* Determine type size without clobbering the typespec for ISO C
 	   binding types.  */
@@ -290,6 +290,9 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 {
   if (source == NULL)
     return 0;
+
+  /* Assumed no union will end up here. */
+  gcc_assert (source->ts.type != BT_UNION);
 
   if (source->expr_type == EXPR_ARRAY)
     return encode_array (source, buffer, buffer_size);
@@ -616,6 +619,11 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
       gcc_assert (result->representation.length >= 0);
       break;
 
+    /* TODO: Handle BT_UNION ? */
+    case BT_UNION:
+      gfc_warning_now (0, "Union binary representation unimplemented");
+      break;
+
     default:
       gfc_internal_error ("Invalid expression in gfc_target_interpret_expr.");
       break;
@@ -662,7 +670,7 @@ expr_to_char (gfc_expr *e, unsigned char *data, unsigned char *chk, size_t len)
 
   /* Take a derived type, one component at a time, using the offsets from the backend
      declaration.  */
-  if (e->ts.type == BT_DERIVED)
+  if (gfc_bt_struct (e->ts.type))
     {
       for (c = gfc_constructor_first (e->value.constructor),
 	   cmp = e->ts.u.derived->components;
