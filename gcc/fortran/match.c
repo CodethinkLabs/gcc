@@ -961,17 +961,6 @@ gfc_match_intrinsic_op (gfc_intrinsic_op *result)
 	    }
 	  break;
 
-	case 'x':
-	  if (gfc_next_ascii_char () == 'o'
-	      && gfc_next_ascii_char () == 'r'
-	      && gfc_next_ascii_char () == '.')
-	    {
-	      /* Matched ".xor.".  */
-	      *result = INTRINSIC_NEQV;
-	      return MATCH_YES;
-	    }
-	  break;
-
 	default:
 	  break;
 	}
