@@ -1471,6 +1471,7 @@ compatibility extensions along with those enabled by @option{-std=legacy}.
 * .XOR. operator::
 * Bitwise logical operators::
 * Extended I/O specifiers::
+* Comparison of CHARACTER values and HOLLERITH constants::
 @end menu
 
 @node Old-style kind specifications
@@ -2695,6 +2696,15 @@ system's manual pages for further details. Locking via @code{SHARE=} is not
 supported on other systems.
 
 @end table
+
+@node Comparison of CHARACTER values and HOLLERITH constants
+@subsection Comparison of character values and Hollerith constants
+@cindex logical
+
+With @option{-fdec}, GNU Fortran allows the @code{.EQ.} and @code{.NE.} operators
+to work on Hollerith constants. Hollerith constants can only be compared to
+character values or or other Hollerith constants. No other logical comparison
+operators (such as @code{.LT.}) are implemented.
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran

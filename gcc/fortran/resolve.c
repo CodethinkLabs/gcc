@@ -3498,6 +3498,11 @@ resolve_call (gfc_code *c)
   return t;
 }
 
+static int
+is_character_based (bt type)
+{
+  return type == BT_CHARACTER || type == BT_HOLLERITH;
+}
 
 /* Compare the shapes of two arrays that have non-NULL shapes.  If both
    op1->shape and op2->shape are non-NULL return true if their shapes
@@ -3779,6 +3784,30 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
+
+      /* In DEC mode, if you're comparing Hollerith constants to character
+         expressions, or two Hollerith constants, convert the Hollerith
+         constant.  */
+
+      if (flag_dec &&
+	  is_character_based (op1->ts.type) &&
+	  is_character_based (op2->ts.type) )
+	{
+	  gfc_typespec ts;
+	  ts.type = BT_CHARACTER;
+	  if (op1->ts.type == BT_HOLLERITH)
+	    {
+	      ts.kind = op1->ts.kind;
+	      gfc_convert_type_warn (op1, &ts, 2, 1);
+	    }
+
+	  if (op2->ts.type == BT_HOLLERITH)
+	    {
+	      ts.kind = op2->ts.kind;
+	      gfc_convert_type_warn (op2, &ts, 2, 1);
+	    }
+	}
+
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
 	  && op1->ts.kind == op2->ts.kind)
 	{
