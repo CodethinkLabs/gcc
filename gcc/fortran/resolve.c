@@ -13142,11 +13142,6 @@ check_defined_assignments (gfc_symbol *derived)
 }
 
 
-
-const int SUCCESS = 0;
-const int FAIL_CONTINUE = 1;
-const int FAIL_STOP = 2;
-
 /* Resolve a single component of a derived type or structure.  */
 
 static bool
@@ -13509,9 +13504,6 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       return false;
     }
 
-  if (c->ts.type == BT_UNION && !resolve_fl_union (c->ts.u.derived))
-    return FAIL_CONTINUE;
-
   /* Ensure that all the derived type components are put on the
      derived type list; even in formal namespaces, where derived type
      pointer components might not have been declared.  */
@@ -13596,34 +13588,6 @@ resolve_fl_struct (gfc_symbol *sym)
   return true;
 }
 
-/* Resolve the components of a union type. */
-
-static bool
-resolve_fl_union (gfc_symbol *sym)
-{
-  gfc_component *map;
-  gfc_try success;
-
-  gcc_assert (sym->attr.flavor == FL_UNION);
-
-  success = true;
-  for (map = sym->components; map; map = map->next)
-    {
-      if (resolve_component (map, (void *)sym) == false)
-      if (res == FAIL_CONTINUE)
-	success = false;
-      else if (res == FAIL_STOP)
-	return false;
-    }
-
-  if (success != SUCCESS)
-    return false;
-
-  if (sym->components)
-    add_dt_to_dt_list (sym);
-
-  return true;
-}
 
 /* Resolve the components of a derived type. This does not have to wait until
    resolution stage, but can be done as soon as the dt declaration has been
@@ -13667,13 +13631,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 
   success = true;
   for ( ; c != NULL; c = c->next)
-    {
-      int res = resolve_component (c, (void *)sym);
-      if (res == FAIL_CONTINUE)
-	success = false;
-      else if (res == FAIL_STOP)
-	return false;
-    }
+    if (!resolve_component (c, sym))
+      success = false;
 
   if (!success)
     return false;
