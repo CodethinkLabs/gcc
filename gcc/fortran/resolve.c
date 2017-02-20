@@ -1144,39 +1144,14 @@ resolve_structure_cons (gfc_expr *expr, int init)
   t = true;
 
   if (expr->ts.type == BT_DERIVED || expr->ts.type == BT_UNION)
-    resolve_fl_derived0 (expr->ts.u.derived);
-  else if (expr->ts.type == BT_UNION)
-    resolve_fl_union (expr->ts.u.derived);
-
-  cons = gfc_constructor_first (expr->value.constructor);
-
-  /* See if the user is trying to invoke a structure constructor for one of
-     the iso_c_binding derived types.  */
-  /* DISABLED TEMPORARILY - this is not present in GCC6 master, so I don't
-     believe it's necessary. */
-  /*
-  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
-      && expr->ts.u.derived->ts.is_iso_c && cons
-      && (cons->expr == NULL || cons->expr->expr_type != EXPR_NULL))
     {
       if (expr->ts.u.derived->attr.flavor == FL_DERIVED)
         resolve_fl_derived0 (expr->ts.u.derived);
       else
         resolve_fl_struct (expr->ts.u.derived);
     }
-  */
 
   cons = gfc_constructor_first (expr->value.constructor);
-  
-  /* Return if structure constructor is c_null_(fun)prt.  */
-  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
-      && expr->ts.u.derived->ts.is_iso_c && cons
-      && cons->expr && cons->expr->expr_type == EXPR_NULL)
-    return true;
-
-  /* Union constructors only have one constructor. */
-  if (expr->ts.type == BT_UNION)
-    return true;
 
   /* A constructor may have references if it is the result of substituting a
      parameter variable.  In this case we just pull out the component we
