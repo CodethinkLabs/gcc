@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fdec-static -fno-automatic" }
+! { dg-options "-O2 -fdec-static -fno-automatic" }
       subroutine foo (b)
         logical b
         integer i, j
