@@ -616,6 +616,7 @@ f33 (int f1line, int f2line)
   return failures;
 }
 
+#if BACKTRACE_SUPPORTED
 #if BACKTRACE_SUPPORTS_DATA
 
 int global = 1;
@@ -687,6 +688,7 @@ test5 (void)
 }
 
 #endif /* BACKTRACE_SUPPORTS_DATA  */
+#endif /* BACKTRACE_SUPPORTED */
 
 static void
 error_callback_create (void *data ATTRIBUTE_UNUSED, const char *msg,
