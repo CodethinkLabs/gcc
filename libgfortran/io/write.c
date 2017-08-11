@@ -1524,7 +1524,7 @@ size_from_kind (st_parameter_dt *dtp, const fnode *f, int kind)
 {
   int size;
 
-  if (f->format == FMT_F && f->u.real.w == 0)
+  if ((f->format == FMT_F && f->u.real.w == 0) || f->u.real.w == DEFAULT_WIDTH)
     {
       switch (kind)
       {

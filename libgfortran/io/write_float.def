@@ -113,7 +113,8 @@ determine_precision (st_parameter_dt * dtp, const fnode * f, int len)
 static void
 build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
 		    size_t size, int nprinted, int precision, int sign_bit,
-		    bool zero_flag, int npad, char *result, size_t *len)
+		    bool zero_flag, int npad, int default_width, char *result,
+                    size_t *len)
 {
   char *put;
   char *digits;
@@ -132,8 +133,17 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
   sign_t sign;
 
   ft = f->format;
-  w = f->u.real.w;
-  d = f->u.real.d;
+  if (f->u.real.w == DEFAULT_WIDTH)
+    /* This codepath can only be reached with -std=extra-legacy. */
+    {
+      w = default_width;
+      d = precision;
+    }
+  else
+    {
+      w = f->u.real.w;
+      d = f->u.real.d;
+    }
   p = dtp->u.p.scale_factor;
 
   rchar = '5';
@@ -958,6 +968,11 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
       int save_scale_factor;\
       volatile GFC_REAL_ ## x temp;\
       save_scale_factor = dtp->u.p.scale_factor;\
+      if (w == DEFAULT_WIDTH)\
+	{\
+	  w = default_width;\
+	  d = precision;\
+	}\
       switch (dtp->u.p.current_unit->round_status)\
 	{\
 	  case ROUND_ZERO:\
@@ -1033,7 +1048,8 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 	  nprinted = FDTOA(y,precision,m);\
 	}\
       build_float_string (dtp, &newf, buffer, size, nprinted, precision,\
-				   sign_bit, zero_flag, npad, result, res_len);\
+				   sign_bit, zero_flag, npad, default_width,\
+				   result, res_len);\
       dtp->u.p.scale_factor = save_scale_factor;\
     }\
   else\
@@ -1043,7 +1059,8 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
       else\
 	nprinted = DTOA(y,precision,m);\
       build_float_string (dtp, f, buffer, size, nprinted, precision,\
-				   sign_bit, zero_flag, npad, result, res_len);\
+				   sign_bit, zero_flag, npad, default_width,\
+				   result, res_len);\
     }\
 }\
 
@@ -1057,6 +1074,22 @@ get_float_string (st_parameter_dt *dtp, const fnode *f, const char *source,
 {
   int sign_bit, nprinted;
   bool zero_flag;
+  int default_width = 0;
+
+  if (f->u.real.w == DEFAULT_WIDTH)
+    /* This codepath can only be reached with -std=extra-legacy. The default
+     * values are based on those used in the Oracle Fortran compiler.
+     */
+    {
+      switch (kind)
+        {
+          case 4: default_width = 15; precision = 7; break;
+          case 8: default_width = 25; precision = 16; break;
+          case 16: default_width = 42; precision = 33; break;
+          /* The default should never be reached, but let's avoid blowing up */
+          default: default_width = 42; precision = 33; break;
+        }
+    }
 
   switch (kind)
     {
