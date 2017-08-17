@@ -1081,14 +1081,8 @@ get_float_string (st_parameter_dt *dtp, const fnode *f, const char *source,
      * values are based on those used in the Oracle Fortran compiler.
      */
     {
-      switch (kind)
-        {
-          case 4: default_width = 15; precision = 7; break;
-          case 8: default_width = 25; precision = 16; break;
-          case 16: default_width = 42; precision = 33; break;
-          /* The default should never be reached, but let's avoid blowing up */
-          default: default_width = 42; precision = 33; break;
-        }
+      default_width = default_width_for_float (kind);
+      precision = default_precision_for_float (kind);
     }
 
   switch (kind)

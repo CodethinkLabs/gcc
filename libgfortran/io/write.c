@@ -684,22 +684,6 @@ write_l (st_parameter_dt *dtp, const fnode *f, char *source, int len)
   p[wlen - 1] = (n) ? 'T' : 'F';
 }
 
-static int
-default_width_for_len (int len)
-{
-  /* No width was specified in the format string, which is a legacy extension -
-     choose a default based on the data width.  */
-  switch (len)
-    {
-    case 1:
-    case 2:  return  7;
-    case 4:  return 12;
-    case 8:  return 23;
-    case 16: return 44;
-    default: return  0;
-    }
-}
-
 static void
 write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n, int len)
 {
@@ -735,7 +719,7 @@ write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n, int len)
      print something.  */
 
   if (w == DEFAULT_WIDTH)
-    w = default_width_for_len (len);
+    w = default_width_for_integer (len);
 
   if (w == 0)
     w = ((digits < m) ? m : digits);
@@ -864,7 +848,7 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
   /* Select a width if none was specified.  The idea here is to always
      print something.  */
   if (w == DEFAULT_WIDTH)
-    w = default_width_for_len(len);
+    w = default_width_for_integer (len);
 
   if (w == 0)
     w = ((digits < m) ? m : digits) + nsign;
