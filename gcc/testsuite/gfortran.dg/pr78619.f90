@@ -10,7 +10,7 @@
 contains
   function f(x) result(z)
     real :: x, z
-    z = sign(1.0, f) ! { dg-error "calling itself recursively|must be the same type" }
+    z = sign(1.0, f) ! { dg-error "calling itself recursively|must have the same type" }
   end
   real function g(x)
     real :: x
