@@ -153,7 +153,6 @@ bool gfc_check_set_exponent (gfc_expr *, gfc_expr *);
 bool gfc_check_shape (gfc_expr *, gfc_expr *);
 bool gfc_check_shift (gfc_expr *, gfc_expr *);
 bool gfc_check_size (gfc_expr *, gfc_expr *, gfc_expr *);
-bool gfc_check_sign (gfc_expr *, gfc_expr *);
 bool gfc_check_signal (gfc_expr *, gfc_expr *);
 bool gfc_check_sizeof (gfc_expr *);
 bool gfc_check_c_associated (gfc_expr *, gfc_expr *);
