@@ -9917,7 +9917,8 @@ permitted.)
 
 @item @emph{Return value}:
 The return value corresponds to the maximum value among the arguments,
-and has the same type and kind as the first argument.
+and has the same type and kind as the first argument.  (As a GNU extension,
+kind is the largest kind of the actual arguments.)
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
@@ -10278,7 +10279,8 @@ permitted.)
 
 @item @emph{Return value}:
 The return value corresponds to the maximum value among the arguments,
-and has the same type and kind as the first argument.
+and has the same type and kind as the first argument.  (As a GNU extension,
+kind is the largest kind of the actual arguments.)
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
@@ -12724,11 +12726,13 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be of type @code{INTEGER} or @code{REAL}
-@item @var{B} @tab Shall be of the same type and kind as @var{A}
+@item @var{B} @tab Shall be of the same type and kind as @var{A}.  (As a GNU
+extension, arguments of different kinds are permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The kind of the return value is that of @var{A} and @var{B}.
+The kind of the return value is that of @var{A} and @var{B}.  (As a GNU
+extension, kind is the largest kind of the actual arguments.)
 If @math{B\ge 0} then the result is @code{ABS(A)}, else
 it is @code{-ABS(A)}.
 
