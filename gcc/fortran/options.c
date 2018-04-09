@@ -80,6 +80,7 @@ set_dec_flags (int value)
   flag_dec_sequence |= value;
   flag_dec_add_missing_indexes |= value;
   flag_dec_format_defaults |= value;
+  flag_dec_promotion |= value;
 }
 
 
