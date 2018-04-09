@@ -2867,7 +2867,7 @@ add_functions (void)
   make_generic ("shiftr", GFC_ISYM_SHIFTR, GFC_STD_F2008);
 
   add_sym_2 ("sign", GFC_ISYM_SIGN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_sign, gfc_simplify_sign, gfc_resolve_sign,
+	     gfc_check_a_p, gfc_simplify_sign, gfc_resolve_sign,
 	     a, BT_REAL, dr, REQUIRED, b, BT_REAL, dr, REQUIRED);
 
   add_sym_2 ("isign", GFC_ISYM_SIGN, CLASS_ELEMENTAL, ACTUAL_YES, BT_INTEGER, di, GFC_STD_F77,
@@ -4248,6 +4248,11 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
       /* A kind of 0 means we don't check for kind.  */
       if (ts.kind == 0)
 	ts.kind = actual->expr->ts.kind;
+
+      /* If kind promotion is allowed don't check for kind if it is smaller */
+      if (flag_dec_promotion && ts.type == BT_INTEGER)
+	if (actual->expr->ts.kind < ts.kind)
+	  ts.kind = actual->expr->ts.kind;
 
       if (!gfc_compare_types (&ts, &actual->expr->ts))
 	{
