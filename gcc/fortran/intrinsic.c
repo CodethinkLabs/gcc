@@ -4251,6 +4251,12 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
       if (ts.kind == 0)
 	ts.kind = actual->expr->ts.kind;
 
+      /* If kind promotion is allowed don't check for kind if it is smaller */
+      if ((flag_dec_promotion || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+	  && ts.type == BT_INTEGER)
+	if (actual->expr->ts.kind < ts.kind)
+	  ts.kind = actual->expr->ts.kind;
+
       if (!gfc_compare_types (&ts, &actual->expr->ts))
 	{
 	  if (error_flag)
