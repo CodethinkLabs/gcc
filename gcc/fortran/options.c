@@ -85,6 +85,7 @@ set_dec_flags (int value)
   SET_BITFLAG (flag_dec_promotion, value, value);
   SET_BITFLAG (flag_dec_sequence, value, value);
   SET_BITFLAG (flag_dec_add_missing_indexes, value, value);
+  SET_BITFLAG (flag_dec_format_defaults, value, value);
 }
 
 /* Finalize DEC flags.  */
