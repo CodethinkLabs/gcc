@@ -956,12 +956,33 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	  *seen_dd = true;
 	  if (u != FMT_POSINT && u != FMT_ZERO)
 	    {
+	      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+		{
+		  tail->u.real.w = DEFAULT_WIDTH;
+		  tail->u.real.d = 0;
+		  tail->u.real.e = -1;
+		  fmt->saved_token = u;
+		  break;
+		}
 	      fmt->error = nonneg_required;
 	      goto finished;
 	    }
 	}
+      else if (u == FMT_ZERO)
+	{
+	  fmt->error = posint_required;
+	  goto finished;
+	}
       else if (u != FMT_POSINT)
 	{
+	  if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+	    {
+	      tail->u.real.w = DEFAULT_WIDTH;
+	      tail->u.real.d = 0;
+	      tail->u.real.e = -1;
+	      fmt->saved_token = u;
+	      break;
+	    }
 	  fmt->error = posint_required;
 	  goto finished;
 	}
@@ -1099,6 +1120,13 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	{
 	  if (t != FMT_POSINT)
 	    {
+	      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+		{
+		  tail->u.integer.w = DEFAULT_WIDTH;
+		  tail->u.integer.m = -1;
+		  fmt->saved_token = t;
+		  break;
+		}
 	      fmt->error = posint_required;
 	      goto finished;
 	    }
@@ -1107,6 +1135,13 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	{
 	  if (t != FMT_ZERO && t != FMT_POSINT)
 	    {
+	      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
+		{
+		  tail->u.integer.w = DEFAULT_WIDTH;
+		  tail->u.integer.m = -1;
+		  fmt->saved_token = t;
+		  break;
+		}
 	      fmt->error = nonneg_required;
 	      goto finished;
 	    }
