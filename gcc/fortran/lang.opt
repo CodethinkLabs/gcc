@@ -464,6 +464,10 @@ fdec-pad-with-spaces
 Fortran Var(flag_dec_pad_with_spaces)
 For character to integer conversions, use spaces for the pad rather than NUL.
 
+fdec-format-defaults
+Fortran Var(flag_dec_format_defaults)
+Enable default widths for i, f and g format specifiers.
+
 fdec-hollerith-conversion
 Fortran Var(flag_dec_hollerith_conversion)
 Enable conversion of Hollerith constants to string or integer.
