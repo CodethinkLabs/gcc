@@ -79,6 +79,7 @@ set_dec_flags (int value)
   flag_dec_non_logical_if |= value;
   flag_dec_sequence |= value;
   flag_dec_add_missing_indexes |= value;
+  flag_dec_format_defaults |= value;
 }
 
 
