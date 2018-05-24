@@ -4060,6 +4060,8 @@ parse_if_block (void)
   d = add_statement ();
 
   d->expr1 = top->expr1;
+  if (top->expr1->ts.type == BT_UNKNOWN)
+    gfc_warning (0, "UNKNOWN type in if block");
   top->expr1 = NULL;
   top->block = d;
 

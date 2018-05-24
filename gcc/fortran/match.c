@@ -1677,6 +1677,8 @@ got_match:
   p->next->loc = gfc_current_locus;
 
   p->expr1 = expr;
+  if (expr->ts.type == BT_UNKNOWN)
+    gfc_warning (0, "UNKNOWN type in if statement");
 
   gfc_clear_new_st ();
 
