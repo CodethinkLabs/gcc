@@ -907,9 +907,7 @@ gfc_resolve_dim (gfc_expr *f, gfc_expr *a, gfc_expr *p)
 	gfc_convert_type (p, &f->ts, 2);
     }
   else
-    {
-      f->ts = a->ts;
-    }
+    f->ts = a->ts;
 
   f->value.function.name
     = gfc_get_string ("__dim_%c%d", gfc_type_letter (f->ts.type), f->ts.kind);
@@ -2073,9 +2071,7 @@ gfc_resolve_mod (gfc_expr *f, gfc_expr *a, gfc_expr *p)
 	gfc_convert_type (p, &f->ts, 2);
     }
   else
-    {
-      f->ts = a->ts;
-    }
+    f->ts = a->ts;
 
   f->value.function.name
     = gfc_get_string ("__mod_%c%d", gfc_type_letter (f->ts.type), f->ts.kind);
@@ -2100,9 +2096,7 @@ gfc_resolve_modulo (gfc_expr *f, gfc_expr *a, gfc_expr *p)
 	gfc_convert_type (p, &f->ts, 2);
     }
   else
-    {
-      f->ts = a->ts;
-    }
+    f->ts = a->ts;
 
   f->value.function.name
     = gfc_get_string ("__modulo_%c%d", gfc_type_letter (f->ts.type),
