@@ -3123,13 +3123,9 @@ gfc_check_min_max (gfc_actual_arglist *arg)
     }
 
   if (flag_dec && x->ts.type != BT_CHARACTER)
-    {
-      return check_rest_int_real (arg);
-    }
+    return check_rest_int_real (arg);
   else
-    {
-      return check_rest (x->ts.type, x->ts.kind, arg);
-    }
+    return check_rest (x->ts.type, x->ts.kind, arg);
 }
 
 
