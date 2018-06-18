@@ -2806,7 +2806,7 @@ static bool
 compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	 	       int ranks_must_agree, int is_elemental,
 		       bool in_statement_function, locus *where,
-	 	       enum match_type mtype)
+		       enum match_type mtype)
 {
   gfc_actual_arglist **new_arg, *a, *actual;
   gfc_formal_arglist *f;
