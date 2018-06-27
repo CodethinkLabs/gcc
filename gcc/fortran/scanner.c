@@ -2142,7 +2142,7 @@ add_line (gfc_char_t *line, int len, int trunc)
   else
     line_tail->next = b;
 
-      line_tail = b;
+  line_tail = b;
 
   while (file_changes_cur < file_changes_count)
     file_changes[file_changes_cur++].lb = b;
