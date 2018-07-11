@@ -7,18 +7,18 @@
 !
       PROGRAM promotion_int_real
         REAL l/0.0/
-        LOGICAL a_i
-        LOGICAL*4 a2_i
-        LOGICAL b_i
-        LOGICAL*8 b2_i
-        LOGICAL x_i
-        LOGICAL y_i
-        CHARACTER a_r
-        CHARACTER*4 a2_r
-        CHARACTER b_r
-        CHARACTER*8 b2_r
-        CHARACTER x_r
-        CHARACTER y_r
+        LOGICAL a_l
+        LOGICAL*4 a2_l
+        LOGICAL b_l
+        LOGICAL*8 b2_l
+        LOGICAL x_l
+        LOGICAL y_l
+        CHARACTER a_c
+        CHARACTER*4 a2_c
+        CHARACTER b_c
+        CHARACTER*8 b2_c
+        CHARACTER x_c
+        CHARACTER y_c
 
         INTEGER m_i/0/
         REAL m_r/0.0/

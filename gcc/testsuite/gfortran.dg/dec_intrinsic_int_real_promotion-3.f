@@ -9,16 +9,16 @@
         REAL l/0.0/
         INTEGER a_i/4/
         INTEGER*4 a2_i/4/
-        CHARACTER b_i
-        CHARACTER*8 b2_i
+        CHARACTER b_c
+        CHARACTER*8 b2_c
         INTEGER x_i/2/
-        CHARACTER y_i
+        CHARACTER y_c
         REAL a_r/4.0/
         REAL*4 a2_r/4.0/
-        LOGICAL b_r
-        LOGICAL*8 b2_r
+        LOGICAL b_l
+        LOGICAL*8 b2_l
         REAL x_r/2.0/
-        LOGICAL y_r
+        LOGICAL y_l
 
         INTEGER m_i/0/
         REAL m_r/0.0/
