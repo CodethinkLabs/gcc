@@ -407,7 +407,7 @@ gfc_check_function_type (gfc_namespace *ns)
                                 goto conflict_std;\
                               }
 
-static bool
+bool
 check_conflict (symbol_attribute *attr, const char *name, locus *where)
 {
   static const char *dummy = "DUMMY", *save = "SAVE", *pointer = "POINTER",
@@ -544,7 +544,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (allocatable, elemental);
 
   conf (in_common, automatic);
-  conf (in_equivalence, automatic);
   conf (result, automatic);
   conf (use_assoc, automatic);
   conf (dummy, automatic);
@@ -4261,6 +4260,7 @@ save_symbol (gfc_symbol *sym)
     return;
 
   if (sym->attr.in_common
+      || sym->attr.in_equivalence
       || sym->attr.dummy
       || sym->attr.result
       || sym->attr.flavor != FL_VARIABLE)
