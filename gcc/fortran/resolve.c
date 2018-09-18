@@ -964,7 +964,8 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
       if (!(csym->ts.u.derived->attr.sequence
 	    || csym->ts.u.derived->attr.is_bind_c))
 	{
-	  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+	  if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+              || flag_dec_sequence)
 	    /* Assume sequence. */
 	    csym->ts.u.derived->attr.sequence = 1;
 	  else
