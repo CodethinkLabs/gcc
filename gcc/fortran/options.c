@@ -69,6 +69,7 @@ set_dec_flags (int value)
   flag_dec_static |= value;
   flag_dec_math |= value;
   flag_dec_sequence |= value;
+  flag_dec_promotion |= value;
 }
 
 

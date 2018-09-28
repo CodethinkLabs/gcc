@@ -963,7 +963,7 @@ check_int_real_promotion (gfc_expr *a, gfc_expr *b)
 bool
 gfc_check_a_p (gfc_expr *a, gfc_expr *p)
 {
-  if (flag_dec)
+  if (flag_dec_promotion)
     return check_int_real_promotion (a, p);
 
   if (!int_or_real_check (a, 0))
@@ -3227,7 +3227,7 @@ gfc_check_min_max (gfc_actual_arglist *arg)
       return false;
     }
 
-  if (flag_dec && x->ts.type != BT_CHARACTER)
+  if (flag_dec_promotion && x->ts.type != BT_CHARACTER)
     return check_rest_int_real (arg);
   else
     return check_rest (x->ts.type, x->ts.kind, arg);
@@ -4492,7 +4492,7 @@ gfc_check_shift (gfc_expr *i, gfc_expr *shift)
 bool
 gfc_check_sign (gfc_expr *a, gfc_expr *b)
 {
-  if (flag_dec)
+  if (flag_dec_promotion)
     return check_int_real_promotion (a, b);
 
   if (!int_or_real_check (a, 0))
