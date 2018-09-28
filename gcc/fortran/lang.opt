@@ -452,6 +452,10 @@ fdec-math
 Fortran Var(flag_dec_math)
 Enable legacy math intrinsics for compatibility.
 
+fdec-non-logical-if
+Fortran Var(flag_dec_non_logical_if)
+Enable support for non-logical expressions in if statements.
+
 fdec-promotion
 Fortran Var(flag_dec_promotion)
 Add support for type promotion in intrinsic arguments

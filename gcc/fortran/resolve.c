@@ -10194,7 +10194,8 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_IF:
 	  if (t && b->expr1 != NULL)
 	    {
-	      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && b->expr1->ts.type != BT_LOGICAL)
+	      if ((flag_dec_non_logical_if || gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+		  && b->expr1->ts.type != BT_LOGICAL)
 		{
 		  gfc_expr* cast;
 		  cast = gfc_ne (b->expr1, gfc_get_int_expr (1, &gfc_current_locus, 0), INTRINSIC_NE);
@@ -11480,7 +11481,8 @@ start:
 	case EXEC_IF:
 	  if (t && code->expr1 != NULL)
             {
-	      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY && code->expr1->ts.type != BT_LOGICAL)
+	      if ((flag_dec_non_logical_if || gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+		  && code->expr1->ts.type != BT_LOGICAL)
 		{
 		  gfc_expr* cast;
 		  cast = gfc_ne (code->expr1, gfc_get_int_expr (1, &gfc_current_locus, 0), INTRINSIC_NE);
