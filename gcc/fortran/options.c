@@ -71,6 +71,7 @@ set_dec_flags (int value)
   flag_dec_sequence |= value;
   flag_dec_promotion |= value;
   flag_dec_non_logical_if |= value;
+  flag_dec_override_kind |= value;
 }
 
 

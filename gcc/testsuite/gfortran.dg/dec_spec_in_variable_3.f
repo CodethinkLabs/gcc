@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=extra-legacy" }
+! { dg-options "-fdec-override-kind" }
 !
 ! Test kind specification in variable not in type
 !

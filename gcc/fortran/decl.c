@@ -2401,7 +2401,7 @@ variable_decl (int elem)
   cl_match = MATCH_NO;
 
   /* Check for a character length clause before an array clause */
-  if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+  if (flag_dec_override_kind || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
     {
       if (current_ts.type == BT_CHARACTER)
 	{
