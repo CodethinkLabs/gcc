@@ -758,7 +758,8 @@ format_item_1:
 
     case FMT_RPAREN:
       /* Oracle allows a blank format item. */
-      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+      if (flag_dec_blank_format_item
+	  || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
         goto finished;
       else
 	{
