@@ -4940,7 +4940,7 @@ resolve_substring (gfc_ref *ref)
 	return false;
 
       /* In legacy mode, allow non-integer string indexes by converting */
-      if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+      if ((flag_dec_non_integer_index || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
 	  && ref->u.ss.start->ts.type != BT_INTEGER
 	  && gfc_numeric_ts (&ref->u.ss.start->ts))
 	{
@@ -4980,7 +4980,7 @@ resolve_substring (gfc_ref *ref)
 	return false;
 
       /* Non-integer string index endings, as for start */
-      if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+      if ((flag_dec_non_integer_index || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
 	  && ref->u.ss.end->ts.type != BT_INTEGER
 	  && gfc_numeric_ts (&ref->u.ss.end->ts))
 	{
