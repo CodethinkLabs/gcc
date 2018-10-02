@@ -2675,7 +2675,7 @@ gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 bool
 gfc_check_int (gfc_expr *x, gfc_expr *kind)
 {
-  if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+  if ((flag_dec_hollerith_conversion || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
       && x->ts.type == BT_CHARACTER)
     return true;
 

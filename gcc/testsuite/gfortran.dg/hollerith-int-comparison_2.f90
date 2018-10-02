@@ -1,5 +1,5 @@
       ! { dg-do run }
-      ! { dg-options "-std=extra-legacy" }
+      ! { dg-options "-fdec" }
 
       program convert
       integer*4 b

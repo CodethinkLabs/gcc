@@ -1,5 +1,5 @@
       ! { dg-do run }
-      ! { dg-options "-std=extra-legacy" }
+      ! { dg-options "-fdec-hollerith-conversion" }
 
       program convert
       integer*4 b
