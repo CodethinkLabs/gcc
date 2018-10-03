@@ -769,6 +769,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
     case OPT_std_legacy:
     case OPT_fdec_hollerith_conversion:
     case OPT_fdec_char_data_as_int:
+    case OPT_fdec_old_init:
       set_default_std_flags ();
       gfc_option.warn_std = 0;
       break;

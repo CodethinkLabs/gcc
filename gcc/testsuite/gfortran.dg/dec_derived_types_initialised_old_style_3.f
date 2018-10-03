@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=legacy -fdec-old-init" }
+! { dg-options "-fdec-old-init" }
 !
 ! Test old style initializers in derived types
 !
