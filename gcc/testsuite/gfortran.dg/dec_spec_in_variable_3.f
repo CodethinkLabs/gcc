@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do run }
 ! { dg-options "-fdec-override-kind" }
 !
 ! Test kind specification in variable not in type

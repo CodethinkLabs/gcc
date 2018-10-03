@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do run }
 ! { dg-options "-std=extra-legacy" }
 !
 ! Test kind specification in variable not in type
