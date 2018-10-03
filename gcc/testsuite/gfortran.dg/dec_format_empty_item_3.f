@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do run }
 ! { dg-options "-fdec-blank-format-item" }
 !
 ! Test blank/empty format items in format string
