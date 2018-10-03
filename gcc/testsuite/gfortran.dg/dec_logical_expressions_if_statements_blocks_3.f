@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do run }
 ! { dg-options "-fdec-non-logical-if" }
 !
 ! Allow logical expressions in if statements and blocks
