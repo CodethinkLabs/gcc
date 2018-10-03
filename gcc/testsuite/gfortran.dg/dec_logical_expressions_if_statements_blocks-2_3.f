@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=legacy -fdec-non-logical-if" }
+! { dg-options "-fdec-non-logical-if" }
 
        function othersub1()
         integer*4 othersub1
