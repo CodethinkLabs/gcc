@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do run }
 ! { dg-options "-fdec -finit-real=snan" }
 !
 ! Test promotion between integers and reals in intrinsic operations.
