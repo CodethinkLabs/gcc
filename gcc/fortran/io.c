@@ -914,7 +914,7 @@ data_desc:
 
       if (u != FMT_POSINT)
 	{
-	  if (flag_dec)
+	  if (flag_dec_format_defaults)
 	    {
 	      /* Assume a default width based on the variable size.  */
 	      saved_token = u;
@@ -1045,7 +1045,7 @@ data_desc:
 	goto fail;
       if (t != FMT_ZERO && t != FMT_POSINT)
 	{
-	  if (flag_dec)
+	  if (flag_dec_format_defaults)
 	    {
 	      /* Assume the default width is expected here and continue lexing.  */
 	      value = 0; /* It doesn't matter what we set the value to here.  */
@@ -1121,7 +1121,7 @@ data_desc:
 	goto fail;
       if (t != FMT_ZERO && t != FMT_POSINT)
 	{
-	  if (flag_dec)
+	  if (flag_dec_format_defaults)
 	    {
 	      /* Assume the default width is expected here and continue lexing.  */
 	      value = 0; /* It doesn't matter what we set the value to here.  */
@@ -4326,8 +4326,8 @@ get_io_list:
     }
 
   /* See if we want to use defaults for missing exponents in real transfers
-     and other DEC runtime extensions.  */
-  if (flag_dec)
+     and other DEC runtime extensions. */
+  if (flag_dec_format_defaults)
     dt->dec_ext = 1;
 
   /* A full IO statement has been matched.  Check the constraints.  spec_end is

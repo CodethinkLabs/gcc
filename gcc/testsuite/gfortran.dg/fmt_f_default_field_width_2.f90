@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options -fdec }
+! { dg-options -fdec-format-defaults }
 !
 ! Test case for the default field widths enabled by the -fdec-format-defaults flag.
 !

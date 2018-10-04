@@ -22,27 +22,27 @@
     real_4 = 4.18
     write(buffer, '(A, G, A)') ':',real_4,':'
     print *,buffer
-    if (buffer.ne.":   4.180000    :") call abort
+    if (buffer.ne.":   4.180000    :") stop 1
 
     real_4 = 0.00000018
     write(buffer, '(A, G, A)') ':',real_4,':'
     print *,buffer
-    if (buffer.ne.":  0.1800000E-06:") call abort
+    if (buffer.ne.":  0.1800000E-06:") stop 2
 
     real_4 = 18000000.4
     write(buffer, '(A, G, A)') ':',real_4,':'
     print *,buffer
-    if (buffer.ne.":  0.1800000E+08:") call abort
+    if (buffer.ne.":  0.1800000E+08:") stop 3
 
     real_8 = 4.18
     write(buffer, '(A, G, A)') ':',real_8,':'
     print *,buffer
     len = len_trim(buffer)
-    if (len /= 27) call abort
+    if (len /= 27) stop 4
 
     real_16 = 4.18
     write(buffer, '(A, G, A)') ':',real_16,':'
     print *,buffer
     len = len_trim(buffer)
-    if (len /= 44) call abort
+    if (len /= 44) stop 5
 end
