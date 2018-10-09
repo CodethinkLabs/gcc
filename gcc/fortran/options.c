@@ -79,6 +79,7 @@ set_dec_flags (int value)
   flag_dec_hollerith_conversion |= value;
   flag_dec_format_defaults |= value;
   flag_dec_add_missing_indexes |= value;
+  flag_dec_pad_with_spaces |= value;
 }
 
 
