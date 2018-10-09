@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do run }
 ! { dg-options "-std=extra-legacy" }
 !
 ! Test ICHAR and IACHAR with more than one character as argument
