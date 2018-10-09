@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=extra-legacy" }
+! { dg-options "-fdec" }
 !
 ! Test character declaration with mixed string length and array specification
 !
