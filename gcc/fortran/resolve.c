@@ -6306,7 +6306,7 @@ resolve_typebound_generic_call (gfc_expr* e, const char **name)
 				  && gfc_sym_get_dummy_args (target) == NULL);
 
 	  /* Check if this arglist matches the formal.  */
-	  matches = gfc_arglist_matches_symbol (&args, target, MATCH_EXACT);
+	  matches = gfc_arglist_matches_symbol (&args, target);
 
 	  /* Clean up and break out of the loop if we've found it.  */
 	  gfc_free_actual_arglist (args);
