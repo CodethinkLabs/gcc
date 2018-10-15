@@ -12044,6 +12044,12 @@ static int indirect_thunks_used;
    by call and return thunks functions with the BND prefix.  */
 static int indirect_thunks_bnd_used;
 
+/* True if return thunk function via CX is needed.  */
+static bool indirect_return_via_cx;
+/* True if return thunk function via CX with the BND prefix is
+   needed.  */
+static bool indirect_return_via_cx_bnd;
+
 #ifndef INDIRECT_LABEL
 # define INDIRECT_LABEL "LIND"
 #endif
@@ -12051,34 +12057,32 @@ static int indirect_thunks_bnd_used;
 /* Fills in the label name that should be used for the indirect thunk.  */
 
 static void
-indirect_thunk_name (char name[32], int regno, bool need_bnd_p,
-		     bool ret_p)
+indirect_thunk_name (char name[32], unsigned int regno,
+		     bool need_bnd_p, bool ret_p)
 {
-  if (regno >= 0 && ret_p)
+  if (regno != INVALID_REGNUM && regno != CX_REG && ret_p)
     gcc_unreachable ();
 
   if (USE_HIDDEN_LINKONCE)
     {
       const char *bnd = need_bnd_p ? "_bnd" : "";
-      if (regno >= 0)
+      const char *ret = ret_p ? "return" : "indirect";
+      if (regno != INVALID_REGNUM)
 	{
 	  const char *reg_prefix;
 	  if (LEGACY_INT_REGNO_P (regno))
 	    reg_prefix = TARGET_64BIT ? "r" : "e";
 	  else
 	    reg_prefix = "";
-	  sprintf (name, "__x86_indirect_thunk%s_%s%s",
-		   bnd, reg_prefix, reg_names[regno]);
+	  sprintf (name, "__x86_%s_thunk%s_%s%s",
+		   ret, bnd, reg_prefix, reg_names[regno]);
 	}
       else
-	{
-	  const char *ret = ret_p ? "return" : "indirect";
-	  sprintf (name, "__x86_%s_thunk%s", ret, bnd);
-	}
+	sprintf (name, "__x86_%s_thunk%s", ret, bnd);
     }
   else
     {
-      if (regno >= 0)
+      if (regno != INVALID_REGNUM)
 	{
 	  if (need_bnd_p)
 	    ASM_GENERATE_INTERNAL_LABEL (name, "LITBR", regno);
@@ -12130,7 +12134,7 @@ indirect_thunk_name (char name[32], int regno, bool need_bnd_p,
  */
 
 static void
-output_indirect_thunk (bool need_bnd_p, int regno)
+output_indirect_thunk (bool need_bnd_p, unsigned int regno)
 {
   char indirectlabel1[32];
   char indirectlabel2[32];
@@ -12160,7 +12164,7 @@ output_indirect_thunk (bool need_bnd_p, int regno)
 
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
-  if (regno >= 0)
+  if (regno != INVALID_REGNUM)
     {
       /* MOV.  */
       rtx xops[2];
@@ -12184,12 +12188,12 @@ output_indirect_thunk (bool need_bnd_p, int regno)
 }
 
 /* Output a funtion with a call and return thunk for indirect branch.
-   If BND_P is true, the BND prefix is needed.   If REGNO != -1,  the
-   function address is in REGNO.  Otherwise, the function address is
+   If BND_P is true, the BND prefix is needed.  If REGNO != INVALID_REGNUM,
+   the function address is in REGNO.  Otherwise, the function address is
    on the top of stack.  */
 
 static void
-output_indirect_thunk_function (bool need_bnd_p, int regno)
+output_indirect_thunk_function (bool need_bnd_p, unsigned int regno)
 {
   char name[32];
   tree decl;
@@ -12238,9 +12242,23 @@ output_indirect_thunk_function (bool need_bnd_p, int regno)
 	ASM_OUTPUT_LABEL (asm_out_file, name);
       }
 
-  if (regno < 0)
+  /* Create alias for __x86_return_thunk/__x86_return_thunk_bnd or
+     __x86_return_thunk_ecx/__x86_return_thunk_ecx_bnd.  */
+  bool need_alias;
+  if (regno == INVALID_REGNUM)
+    need_alias = true;
+  else if (regno == CX_REG)
     {
-      /* Create alias for __x86.return_thunk/__x86.return_thunk_bnd.  */
+      if (need_bnd_p)
+	need_alias = indirect_return_via_cx_bnd;
+      else
+	need_alias = indirect_return_via_cx;
+    }
+  else
+    need_alias = false;
+
+  if (need_alias)
+    {
       char alias[32];
 
       indirect_thunk_name (alias, regno, need_bnd_p, true);
@@ -12312,16 +12330,16 @@ static void
 ix86_code_end (void)
 {
   rtx xops[2];
-  int regno;
+  unsigned int regno;
 
   if (indirect_thunk_needed)
-    output_indirect_thunk_function (false, -1);
+    output_indirect_thunk_function (false, INVALID_REGNUM);
   if (indirect_thunk_bnd_needed)
-    output_indirect_thunk_function (true, -1);
+    output_indirect_thunk_function (true, INVALID_REGNUM);
 
   for (regno = FIRST_REX_INT_REG; regno <= LAST_REX_INT_REG; regno++)
     {
-      int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
+      unsigned int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
       if ((indirect_thunks_used & (1 << i)))
 	output_indirect_thunk_function (false, regno);
 
@@ -14061,7 +14079,6 @@ ix86_expand_prologue (void)
 {
   struct machine_function *m = cfun->machine;
   rtx insn, t;
-  struct ix86_frame frame;
   HOST_WIDE_INT allocate;
   bool int_registers_saved;
   bool sse_registers_saved;
@@ -14085,7 +14102,7 @@ ix86_expand_prologue (void)
   m->fs.sp_valid = true;
 
   ix86_compute_frame_layout ();
-  frame = m->frame;
+  const struct ix86_frame &frame = cfun->machine->frame;
 
   if (!TARGET_64BIT && ix86_function_ms_hook_prologue (current_function_decl))
     {
@@ -14748,13 +14765,12 @@ ix86_expand_epilogue (int style)
 {
   struct machine_function *m = cfun->machine;
   struct machine_frame_state frame_state_save = m->fs;
-  struct ix86_frame frame;
   bool restore_regs_via_mov;
   bool using_drap;
 
   ix86_finalize_stack_realign_flags ();
   ix86_compute_frame_layout ();
-  frame = m->frame;
+  const struct ix86_frame &frame = cfun->machine->frame;
 
   m->fs.sp_valid = (!frame_pointer_needed
 		    || (crtl->sp_is_unchanging
@@ -14796,11 +14812,13 @@ ix86_expand_epilogue (int style)
 				  + UNITS_PER_WORD);
     }
 
+  HOST_WIDE_INT reg_save_offset = frame.reg_save_offset;
+
   /* Special care must be taken for the normal return case of a function
      using eh_return: the eax and edx registers are marked as saved, but
      not restored along this path.  Adjust the save location to match.  */
   if (crtl->calls_eh_return && style != 2)
-    frame.reg_save_offset -= 2 * UNITS_PER_WORD;
+    reg_save_offset -= 2 * UNITS_PER_WORD;
 
   /* EH_RETURN requires the use of moves to function properly.  */
   if (crtl->calls_eh_return)
@@ -14816,11 +14834,11 @@ ix86_expand_epilogue (int style)
   else if (TARGET_EPILOGUE_USING_MOVE
 	   && cfun->machine->use_fast_prologue_epilogue
 	   && (frame.nregs > 1
-	       || m->fs.sp_offset != frame.reg_save_offset))
+	       || m->fs.sp_offset != reg_save_offset))
     restore_regs_via_mov = true;
   else if (frame_pointer_needed
 	   && !frame.nregs
-	   && m->fs.sp_offset != frame.reg_save_offset)
+	   && m->fs.sp_offset != reg_save_offset)
     restore_regs_via_mov = true;
   else if (frame_pointer_needed
 	   && TARGET_USE_LEAVE
@@ -14858,7 +14876,7 @@ ix86_expand_epilogue (int style)
       rtx t;
 
       if (frame.nregs)
-	ix86_emit_restore_regs_using_mov (frame.reg_save_offset, style == 2);
+	ix86_emit_restore_regs_using_mov (reg_save_offset, style == 2);
 
       /* eh_return epilogues need %ecx added to the stack pointer.  */
       if (style == 2)
@@ -14948,19 +14966,19 @@ ix86_expand_epilogue (int style)
 	 epilogues.  */
       if (!m->fs.sp_valid
  	  || (TARGET_SEH
-	      && (m->fs.sp_offset - frame.reg_save_offset
+	      && (m->fs.sp_offset - reg_save_offset
 		  >= SEH_MAX_FRAME_SIZE)))
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, hard_frame_pointer_rtx,
 				     GEN_INT (m->fs.fp_offset
-					      - frame.reg_save_offset),
+					      - reg_save_offset),
 				     style, false);
 	}
-      else if (m->fs.sp_offset != frame.reg_save_offset)
+      else if (m->fs.sp_offset != reg_save_offset)
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 				     GEN_INT (m->fs.sp_offset
-					      - frame.reg_save_offset),
+					      - reg_save_offset),
 				     style,
 				     m->fs.cfa_reg == stack_pointer_rtx);
 	}
@@ -29109,18 +29127,17 @@ ix86_output_indirect_branch (rtx call_op, const char *xasm,
   else
     ix86_output_indirect_branch_via_push (call_op, xasm, sibcall_p);
 }
-/* Output indirect jump.  CALL_OP is the jump target.  Jump is a
-   function return if RET_P is true.  */
+
+/* Output indirect jump.  CALL_OP is the jump target.  */
 
 const char *
-ix86_output_indirect_jmp (rtx call_op, bool ret_p)
+ix86_output_indirect_jmp (rtx call_op)
 {
   if (cfun->machine->indirect_branch_type != indirect_branch_keep)
     {
-      /* We can't have red-zone if this isn't a function return since
-	 "call" in the indirect thunk pushes the return address onto
-	 stack, destroying red-zone.  */
-      if (!ret_p && ix86_red_zone_size != 0)
+      /* We can't have red-zone since "call" in the indirect thunk
+         pushes the return address onto stack, destroying red-zone.  */
+      if (ix86_red_zone_size != 0)
 	gcc_unreachable ();
 
       ix86_output_indirect_branch (call_op, "%0", true);
@@ -29146,7 +29163,8 @@ ix86_output_function_return (bool long_p)
 	{
 	  bool need_thunk = (cfun->machine->function_return_type
 			     == indirect_branch_thunk);
-	  indirect_thunk_name (thunk_name, -1, need_bnd_p, true);
+	  indirect_thunk_name (thunk_name, INVALID_REGNUM, need_bnd_p,
+			       true);
 	  if (need_bnd_p)
 	    {
 	      indirect_thunk_bnd_needed |= need_thunk;
@@ -29159,7 +29177,7 @@ ix86_output_function_return (bool long_p)
 	    }
 	}
       else
-	output_indirect_thunk (need_bnd_p, -1);
+	output_indirect_thunk (need_bnd_p, INVALID_REGNUM);
 
       return "";
     }
@@ -29168,6 +29186,86 @@ ix86_output_function_return (bool long_p)
     return "%!ret";
 
   return "rep%; ret";
+}
+
+/* Output indirect function return.  RET_OP is the function return
+   target.  */
+
+const char *
+ix86_output_indirect_function_return (rtx ret_op)
+{
+  if (cfun->machine->function_return_type != indirect_branch_keep)
+    {
+      char thunk_name[32];
+      bool need_bnd_p = ix86_bnd_prefixed_insn_p (current_output_insn);
+      unsigned int regno = REGNO (ret_op);
+      gcc_assert (regno == CX_REG);
+
+      if (cfun->machine->function_return_type
+	  != indirect_branch_thunk_inline)
+	{
+	  bool need_thunk = (cfun->machine->function_return_type
+			     == indirect_branch_thunk);
+	  indirect_thunk_name (thunk_name, regno, need_bnd_p, true);
+	  if (need_bnd_p)
+	    {
+	      if (need_thunk)
+		{
+		  indirect_return_via_cx_bnd = true;
+		  indirect_thunks_bnd_used |= 1 << CX_REG;
+		}
+	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
+	    }
+	  else
+	    {
+	      if (need_thunk)
+		{
+		  indirect_return_via_cx = true;
+		  indirect_thunks_used |= 1 << CX_REG;
+		}
+	      fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	    }
+	}
+      else
+	output_indirect_thunk (need_bnd_p, regno);
+
+      return "";
+    }
+  else
+    return "%!jmp\t%A0";
+}
+
+/* Split simple return with popping POPC bytes from stack to indirect
+   branch with stack adjustment .  */
+
+void
+ix86_split_simple_return_pop_internal (rtx popc)
+{
+  struct machine_function *m = cfun->machine;
+  rtx ecx = gen_rtx_REG (SImode, CX_REG);
+  rtx_insn *insn;
+
+  /* There is no "pascal" calling convention in any 64bit ABI.  */
+  gcc_assert (!TARGET_64BIT);
+
+  insn = emit_insn (gen_pop (ecx));
+  m->fs.cfa_offset -= UNITS_PER_WORD;
+  m->fs.sp_offset -= UNITS_PER_WORD;
+
+  rtx x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
+  x = gen_rtx_SET (stack_pointer_rtx, x);
+  add_reg_note (insn, REG_CFA_ADJUST_CFA, x);
+  add_reg_note (insn, REG_CFA_REGISTER, gen_rtx_SET (ecx, pc_rtx));
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, popc);
+  x = gen_rtx_SET (stack_pointer_rtx, x);
+  insn = emit_insn (x);
+  add_reg_note (insn, REG_CFA_ADJUST_CFA, x);
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  /* Now return address is in ECX.  */
+  emit_jump_insn (gen_simple_return_indirect_internal (ecx));
 }
 
 /* Output the assembly for a call instruction.  */
