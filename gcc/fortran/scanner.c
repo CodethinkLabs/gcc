@@ -82,6 +82,9 @@ size_t file_changes_allocated;
 
 static gfc_char_t *last_error_char;
 
+static fpos_t file_position;
+
+
 /* Functions dealing with our wide characters (gfc_char_t) and
    sequences of such characters.  */
 
@@ -2164,18 +2167,378 @@ add_line (gfc_char_t *line, int len, int trunc)
 
 static bool load_file (const char *, const char *, bool);
 
+int
+wide_substrncasecmp (const gfc_char_t *s1, const char *s2, size_t index, size_t n)
+{
+  size_t length = strlen(s2);
+  if (index + n > length)
+    return 1;
+
+  const char *ss2 = s2 + index;
+  gfc_char_t c1, c2;
+
+  while (n-- > 0)
+    {
+      c1 = gfc_wide_tolower (*s1++);
+      c2 = TOLOWER (*ss2++);
+      if (c1 != c2)
+	return (c1 > c2 ? 1 : -1);
+      if (c1 == '\0')
+	return 0;
+    }
+  return 0;
+}
+
+/* The include keyword may be split and continued on multiple
+   lines.  It is possible that comment lines are inserted between
+   continuations.  */
+
+static bool
+include_found_free (FILE *input, int *lines_read)
+{
+  char *include = "include";
+  int length = 7;
+  int pos = 0;
+  bool comment = false;
+  bool continuation_seen = false;
+  bool optional = false;
+  gfc_char_t c = getc (input);
+  while (c != EOF && pos < length)
+    {
+      if (c == '\n')
+	{
+	  if (!continuation_seen)
+	    break;
+	  else
+	    {
+	      optional = true;
+	      continuation_seen = false;
+	    }
+	  (*lines_read)++;
+	  comment = false;
+	}
+      else if (c == '!')
+	{
+	  if (continuation_seen)
+	    comment = true;
+	  else
+	    break;
+	}
+      else if (c != ' ' && c != '\t' && !comment)
+	{
+	  /* previous character must not be an &.  */
+	  if (c == '&')
+	    {
+	      if (!optional)
+                {
+                  if (continuation_seen)
+		    break;
+		  continuation_seen = true;
+                }
+	    }
+	  else
+	    {
+	      if (include[pos] != c)
+		break;
+	      pos++;
+	    }
+	  optional = false;
+	}
+      c = getc (input);
+    }
+  return pos == length;
+}
+
+static bool
+include_found_fixed (FILE *input, int *lines_read)
+{
+  *lines_read = 1;
+
+  /* Look ahead for "include" taking into account continations and
+     possible comments and blank lines before continuation.
+     Continuations are indicated by column six containing a
+     character that is not a space, the digit zero or a new
+     line.  Continuation indicated by digits in columns 7 to 72
+     preceded only by spaces is not supported.  */
+
+  char *include = "include";
+  int length = 7;
+  int pos = 0;
+  gfc_char_t x = '\0';
+  bool comment = false;
+  x = getc (input);
+  int column = 1;
+  bool cont_expected = false;
+  while (x != EOF && pos < length)
+    {
+      if ((x == '*' || x == 'c' || x == 'C' || x == 'd' || x == 'D'
+	  || x == '!') && column == 1)
+	comment = true;
+      else if (x == '\n')
+	{
+	  if (comment && !cont_expected)
+	    break;
+	  if (column <= 6 && !comment || pos == 0)
+	    break;
+	  (*lines_read)++;
+	  comment = false;
+	  column = 0;
+	}
+      else if (x != ' ' && !comment)
+	{
+	  if ((column < 6) || (column == 6 && (x == ' ' || x == '0')))
+	    break;
+	  else if (column > 6)
+	    {
+	      if (include[pos] != x)
+		break;
+	      pos++;
+	    }
+	}
+      x = getc (input);
+      column++;
+    }
+  return pos == length;
+}
+
+static bool
+include_found (FILE *input, int *lines_read)
+{
+  if (fsetpos(input, &file_position) != 0)
+    exit (FATAL_EXIT_CODE);
+  if (gfc_current_form == FORM_FREE)
+    return include_found_free (input, lines_read);
+  else
+    return include_found_fixed (input, lines_read);
+}
+
+static void
+get_include_filename_fixed (FILE *input, gfc_char_t **pbuf, int *pbuflen, int *lines_read)
+{
+  gfc_char_t c;
+  int buflen = *pbuflen;
+  gfc_char_t *buffer;
+
+  if (*pbuf == NULL)
+    {
+      buflen = 132;
+      *pbuf = gfc_get_wide_string (buflen + 1);
+    }
+
+  buffer = *pbuf;
+
+  /* Fast forward to find end of 'include'.  */
+  int column = 0;
+  do
+    {
+      c = getc (input);
+      column++;
+      if (c == '\n')
+	{
+	  (*lines_read)++;
+	  column = 0;
+	}
+      else if (c == EOF)
+	break;
+    } while (c != 'e');
+
+  /* Look for opening quote */
+
+  /* Continuation may occur.  Continuation is indicated by a character
+     in column 6 that is not a space, the digit zero or a new line.
+     Continuation in columns 7 to 72 is not supported.  Comment lines
+     can appear before a continuation.  */
+  bool quote = false;
+  bool comment = false;
+  bool failed = false;
+  while (c != EOF && !failed)
+    {
+      c = getc (input);
+      if (c == '"' || c == '\'')
+	{
+	  if (quote)
+	    {
+	      /* finished.  */
+	      quote = false;
+	      break;
+	    }
+	  else
+	    quote = true;
+	}
+      else if ((c == 'C' || c == 'c' || c == 'd' || c == 'D'
+		|| c == '*' || c == '!') && column == 1)
+	  comment = true;
+      else if (c == '\n')
+	{
+	  (*lines_read)++;
+	  if (column == 6)
+	    failed = true;
+	  else
+	    {
+	      comment = false;
+	      column = 0;
+	    }
+	}
+      else if (!comment)
+	{
+	  if ((column < 6 && c != ' ')
+	      || (column == 6 && (c == ' ' || c == '0')))
+	    failed = true;
+	  else if (quote && column > 6)
+	    {
+	      if (buffer - *pbuf < buflen)
+		*buffer++ = c;
+	      else
+		failed = true;
+	    }
+	}
+      column++;
+    }
+
+  /* If quote is false then the filename is complete otherwise
+     there is no filename to return.  */
+  if (failed)
+    {
+       /* Failed. */
+       free (*pbuf);
+       *pbuf = NULL;
+    }
+  else
+    {
+      *buffer = '\0';
+      *pbuflen = buflen;
+    }
+}
+
+static void
+get_include_filename_free (FILE *input, gfc_char_t **pbuf, int *pbuflen, int *lines_read)
+{
+  gfc_char_t c;
+  int buflen = *pbuflen;
+  gfc_char_t *buffer;
+
+  if (*pbuf == NULL)
+    {
+      buflen = 132;
+      *pbuf = gfc_get_wide_string (buflen + 1);
+    }
+
+  buffer = *pbuf;
+
+  /* Fast forward to find end of 'include'.  */
+  do
+    {
+      c = getc (input);
+      if (c == '\n')
+	(*lines_read)++;
+      else if (c == EOF)
+	break;
+    } while (c != 'e');
+
+  /* Look for opening quote */
+
+  bool quote = false;
+  bool optional = false;
+  bool mandatory = false;
+  bool comment = false;
+  bool continuation_seen = false;
+  bool failed = false;
+  while (c != EOF && !failed)
+    {
+      c = getc (input);
+      if (c == '"' || c == '\'')
+	{
+	  if (!optional && continuation_seen)
+	    failed = true;
+	  else
+	    {
+	      if (quote)
+		break;
+	      quote = true;
+	      optional = false;
+	      continuation_seen = false;
+	    }
+	}
+      else if (c == '!')
+	comment = true;
+      else if (c == '\n')
+	{
+	  (*lines_read)++;
+	  comment = false;
+	  if (!continuation_seen)
+	    failed = true;
+	  else if (quote)
+	    mandatory = true;
+	  else
+	    optional = true;
+	}
+      else if (c != ' ' && c != '\t' && !comment)
+	{
+	  if (c == '&' )
+	    {
+	      if (mandatory)
+		{
+		  mandatory = false;
+		  continuation_seen = false;
+		}
+	      else if (optional)
+		{
+		  optional = false;
+		  continuation_seen = false;
+		}
+	      else if (continuation_seen)
+		failed = true;
+	      else
+		continuation_seen = true;
+	    }
+	  else if (quote)
+	    {
+	      if (!(continuation_seen && mandatory)
+		  && (buffer - *pbuf < buflen))
+		*buffer++ = c;
+	      else
+		failed = true;
+	    }
+	  else
+	    failed = true;
+	}
+    }
+
+  if (failed)
+    {
+       /* Failed. */
+       free (*pbuf);
+       *pbuf = NULL;
+    }
+  else
+    {
+      *buffer = '\0';
+      *pbuflen = buflen;
+    }
+}
+
 /* include_line()-- Checks a line buffer to see if it is an include
    line.  If so, we call load_file() recursively to load the included
    file.  We never return a syntax error because a statement like
    "include = 5" is perfectly legal.  We return false if no include was
-   processed or true if we matched an include.  */
+   processed and there were no continuations or true if we matched an
+   include or there were contination lines.
+
+   If continuation lines have been read it is necessary to add them to
+   the in memory copy.
+
+   returns false if line has NOT been added
+   returns true if line have been added
+   lines_read is returned as zero if the no file inclusion occurred.  */
 
 static bool
-include_line (FILE *input, gfc_char_t *line, int *len, int *trunc)
+include_line (FILE *input, gfc_char_t *line, int *len, int *trunc, int *lines_read)
 {
-  gfc_char_t quote, *c, *begin, *stop;
+  gfc_char_t *c;
   char *filename;
+  fpos_t next_line; /* File position of the next line.  */
 
+  *lines_read = 0;
   c = line;
 
   if (flag_openmp || flag_openmp_simd)
@@ -2198,104 +2561,87 @@ include_line (FILE *input, gfc_char_t *line, int *len, int *trunc)
   while (*c == ' ' || *c == '\t')
     c++;
 
-  if (gfc_wide_strncasecmp (c, "include", 7))
-    return false;
-
-  c += 7;
-  while (*c == ' ' || *c == '\t')
-    c++;
-
-  /* If we have reached EOL, read ahead to find the quote.  We eat
-     any whitespace.  We use getchar behind the back of load_line and
-     put it back if we do not find what we are looking for.  */
-  int new_line_len = 0;
-  int new_trunc = 0;
-  gfc_char_t *new_line = NULL;
-  if (*c == '\0')
-    {
-      unsigned char x;
-
-      do
-	x = getc (input);
-      while (x == ' ' || x == '\t' || x == '\r' || x == '\n');
-
-      /* Always put the character back.  */
-      ungetc (x, input);
-
-      /* If we did not fine the quote, put the character back and
-	 return that no INCLUDE has processed.  */
-      if (x != '"' && x != '\'')
-	return false;
-
-      /* Read the next line and continue processing.  */
-      new_trunc = load_line (input, &new_line, &new_line_len, NULL);
-      c = new_line;
-    }
-
-  /* Find filename between quotes.  */
-  
-  quote = *c++;
-  if (quote != '"' && quote != '\'')
-    return false;
-
-  begin = c;
-
-  while (*c != quote && *c != '\0')
-    c++;
-
-  /* Reached EOL without finding ending quote.  */
-  if (*c == '\0')
-    {
-      /* If we loaded another line, then we want to add the
-	 original line and return the current line.
-
-	 We do not try to support multi-line filenames for
-	 INCLUDE statements.  */
-      if (new_line)
-	{
-	  add_line (line, *len, *trunc);
-	  *line = *new_line;
-	  *len = new_line_len;
-	  *trunc = new_trunc;
-	}
-      return false;
-    }
-
-  stop = c++;
-  
-  /* Consume trailing whitespace on this line.  */
-  while (*c == ' ' || *c == '\t')
-    c++;
-
-  /* If we encounter real characters before reaching EOL, then
-     we do not consider this an include line.  */
-  if (*c != '\0' && *c != '!')
-    {
-      /* If we loaded another line, then we want to add the
-	 original line and return the current line.  */
-      if (new_line)
-	{
-	  add_line (line, *len, *trunc);
-	  *line = *new_line;
-	  *len = new_line_len;
-	  *trunc = new_trunc;
-	}
-      return false;
-    }
-
-  /* We have an include line at this point.  */
-
-  *stop = '\0'; /* It's ok to trash the buffer, as this line won't be
-		   read by anything else.  */
-
-  filename = gfc_widechar_to_char (begin, -1);
-  if (!load_file (filename, NULL, false))
+  if (fgetpos(input, &next_line) != 0)
     exit (FATAL_EXIT_CODE);
 
-  free (filename);
-  return true;
-}
+  gfc_char_t *name = NULL;
+  if (include_found(input, lines_read))
+    {
+      /* Line contains include, so extract file name in file stream.
+	 If include has been used as a symbol there will be no
+	 include file to read. */
+      *lines_read = 0;
 
+
+      if (fsetpos(input, &file_position) != 0)
+	exit (FATAL_EXIT_CODE);
+
+      int length = 1;
+      if (gfc_current_form == FORM_FREE)
+	get_include_filename_free (input, &name, &length, lines_read);
+      else
+	get_include_filename_fixed (input, &name, &length, lines_read);
+
+      if (name == NULL)
+	{
+	  /* No filename found so can't have been an include line.
+	     Add lines to in memory copy. */
+	  if (fsetpos(input, &next_line) != 0)
+	    exit (FATAL_EXIT_CODE);
+	  gfc_char_t *new_line;
+	  int new_trunc = 0;
+	  int i;
+	  add_line (line, *len, *trunc);
+	  for (i = 1; i < *lines_read; i++)
+	    {
+	      new_line = NULL;
+	      new_trunc = load_line(input, &new_line, &length, NULL);
+	      add_line (new_line, length, new_trunc);
+	    }
+	    *lines_read = 0; /* Not include lines. */
+	}
+      else
+	{
+
+	  filename = gfc_widechar_to_char (name, -1);
+	  if (!load_file (filename, NULL, false))
+	    exit (FATAL_EXIT_CODE);
+	  free (filename);
+	  free (name);
+	}
+      return true;
+    }
+  else
+    {
+      /* Not an include line reset file position */
+      gfc_char_t *new_line;
+      int new_trunc = 0;
+      int i;
+      int length;
+      new_line = NULL;
+      if (fsetpos(input, &next_line) != 0)
+	exit (FATAL_EXIT_CODE);
+      if (*lines_read == 0)
+	{
+	  /* Already in the correct position  */
+	  return false;
+	}
+      else
+	{
+	  /* Add original line */
+	  add_line (line, *len, *trunc);
+	  /* Read the extra lines and add to in memory copy.  */
+	  for (i = 1; i < *lines_read; i++)
+	    {
+	      new_line = NULL;
+	      new_trunc = load_line(input, &new_line, &length, NULL);
+	      add_line (new_line, length, new_trunc);
+	    }
+	}
+      *lines_read = 0; /* Not include lines. */
+      return true;
+    }
+}
 
 /* Load a file into memory by calling load_line until the file ends.  */
 
@@ -2404,6 +2750,11 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 
   for (;;)
     {
+      /* Save current file position in case we need to backtrack to
+	 the start of this line.  */
+      if (fgetpos(input, &file_position) != 0)
+	exit (FATAL_EXIT_CODE);
+
       int trunc = load_line (input, &line, &line_len, NULL);
 
       len = gfc_wide_strlen (line);
@@ -2456,10 +2807,11 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
          order mark, so first_line is not about the first line of the file
 	 but the first line that's not a preprocessor line.  */
       first_line = false;
+      int lines_read;
 
-      if (include_line (input, line, &len, &trunc))
+      if (include_line (input, line, &len, &trunc, &lines_read))
 	{
-	  current_file->line++;
+	  current_file->line += lines_read; /* Adjust current line.  */
 	  continue;
 	}
 
