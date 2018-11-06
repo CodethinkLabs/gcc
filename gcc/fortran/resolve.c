@@ -3982,7 +3982,8 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_OR:
     case INTRINSIC_EQV:
     case INTRINSIC_NEQV:
-      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY 
+	  || flag_logical_as_integer)
 	{
 	  convert_integer_to_logical (op1);
 	  convert_integer_to_logical (op2);
@@ -4029,7 +4030,8 @@ resolve_operator (gfc_expr *e)
 	  return resolve_function (e);
 	}
 
-      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY
+	  || flag_logical_as_integer)
 	{
 	  convert_integer_to_logical (op1);
 	}
@@ -4066,7 +4068,8 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
 
-      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY
+          || flag_logical_as_integer)
 	{
 	  convert_logical_to_integer (op1);
 	  convert_logical_to_integer (op2);

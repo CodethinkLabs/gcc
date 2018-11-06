@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=extra-legacy" }
+! { dg-options "-flogical-as-integer" }
 !
 ! Test conversion between logical and integer for logical operators
 !
