@@ -452,6 +452,10 @@ fdec-char-data-as-int
 Fortran Var(flag_dec_char_data_as_int)
 Enable support for character to int conversions in data statements.
 
+fdec-duplicates
+Fortran Var(flag_dec_duplicates)
+Allow varibles to be duplicated in the type specification matches.
+
 fdec-pad-with-spaces
 Fortran Var(flag_dec_pad_with_spaces)
 For character to integer conversions, use spaces for the pad rather than NUL.
