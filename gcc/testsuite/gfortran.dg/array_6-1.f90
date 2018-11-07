@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=extra-legacy" }!
+! { dg-options "-fdec" }!
 ! Checks that under-specified arrays (referencing arrays with fewer
 ! dimensions than the array spec) generates a warning.
 !
