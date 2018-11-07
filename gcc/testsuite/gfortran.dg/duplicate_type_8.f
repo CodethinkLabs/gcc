@@ -1,13 +1,9 @@
-! { dg-do compile }
+! { dg-do run }
+! { dg-options "-fdec" }
 
-! PR fortran/30239
-! Check for errors when a symbol gets declared a type twice, even if it
-! is the same.
-!
-
-      INTEGER FUNCTION foo ()
-      INTEGER :: x
-      INTEGER :: x ! { dg-error "basic type of" }
-      x = 42
+      PROGRAM TEST
+      INTEGER :: X
+      INTEGER :: X
+      X = 42
       IF (X.NE.42) STOP 1
-      END FUNCTION foo
+      END PROGRAM TEST
