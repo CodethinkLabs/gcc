@@ -772,7 +772,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_std_legacy:
     case OPT_fdec_char_data_as_int:
-    case OPT_fdec_duplicates:
     case OPT_fdec_hollerith_conversion:
     case OPT_fdec_old_init:
     case OPT_flogical_as_integer:

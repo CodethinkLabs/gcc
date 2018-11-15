@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fdec-duplicates" }
+! { dg-options "-std=legacy -fdec-duplicates" }
 
       PROGRAM TEST
       INTEGER :: X
