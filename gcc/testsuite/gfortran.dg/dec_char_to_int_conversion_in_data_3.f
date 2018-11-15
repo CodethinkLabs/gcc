@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fdec-char-data-as-int" }
+! { dg-options "-std=legacy -fdec-char-data-as-int" }
 !
 ! Test character to int conversion in DATA types
 !
