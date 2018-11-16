@@ -1,5 +1,5 @@
        ! { dg-do run }
-       ! { dg-options "-fdec-hollerith-conversion" }
+       ! { dg-options "-std=legacy -fdec-hollerith-conversion" }
 
       program convert
       if (4HJMAC.ne.4HJMAC) stop 1 ! { dg-warning "Promoting argument for comparison from HOLLERITH to CHARACTER at" }
