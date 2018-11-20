@@ -33,6 +33,6 @@
         if (knot(5_4).ne.-6) stop 23
         if (isign(-77_1, 1).ne.77) stop 24
         if (isign(-77_1, -1).ne.-77) stop 25
-        if (isign(-77_2, 1).ne.77) stop 24
-        if (isign(-77_2, -1).ne.-77) stop 25
+        if (isign(-77_2, 1).ne.77) stop 26
+        if (isign(-77_2, -1).ne.-77) stop 27
       end program

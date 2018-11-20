@@ -1,5 +1,5 @@
-!{ dg-do run }
-!{ dg-options "-fdec" }
+!{ dg-do compile }
+!{ dg-options "-fdec -fno-dec-promotion" }
 !
 ! integer types of a smaller kind than expected should be
 ! accepted by type specific intrinsic functions
@@ -9,8 +9,8 @@
         integer(1) :: a = 1
         integer :: i
         if (iiabs(-9_1).ne.9) stop 1
-        if (iabs(-9_1).ne.9) stop 2
-        if (iabs(-9_2).ne.9) stop 3
+        if (iabs(-9_1).ne.9) stop 2 ! { dg-error "Type of argument" }
+        if (iabs(-9_2).ne.9) stop 3 ! { dg-error "Type of argument" }
         if (jiabs(-9_1).ne.9) stop 4
         if (jiabs(-9_2).ne.9) stop 5
         if (iishft(1_1, 2).ne.4) stop 6
@@ -31,8 +31,8 @@
         if (knot(5_1).ne.-6) stop 21
         if (knot(5_2).ne.-6) stop 22
         if (knot(5_4).ne.-6) stop 23
-        if (isign(-77_1, 1).ne.77) stop 24
-        if (isign(-77_1, -1).ne.-77) stop 25
-        if (isign(-77_2, 1).ne.77) stop 26
-        if (isign(-77_2, -1).ne.-77) stop 27
+        if (isign(-77_1, 1).ne.77) stop 24 ! { dg-error "Type of argument" }
+        if (isign(-77_1, -1).ne.-77) stop 25 ! { dg-error "Type of argument" }
+        if (isign(-77_2, 1).ne.77) stop 26 ! { dg-error "Type of argument" }
+        if (isign(-77_2, -1).ne.-77) stop 27 ! { dg-error "Type of argument" }
       end program
