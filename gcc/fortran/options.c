@@ -810,6 +810,11 @@ gfc_handle_option (size_t scode, const char *arg, int value,
                               scode, arg, value, 
                               gfc_option_lang_mask (), kind,
                               loc, handlers, global_dc);
+
+  /* If -fdec is used set to no fixed form padding.  */
+  if (code == OPT_fdec && value)
+    flag_pad_source = 0;
+
   return result;
 }
 
