@@ -1,4 +1,16 @@
-2018-11-05  Jakub Jelinek  <jakub@redhat.com>
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* gfortran.dg/include_10.f: New test.
+	* gfortran.dg/include_10.inc: New file.
+	* gfortran.dg/include_11.f: New test.
+	* gfortran.dg/include_12.f: New test.
+	* gfortran.dg/include_13.f90: New test.
+	* gfortran.dg/gomp/include_1.f: New test.
+	* gfortran.dg/gomp/include_1.inc: New file.
+	* gfortran.dg/gomp/include_2.f90: New test.
+
+2018-07-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR tree-optimization/87859
 	* gcc.dg/store_merging_24.c: New test.
