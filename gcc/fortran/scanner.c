@@ -1914,6 +1914,7 @@ next_char:
   /* Pad lines to the selected line length in fixed form.  */
   if (gfc_current_form == FORM_FIXED
       && flag_fixed_line_length != 0
+      && flag_pad_source
       && !preprocessor_flag
       && c != EOF)
     {
