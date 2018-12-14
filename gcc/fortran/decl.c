@@ -2431,7 +2431,7 @@ variable_decl (int elem)
   cl_match = MATCH_NO;
 
   /* Check for a character length clause before an array clause */
-  if (flag_dec_override_kind)
+  if (flag_dec_override_kind || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
     {
       if (current_ts.type == BT_CHARACTER)
 	{
@@ -2711,7 +2711,7 @@ variable_decl (int elem)
          but not components of derived types.  */
       else if (gfc_current_state () == COMP_DERIVED)
 	{
-	  if (flag_dec_old_init)
+	  if (flag_dec_old_init || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
 	    {
 	      /* Attempt to match an old-style initializer which is a simple
 		 integer or character expression; this will not work with

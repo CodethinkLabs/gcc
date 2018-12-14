@@ -964,7 +964,8 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
       if (!(csym->ts.u.derived->attr.sequence
 	    || csym->ts.u.derived->attr.is_bind_c))
 	{
-	  if (flag_dec_sequence)
+	  if ((gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+              || flag_dec_sequence)
 	    /* Assume sequence. */
 	    csym->ts.u.derived->attr.sequence = 1;
 	  else
@@ -3980,8 +3981,8 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_OR:
     case INTRINSIC_EQV:
     case INTRINSIC_NEQV:
-
-      if (flag_logical_as_integer)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY 
+	  || flag_logical_as_integer)
 	{
 	  convert_integer_to_logical (op1);
 	  convert_integer_to_logical (op2);
@@ -4028,7 +4029,8 @@ resolve_operator (gfc_expr *e)
 	  return resolve_function (e);
 	}
 
-      if (flag_logical_as_integer)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY
+	  || flag_logical_as_integer)
 	{
 	  convert_integer_to_logical (op1);
 	}
@@ -4064,8 +4066,8 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
-
-      if (flag_logical_as_integer)
+      if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY
+          || flag_logical_as_integer)
 	{
 	  convert_logical_to_integer (op1);
 	  convert_logical_to_integer (op2);
@@ -4073,7 +4075,8 @@ resolve_operator (gfc_expr *e)
 
       /* If you're comparing hollerith contants to character expressions,
 	 convert the hollerith constant */
-      if (flag_dec_hollerith_conversion && is_character_based (op1->ts.type)
+      if ((flag_dec_hollerith_conversion || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+	  && is_character_based (op1->ts.type)
 	  && is_character_based (op2->ts.type))
 	{
            convert_hollerith_to_character (op1);
@@ -4089,13 +4092,15 @@ resolve_operator (gfc_expr *e)
 	}
 
       /* Numeric to hollerith comparisons */
-      if (flag_dec_hollerith_conversion && gfc_numeric_ts (&op1->ts)
+      if ((flag_dec_hollerith_conversion || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+	  && gfc_numeric_ts (&op1->ts)
 	  && is_character_based (op2->ts.type))
 	{
           convert_hollerith_to_integer (op2);
 	}
 
-      if (flag_dec_hollerith_conversion && gfc_numeric_ts (&op2->ts)
+      if ((flag_dec_hollerith_conversion || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+	  && gfc_numeric_ts (&op2->ts)
 	  && is_character_based (op1->ts.type))
 	{
           convert_hollerith_to_integer (op1);
@@ -4603,7 +4608,8 @@ compare_spec_to_ref (gfc_array_ref *ar)
   if (ar->type == AR_FULL)
     return true;
 
-  if (flag_dec_add_missing_indexes && as->rank > ar->dimen)
+  if ((flag_dec_add_missing_indexes || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+      && as->rank > ar->dimen)
     {
       /* Add in the missing dimensions, assuming they are the lower bound
          of that dimension if not specified. */
@@ -4942,7 +4948,8 @@ resolve_substring (gfc_ref *ref)
 	return false;
 
       /* In legacy mode, allow non-integer string indexes by converting */
-      if (flag_dec_non_integer_index && ref->u.ss.start->ts.type != BT_INTEGER
+      if ((flag_dec_non_integer_index || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+	  && ref->u.ss.start->ts.type != BT_INTEGER
 	  && gfc_numeric_ts (&ref->u.ss.start->ts))
 	{
 	  gfc_typespec t;
@@ -4981,7 +4988,8 @@ resolve_substring (gfc_ref *ref)
 	return false;
 
       /* Non-integer string index endings, as for start */
-      if (flag_dec_non_integer_index && ref->u.ss.end->ts.type != BT_INTEGER
+      if ((flag_dec_non_integer_index || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+	  && ref->u.ss.end->ts.type != BT_INTEGER
 	  && gfc_numeric_ts (&ref->u.ss.end->ts))
 	{
 	  gfc_typespec t;
@@ -10202,7 +10210,8 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_IF:
 	  if (t && b->expr1 != NULL)
 	    {
-	      if (flag_dec_non_logical_if && b->expr1->ts.type != BT_LOGICAL)
+	      if ((flag_dec_non_logical_if || gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
+		  && b->expr1->ts.type != BT_LOGICAL)
 		{
 		  gfc_expr* cast;
 		  cast = gfc_ne (b->expr1, gfc_get_int_expr (1, &gfc_current_locus, 0), INTRINSIC_NE);
@@ -11488,7 +11497,7 @@ start:
 	case EXEC_IF:
 	  if (t && code->expr1 != NULL)
             {
-	      if (flag_dec_non_logical_if
+	      if ((flag_dec_non_logical_if || gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)
 		  && code->expr1->ts.type != BT_LOGICAL)
 		{
 		  gfc_expr* cast;

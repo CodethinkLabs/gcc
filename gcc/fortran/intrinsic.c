@@ -3952,7 +3952,9 @@ add_conversions (void)
   /* Oracle allows character values to be converted to integers,
      similar to Hollerith-Integer conversion - the first characters will
      be turned into ascii values. */
-  if (flag_dec_hollerith_conversion || flag_dec_char_data_as_int)
+  if (flag_dec_hollerith_conversion
+      || flag_dec_char_data_as_int 
+      || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
     {
       /* Character-Integer conversions.  */
       for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
@@ -4250,7 +4252,8 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
 	ts.kind = actual->expr->ts.kind;
 
       /* If kind promotion is allowed don't check for kind if it is smaller */
-      if (flag_dec_promotion && ts.type == BT_INTEGER)
+      if ((flag_dec_promotion || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+	  && ts.type == BT_INTEGER)
 	if (actual->expr->ts.kind < ts.kind)
 	  ts.kind = actual->expr->ts.kind;
 
@@ -5046,7 +5049,8 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
 	}
-      else if ((flag_dec_hollerith_conversion || flag_dec_char_data_as_int)
+      else if ((flag_dec_hollerith_conversion || flag_dec_char_data_as_int
+                || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
 	       && from_ts.type == BT_CHARACTER
 	       && ts->type == BT_INTEGER)
 	{

@@ -1994,7 +1994,7 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 	gfc_error ("Symbol %qs at %L conflicts with symbol from module %qs, "
 		   "use-associated at %L", sym->name, where, sym->module,
 		   &sym->declared_at);
-      else if (flag_dec_duplicates)
+      else if (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY || flag_dec_duplicates)
 	{
 	  /* Ignore temporaries and class/procedure names */
           if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS || sym->ts.type == BT_PROCEDURE)
