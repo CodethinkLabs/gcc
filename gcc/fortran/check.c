@@ -2500,7 +2500,7 @@ gfc_check_ichar_iachar (gfc_expr *c, gfc_expr *kind)
   else
     return true;
 
-  if (i != 1 && !flag_dec)
+  if (i != 1 && !(flag_dec || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY)))
     {
       gfc_error ("Argument of %s at %L must be of length one",
 		 gfc_current_intrinsic, &c->where);
@@ -2576,7 +2576,9 @@ gfc_check_index (gfc_expr *string, gfc_expr *substring, gfc_expr *back,
 bool
 gfc_check_int (gfc_expr *x, gfc_expr *kind)
 {
-  if (flag_dec_hollerith_conversion && x->ts.type == BT_CHARACTER)
+  if ((flag_dec_hollerith_conversion
+      || (gfc_option.allow_std & GFC_STD_EXTRA_LEGACY))
+      && x->ts.type == BT_CHARACTER)
     return true;
 
   if (!numeric_check (x, 0))
