@@ -10251,7 +10251,8 @@ permitted.)
 
 @item @emph{Return value}:
 The return value corresponds to the maximum value among the arguments,
-and has the same type and kind as the first argument.
+and has the same type and kind as the first argument.  (As a GNU extension,
+kind is the largest kind of the actual arguments.)
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
@@ -10625,8 +10626,9 @@ permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return value corresponds to the maximum value among the arguments,
-and has the same type and kind as the first argument.
+The return value corresponds to the minimum value among the arguments,
+and has the same type and kind as the first argument.  (As a GNU extension,
+kind is the largest kind of the actual arguments.)
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
@@ -10918,7 +10920,7 @@ extension, kind is the largest kind of the actual arguments.)
 @item If @var{A} and @var{P} are of type @code{REAL}:
 @code{MODULO(A,P)} has the value of @code{A - FLOOR (A / P) * P}.
 @end table
-The returned value has the same sign as P and a magnitude less than
+The returned value has the same sign as P and a magnitude less than88543f807c8b746bf8d6d06277a7eeb6a44f8a09
 the magnitude of P.
 
 @item @emph{Example}:
