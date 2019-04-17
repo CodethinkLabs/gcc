@@ -3757,6 +3757,12 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_TIMES:
     case INTRINSIC_DIVIDE:
     case INTRINSIC_POWER:
+      if (flag_logical_as_integer)
+	{
+	  convert_logical_to_integer (op1);
+	  convert_logical_to_integer (op2);
+	}
+
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
 	{
 	  gfc_type_convert_binary (e, 1);
