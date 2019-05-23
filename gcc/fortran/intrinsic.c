@@ -4028,7 +4028,7 @@ add_conversions (void)
 
   /* Flang allows character conversions similar to Hollerith conversions
      - the first characters will be turned into ascii values. */
-  if (flag_dec_char_conversions)
+  if (flag_dec_char_conversions || flag_dec_comparisons)
     {
       /* Character-Integer conversions.  */
       for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
@@ -5207,7 +5207,8 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 			     gfc_typename (&from_ts), gfc_dummy_typename (ts),
 			     &expr->where);
 	}
-      else if (flag_dec_char_conversions && from_ts.type == BT_CHARACTER
+      else if ((flag_dec_char_conversions || flag_dec_comparisons)
+	       && from_ts.type == BT_CHARACTER
 	       && (gfc_numeric_ts (ts) || ts->type == BT_LOGICAL))
 	{
 	  if (warn_conversion)
