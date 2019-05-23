@@ -453,6 +453,11 @@ Fortran Var(flag_dec_char_conversions)
 Enable the use of character literals in assignments and data statements
 for non-character variables.
 
+fdec-comparisons
+Fortran Var(flag_dec_comparisons)
+Enable the use of hollerith constants in comparisons. Also enables comparison
+of character literals and numeric vaiables.
+
 fdec-include
 Fortran Var(flag_dec_include)
 Enable legacy parsing of INCLUDE as statement.
