@@ -3890,6 +3890,41 @@ impure_function_callback (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+/* Return true if TYPE is character based, false otherwise.  */
+
+static int
+is_character_based (bt type)
+{
+  return type == BT_CHARACTER || type == BT_HOLLERITH;
+}
+
+
+/* If E is a hollerith, convert it to character and issue a warning
+   for the conversion.  */
+
+static void
+convert_hollerith_to_character (gfc_expr *e)
+{
+  if (e->ts.type == BT_HOLLERITH)
+    {
+      gfc_typespec t;
+      t.type = BT_CHARACTER;
+      t.kind = e->ts.kind;
+      gfc_convert_type_warn (e, &t, 2, 1);
+    }
+}
+
+/* Convert to numeric and issue a warning for the conversion.  */
+
+static void
+convert_to_numeric (gfc_expr *a, gfc_expr *b)
+{
+  gfc_typespec t;
+  t.type = b->ts.type;
+  t.kind = b->ts.kind;
+  gfc_convert_type_warn (a, &t, 2, 1);
+}
+
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
@@ -4089,6 +4124,14 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_EQ_OS:
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
+
+      if (flag_dec_comparisons && is_character_based (op1->ts.type)
+          && is_character_based (op2->ts.type))
+	{
+	  convert_hollerith_to_character (op1);
+	  convert_hollerith_to_character (op2);
+	}
+
       if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
 	  && op1->ts.kind == op2->ts.kind)
 	{
@@ -4126,6 +4169,14 @@ resolve_operator (gfc_expr *e)
 	  if (op1->ts.type == BT_REAL && !gfc_boz2real (op2, op1->ts.kind))
 	    return false;
 	}
+      if (flag_dec_comparisons && is_character_based (op1->ts.type)
+          && op1->expr_type == EXPR_CONSTANT && gfc_numeric_ts (&op2->ts))
+	convert_to_numeric (op1, op2);
+
+      if (flag_dec_comparisons && gfc_numeric_ts (&op1->ts)
+	  && is_character_based (op2->ts.type)
+	  && op2->expr_type == EXPR_CONSTANT)
+	convert_to_numeric (op2, op1);
 
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
 	{
@@ -10690,7 +10741,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   if ((gfc_numeric_ts (&lhs->ts) || lhs->ts.type == BT_LOGICAL)
       && rhs->ts.type == BT_CHARACTER
-      && rhs->expr_type != EXPR_CONSTANT)
+      && (rhs->expr_type != EXPR_CONSTANT || !flag_dec_char_conversions))
     {
       gfc_error ("Cannot convert CHARACTER into %s at %L",
                  gfc_typename (&lhs->ts),     
