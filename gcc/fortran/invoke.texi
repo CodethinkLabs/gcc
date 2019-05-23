@@ -119,14 +119,15 @@ by type.  Explanations are in the following sections.
 @gccoptlist{-fall-intrinsics -fallow-invalid-boz -fbackslash -fcray-pointer @gol
 -fd-lines-as-code -fd-lines-as-comments -fdec -fdec-structure @gol
 -fdec-intrinsic-ints -fdec-static -fdec-math -fdec-include @gol
--fdec-format-defaults -fdec-blank-format-item -fdefault-double-8 @gol
--fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 -fdefault-real-16 @gol
--fdollar-ok @gol -ffixed-line-length-@var{n} -ffixed-line-length-none @gol
--fpad-source -ffree-form -ffree-line-length-@var{n} -ffree-line-length-none @gol
--fimplicit-none -finteger-4-integer-8 -fmax-identifier-length @gol
--fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp @gol
--freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10 @gol
--freal-8-real-16 -freal-8-real-4 -std=@var{std} -ftest-forall-temp
+-fdec-format-defaults -fdec-add-missing-indexes -fdec-blank-format-item @gol
+-fdec-comparisons -fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
+-fdefault-real-10 -fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
+-ffixed-line-length-none -fpad-source -ffree-form -ffree-line-length-@var{n} @gol
+-ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
+-fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
+-fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
+-freal-8-real-10 -freal-8-real-16 -freal-8-real-4 -std=@var{std} @gol
+-ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -301,6 +302,12 @@ default widths will be used instead.
 @opindex @code{fdec-blank-format-item}
 Enable a blank format item at the end of a format specification i.e. nothing
 following the final comma.
+
+@item -fdec-comparisons
+@opindex @code{fdec-comparisons}
+Enable comparison of Hollerith constants and character literals with numeric and
+character expressions. Also enables comparison of Hollerith constants with character
+expressions.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
