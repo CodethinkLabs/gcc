@@ -6944,6 +6944,10 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 
       switch (mode)
 	{
+	case E_V1TImode:
+	  emit_move_insn (target, gen_lowpart (TImode, vec));
+	  return;
+
 	case E_V2DFmode:
 	  emit_insn (gen_vsx_extract_v2df_var (target, vec, elt));
 	  return;
@@ -33614,6 +33618,15 @@ rs6000_elf_asm_out_destructor (rtx symbol, int priority)
     assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
+#ifdef HAVE_LD_OVERLAPPING_OPD
+/* If the linker supports overlapping .opd entries and we know this function
+   doesn't ever use r11 passed to it, we can overlap the fd_aux function
+   descriptor field with next function descriptor's fd_func field.  */
+# define OVERLAPPING_OPD (cfun->static_chain_decl == NULL)
+#else
+# define OVERLAPPING_OPD 0
+#endif
+
 void
 rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
 {
@@ -33623,7 +33636,8 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
       ASM_OUTPUT_LABEL (file, name);
       fputs (DOUBLE_INT_ASM_OP, file);
       rs6000_output_function_entry (file, name);
-      fputs (",.TOC.@tocbase,0\n\t.previous\n", file);
+      fprintf (file, ",.TOC.@tocbase%s\n\t.previous\n",
+	       OVERLAPPING_OPD ? "" : ",0");
       if (DOT_SYMBOLS)
 	{
 	  fputs ("\t.size\t", file);
@@ -33748,6 +33762,13 @@ rs6000_elf_file_end (void)
 #if defined (POWERPC_LINUX) || defined (POWERPC_FREEBSD)
   if (TARGET_32BIT || DEFAULT_ABI == ABI_ELFv2)
     file_end_indicate_exec_stack ();
+  else
+    {
+      int saved_trampolines_created = trampolines_created;
+      trampolines_created = 0;
+      file_end_indicate_exec_stack ();
+      trampolines_created = saved_trampolines_created;
+    }
 #endif
 
   if (flag_split_stack)
