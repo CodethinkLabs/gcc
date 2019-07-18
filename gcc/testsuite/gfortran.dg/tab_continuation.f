@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-pedantic-errors" }
 !
 ! PR fortran/34899
 !
@@ -13,8 +14,8 @@
 	INTEGER NAXIS(0:MAPMAX,LUMIN:LUMAX),NAXIS1(0:MAPMAX,LUMIN:LUMAX),
 	1NAXIS2(0:MAPMAX,LUMIN:LUMAX),NAXIS3(0:MAPMAX,LUMIN:LUMAX)
 	end
-! { dg-error "Nonconforming tab character in column 1 of line 12" "Nonconforming tab" { target *-*-* } 0 }
 ! { dg-error "Nonconforming tab character in column 1 of line 13" "Nonconforming tab" { target *-*-* } 0 }
 ! { dg-error "Nonconforming tab character in column 1 of line 14" "Nonconforming tab" { target *-*-* } 0 }
 ! { dg-error "Nonconforming tab character in column 1 of line 15" "Nonconforming tab" { target *-*-* } 0 }
+! { dg-error "Nonconforming tab character in column 1 of line 16" "Nonconforming tab" { target *-*-* } 0 }
 ! { dg-excess-errors "some warnings being treated as errors" }

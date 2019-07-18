@@ -4677,7 +4677,7 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
   const char* symstd_msg;
 
   /* For -fall-intrinsics, just succeed.  */
-  if (flag_all_intrinsics)
+  if (flag_all_intrinsics && !pedantic && !flag_pedantic_errors)
     return true;
 
   /* Find the symbol's standard message for later usage.  */
@@ -4721,19 +4721,25 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 
     default:
       gfc_internal_error ("Invalid standard code on intrinsic %qs (%d)",
-			  isym->name, isym->standard);
+			  isym->name, _(symstd_msg), isym->standard);
     }
 
   /* If warning about the standard, warn and succeed.  */
-  if (gfc_option.warn_std & isym->standard)
+  if (isym->standard == GFC_STD_GNU)
+    {
+      return gfc_notify_std(isym->standard, "Intrinsic %qs is used at %L",
+			    isym->name, &where);
+    }
+  else if (gfc_option.warn_std & isym->standard)
     {
       /* Do only print a warning if not a GNU extension.  */
-      if (!silent && isym->standard != GFC_STD_GNU)
+      if (!silent)
 	gfc_warning (0, "Intrinsic %qs (is %s) is used at %L",
 		     isym->name, _(symstd_msg), &where);
 
       return true;
     }
+
 
   /* If allowing the symbol's standard, succeed, too.  */
   if (gfc_option.allow_std & isym->standard)

@@ -24,9 +24,10 @@ load_lib target-supports.exp
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_FFLAGS
-if ![info exists DEFAULT_FFLAGS] then {
-    set DEFAULT_FFLAGS " -pedantic-errors"
-}
+#if ![info exists DEFAULT_FFLAGS] then {
+#    set DEFAULT_FFLAGS " -pedantic-errors"
+#}
+set DEFAULT_FFLAGS " -pedantic"
 
 # Initialize `dg'.
 dg-init
