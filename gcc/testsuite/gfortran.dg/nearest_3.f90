@@ -88,7 +88,7 @@ program test
   ! -INF- = -INF
   if (nearest(-1.0/r4, -1.0) /= -1.0/r4) STOP 18
   ! NAN- = NAN
-  if (.not.isnan(nearest(0.0/r4,  1.0))) STOP 19
+  if (.not.isnan(nearest(0.0/r4,  1.0))) STOP 19 ! { dg-warning " GNU Extension" }
   ! NAN+ = NAN
   if (.not.isnan(nearest(0.0/r4, -1.0))) STOP 20
 

@@ -31,7 +31,7 @@ if (r > 0 .or. r /= r*1.1) STOP 4
 
 r = 1.0
 str = 'NAN' ; read(str,*) r
-if (.not. isnan(r)) STOP 5
+if (.not. isnan(r)) STOP 5 ! { dg-warning "GNU Extension" }
 
 r = 1.0
 str = '-NAN' ; read(str,*) r

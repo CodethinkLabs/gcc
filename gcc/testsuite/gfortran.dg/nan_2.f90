@@ -41,7 +41,7 @@ program test
 
   if (nan == nan .or. nan > nan .or. nan < nan .or. nan >= nan &
       .or. nan <= nan) STOP 1
-  if (isnan (2.d0) .or. (.not. isnan(nan)) .or. &
+  if (isnan (2.d0) .or. (.not. isnan(nan)) .or. & ! { dg-warning "GNU Extension" }
       (.not. isnan(real(nan,kind=kind(2.d0))))) STOP 2
 
   ! Create an INF and check it

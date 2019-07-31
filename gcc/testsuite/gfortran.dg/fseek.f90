@@ -8,7 +8,7 @@ PROGRAM test_fseek
   ! We first need to determine if a newline is one or two characters
   open (911,status="scratch")
   write(911,"()")
-  newline_length = ftell(911)
+  newline_length = ftell(911) ! { dg-warning "GNU Extension" }
   close (911)
   if (newline_length < 1 .or. newline_length > 2) STOP 1
 
@@ -18,7 +18,7 @@ PROGRAM test_fseek
   IF (FTELL(fd) /= 11 + newline_length) STOP 2
 
   ! move backward from current position
-  CALL FSEEK(fd, -11 - newline_length, SEEK_CUR, ierr)
+  CALL FSEEK(fd, -11 - newline_length, SEEK_CUR, ierr)! { dg-warning "GNU Extension" }
   IF (ierr /= 0 .OR. FTELL(fd) /= 0) STOP 3
 
   ! move to negative position (error)

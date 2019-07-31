@@ -1121,17 +1121,19 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
   if (!gfc_check_intrinsic_standard (isym, &symstd, false, loc)
       && !sym->attr.artificial)
     {
-      if (sym->attr.proc == PROC_UNKNOWN && warn_intrinsics_std)
-	gfc_warning_now (OPT_Wintrinsics_std, "The intrinsic %qs at %L is not "
-			 "included in the selected standard but %s and %qs will"
-			 " be treated as if declared EXTERNAL.  Use an"
-			 " appropriate %<-std=%>* option or define"
-			 " %<-fall-intrinsics%> to allow this intrinsic.",
-			 sym->name, &loc, symstd, sym->name);
-
+      if (sym->attr.proc == PROC_UNKNOWN && warn_intrinsics_std
+	  && isym->standard != GFC_STD_GNU)
+	  gfc_warning_now (OPT_Wintrinsics_std, "The intrinsic %qs at %L is"
+			   " not included in the selected standard but %s"
+			   " and %qs will be treated as if declared EXTERNAL."
+			   "  Use an appropriate %<-std=%>* option or define"
+			   " %<-fall-intrinsics%> to allow this intrinsic.",
+			   sym->name, &loc, symstd, sym->name);
+      sym->attr.external = 1;
       return false;
     }
 
+  sym->attr.intrinsic = 1;
   return true;
 }
 
@@ -4721,8 +4723,11 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 
     default:
       gfc_internal_error ("Invalid standard code on intrinsic %qs (%d)",
-			  isym->name, _(symstd_msg), isym->standard);
+			  isym->name, isym->standard);
     }
+
+  if (symstd)
+    *symstd = _(symstd_msg);
 
   /* If warning about the standard, warn and succeed.  */
   if (isym->standard == GFC_STD_GNU)
@@ -4740,14 +4745,11 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
       return true;
     }
 
-
   /* If allowing the symbol's standard, succeed, too.  */
   if (gfc_option.allow_std & isym->standard)
     return true;
 
   /* Otherwise, fail.  */
-  if (symstd)
-    *symstd = _(symstd_msg);
   return false;
 }
 

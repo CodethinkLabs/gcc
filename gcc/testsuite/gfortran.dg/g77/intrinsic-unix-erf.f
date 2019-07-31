@@ -19,14 +19,14 @@ c     ERF  - error function
       da = a
       call c_r(ERF(x),a,'ERF(real)')
       call c_d(ERF(dx),da,'ERF(double)')
-      call c_d(DERF(dx),da,'DERF(double)')
+      call c_d(DERF(dx),da,'DERF(double)') ! { dg-warning "GNU Extension" }
 
 c     ERFC  - complementary error function
       a = 1.0 - a
       da = a
       call c_r(ERFC(x),a,'ERFC(real)')
       call c_d(ERFC(dx),da,'ERFC(double)')
-      call c_d(DERFC(dx),da,'DERFC(double)')
+      call c_d(DERFC(dx),da,'DERFC(double)') ! { dg-warning "GNU Extension" }
 
       if ( fail ) STOP 1
       end

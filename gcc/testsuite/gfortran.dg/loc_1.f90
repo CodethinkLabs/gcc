@@ -13,7 +13,7 @@ end program test
 subroutine fn
   common /targ/targ
   integer targ(10)
-  call foo (loc (targ)) ! Line that caused ICE
+  call foo (loc (targ)) ! { dg-warning "GNU Extension" } Line that caused ICE
 end subroutine fn
 
 subroutine foo (ii)

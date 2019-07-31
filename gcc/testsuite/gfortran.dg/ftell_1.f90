@@ -2,7 +2,7 @@
   integer(kind=8) o, o2
 
   open (10, status="scratch")
-  call ftell (10, o)
+  call ftell (10, o) ! { dg-warning "GNU Extension" }
   if (o /= 0) STOP 1
   write (10,"(A)") "1234567"
   call ftell (10, o)

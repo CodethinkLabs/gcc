@@ -391,23 +391,28 @@ gfc_post_options (const char **pfilename)
 	warn_line_truncation = 0;
     }
 
-printf("flag_pedantic_errors %d\n", flag_pedantic_errors);
-printf("pedantic %d\n", pedantic);
-  if (flag_pedantic_errors)
-      gfc_option.allow_std &= ~(GFC_STD_GNU | GFC_STD_F95_OBS | GFC_STD_F95_DEL
-	| GFC_STD_F2008_OBS | GFC_STD_F2018_OBS | GFC_STD_F2018_DEL
-	| GFC_STD_LEGACY);
-  else if (pedantic)
-    {
-      /* If -pedantic, warn about the use of GNU extensions.  */
-      if ((gfc_option.allow_std & GFC_STD_GNU) != 0)
-	gfc_option.warn_std |= GFC_STD_GNU;
-      /* -std=legacy -pedantic is effectively -std=gnu.  */
-      if ((gfc_option.allow_std & GFC_STD_LEGACY) != 0)
-	gfc_option.warn_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
-	| GFC_STD_F2008_OBS | GFC_STD_F2018_OBS | GFC_STD_F2018_DEL
-	| GFC_STD_LEGACY;
-    }
+  /* If -pedantic, warn about the use of GNU extensions.  */
+  if (pedantic && (gfc_option.allow_std & GFC_STD_GNU) != 0)
+    gfc_option.warn_std |= GFC_STD_GNU;
+  /* -std=legacy -pedantic is effectively -std=gnu.  */
+  if (pedantic && (gfc_option.allow_std & GFC_STD_LEGACY) != 0)
+    gfc_option.warn_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_LEGACY;
+
+//  if (flag_pedantic_errors)
+//      gfc_option.allow_std &= ~(GFC_STD_GNU | GFC_STD_F95_OBS | GFC_STD_F95_DEL
+//	| GFC_STD_F2008_OBS | GFC_STD_F2018_OBS | GFC_STD_F2018_DEL
+//	| GFC_STD_LEGACY);
+//  else if (pedantic)
+//    {
+//      /* If -pedantic, warn about the use of GNU extensions.  */
+//      if ((gfc_option.allow_std & GFC_STD_GNU) != 0)
+//	gfc_option.warn_std |= GFC_STD_GNU;
+//      /* -std=legacy -pedantic is effectively -std=gnu.  */
+//      if ((gfc_option.allow_std & GFC_STD_LEGACY) != 0)
+//	gfc_option.warn_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
+//	| GFC_STD_F2008_OBS | GFC_STD_F2018_OBS | GFC_STD_F2018_DEL
+//	| GFC_STD_LEGACY;
+//    }
 
   /* If the user didn't explicitly specify -f(no)-second-underscore we
      use it if we're trying to be compatible with f2c, and not

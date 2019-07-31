@@ -28,7 +28,7 @@ contains
   function alsize (a)
     integer alsize
     type (*), dimension (..), contiguous :: a
-    alsize = sizeof(a)
+    alsize = sizeof(a) ! { dg-warning "GNU Extension" }
   end function
 end program main
 

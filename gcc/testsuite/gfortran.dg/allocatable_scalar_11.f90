@@ -7,7 +7,7 @@ function g()
   implicit none
   integer, allocatable :: g
   call int()
-    print *, loc(g) ! OK
+    print *, loc(g) ! OK ! { dg-warning " GNU Extension" }
 contains
   subroutine int()
     print *, loc(g) ! OK

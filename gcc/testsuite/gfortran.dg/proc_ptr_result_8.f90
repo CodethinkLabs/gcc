@@ -37,7 +37,7 @@ procedure(interf_iabs), pointer :: pp
 procedure(foo), pointer :: pp1
 
 x%p => a     ! ok
-if (x%p(0) .ne. loc(foo)) STOP 1
+if (x%p(0) .ne. loc(foo)) STOP 1 ! { dg-warning "GNU Extension" }
 if (x%p(1) .ne. loc(iabs)) STOP 2
 
 x%p => a(1)  ! { dg-error "PROCEDURE POINTER mismatch in function result" }

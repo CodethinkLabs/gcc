@@ -17,7 +17,7 @@ type(t) :: x
 print *,c_sizeof(i1)
 print *,c_sizeof(i2)
 print *,c_sizeof(x)
-print *, c_sizeof(ran())
+print *, c_sizeof(ran()) ! { dg-warning "GNU Extension" }
 
 print *,storage_size(1.0,4)
 print *,storage_size(1.0,3.2)       ! { dg-error "must be INTEGER" }

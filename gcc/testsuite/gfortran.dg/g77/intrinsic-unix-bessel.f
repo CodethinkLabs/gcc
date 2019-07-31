@@ -25,54 +25,54 @@ c
 c     BESJ0  - Bessel function of first kind of order zero
       a = 0.22389077
       da = a
-      call c_r(BESJ0(x),a,'BESJ0(real)')
+      call c_r(BESJ0(x),a,'BESJ0(real)')       ! { dg-warning "GNU Extension" }
       call c_d(BESJ0(dx),da,'BESJ0(double)')
-      call c_d(DBESJ0(dx),da,'DBESJ0(double)')
+      call c_d(DBESJ0(dx),da,'DBESJ0(double)') ! { dg-warning "GNU Extension" }
 
 c     BESJ1  - Bessel function of first kind of order one
       a = 0.57672480
       da = a
-      call c_r(BESJ1(x),a,'BESJ1(real)')
+      call c_r(BESJ1(x),a,'BESJ1(real)')       ! { dg-warning "GNU Extension" }
       call c_d(BESJ1(dx),da,'BESJ1(double)')
-      call c_d(DBESJ1(dx),da,'DBESJ1(double)')
+      call c_d(DBESJ1(dx),da,'DBESJ1(double)') ! { dg-warning "GNU Extension" }
 
 c     BESJN  - Bessel function of first kind of order N
       a = 0.3528340
       da = a
-      call c_r(BESJN(i,x),a,'BESJN(integer,real)')
+      call c_r(BESJN(i,x),a,'BESJN(integer,real)')          ! { dg-warning "GNU Extension" }
       call c_r(BESJN(j,x),a,'BESJN(integer(2),real)')
       call c_r(BESJN(k,x),a,'BESJN(integer(1),real)')
       call c_d(BESJN(i,dx),da,'BESJN(integer,double)')
       call c_d(BESJN(j,dx),da,'BESJN(integer(2),double)')
       call c_d(BESJN(k,dx),da,'BESJN(integer(1),double)')
-      call c_d(DBESJN(i,dx),da,'DBESJN(integer,double)')
+      call c_d(DBESJN(i,dx),da,'DBESJN(integer,double)')    ! { dg-warning "GNU Extension" }
       call c_d(DBESJN(j,dx),da,'DBESJN(integer(2),double)')
       call c_d(DBESJN(k,dx),da,'DBESJN(integer(1),double)')
 
 c     BESY0  - Bessel function of second kind of order zero
       a = 0.51037567
       da = a
-      call c_r(BESY0(x),a,'BESY0(real)')
+      call c_r(BESY0(x),a,'BESY0(real)')        ! { dg-warning "GNU Extension" }
       call c_d(BESY0(dx),da,'BESY0(double)')
-      call c_d(DBESY0(dx),da,'DBESY0(double)')
+      call c_d(DBESY0(dx),da,'DBESY0(double)')  ! { dg-warning "GNU Extension" }
 
 c     BESY1  - Bessel function of second kind of order one
       a = 0.-0.1070324
       da = a
-      call c_r(BESY1(x),a,'BESY1(real)')
+      call c_r(BESY1(x),a,'BESY1(real)')       ! { dg-warning "GNU Extension" }
       call c_d(BESY1(dx),da,'BESY1(double)')
-      call c_d(DBESY1(dx),da,'DBESY1(double)')
+      call c_d(DBESY1(dx),da,'DBESY1(double)') ! { dg-warning "GNU Extension" }
 
 c     BESYN  - Bessel function of second kind of order N
       a = -0.6174081
       da = a
-      call c_r(BESYN(i,x),a,'BESYN(integer,real)')
+      call c_r(BESYN(i,x),a,'BESYN(integer,real)')          ! { dg-warning "GNU Extension" }
       call c_r(BESYN(j,x),a,'BESYN(integer(2),real)')
       call c_r(BESYN(k,x),a,'BESYN(integer(1),real)')
       call c_d(BESYN(i,dx),da,'BESYN(integer,double)')
       call c_d(BESYN(j,dx),da,'BESYN(integer(2),double)')
       call c_d(BESYN(k,dx),da,'BESYN(integer(1),double)')
-      call c_d(DBESYN(i,dx),da,'DBESYN(integer,double)')
+      call c_d(DBESYN(i,dx),da,'DBESYN(integer,double)')    ! { dg-warning "GNU Extension" }
       call c_d(DBESYN(j,dx),da,'DBESYN(integer(2),double)')
       call c_d(DBESYN(k,dx),da,'DBESYN(integer(1),double)')
 

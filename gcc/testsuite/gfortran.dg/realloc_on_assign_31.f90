@@ -14,7 +14,7 @@ program test
    class(t), allocatable :: var(:)
    call poly_init()
    print *, var(:)%i
-   if (lbound(var, 1) /= 1 .and. ubound(var, 1) /= 2) call abort()
+   if (lbound(var, 1) /= 1 .and. ubound(var, 1) /= 2) call abort() ! { dg-warning "GNU Extension" }
    if (var(1)%i /= 11 .or. var(2)%i /= 12) call abort()
    call poly_init2()
    !print *, var(:)%i

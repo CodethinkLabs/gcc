@@ -7,5 +7,5 @@ program main
   close(nout)
   open(nout, file="foo_open_new.dat", status="new",err=100)
   STOP 1! This should never happen
-100 call unlink ("foo_open_new.dat")
+100 call unlink ("foo_open_new.dat") ! { dg-warning " GNU Extension" }
 end program main

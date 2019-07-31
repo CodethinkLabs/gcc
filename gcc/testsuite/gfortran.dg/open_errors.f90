@@ -29,8 +29,8 @@ if (msg(1:23) /= "Cannot open file './': " &
      .and. msg /= "Invalid argument") STOP 5
 
 open(77,file=n,status="new")
-i = chmod(n, "-w")
-if (i == 0 .and. getuid() /= 0) then
+i = chmod(n, "-w") ! { dg-warning " GNU Extension" }
+if (i == 0 .and. getuid() /= 0) then ! { dg-warning " GNU Extension" }
  close(77, status="keep")
  open(77,file=n, iomsg=msg, iostat=i, action="write")
  if (i == 0) STOP 6

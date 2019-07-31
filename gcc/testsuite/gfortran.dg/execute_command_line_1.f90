@@ -13,7 +13,7 @@
 
   call execute_command_line ("sleep 1 ; ls *.f90", .false.)
   print *, "I'm not waiting"
-  call sleep(2)
+  call sleep(2) ! { dg-warning "GNU Extension" }
 
   print *, "-----------------------------"
 

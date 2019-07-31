@@ -2,7 +2,7 @@ c { dg-do run }
       program foo
       complex(kind=8)      z0, z1, z2
 
-      z0 = dcmplx(0.,.5)
+      z0 = dcmplx(0.,.5) ! { dg-warning "GNU Extension" }
       z1 = 1./z0
       if (z1 .ne. dcmplx(0.,-2)) STOP 1
 

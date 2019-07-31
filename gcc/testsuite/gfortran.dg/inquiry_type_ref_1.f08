@@ -30,7 +30,7 @@ end module
 
 ! Check the pointer initializations
   if (r .ne. real (z)) stop 1
-  if (i .ne. imag (z)) stop 2
+  if (i .ne. aimag (z)) stop 2
 
 ! Check the use of inquiry part_refs on lvalues and rvalues.
   z%im = 4.0 * z%re

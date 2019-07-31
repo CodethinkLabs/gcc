@@ -4,7 +4,7 @@ real :: a, b, c
 open(unit=10,file="atest",access='stream',form='unformatted',&
      & status="replace")
 write(10) '1.2'//achar(10)//'2.2'//achar(10)//'3.'
-call fputc(10,'3')
+call fputc(10,'3') ! { dg-warning " GNU Extension" }
 close(10, status="keep")
 open(unit=10,file="atest",form='formatted',status="old")
 read(10,*) a, b, c

@@ -6,7 +6,7 @@ program getenv_1
   character(len=101) ::  var
   character(len=*), parameter :: home = 'HOME'
   integer :: len, stat
-  call getenv(name=home, value=var)
+  call getenv(name=home, value=var) ! { dg-warning "GNU Extension" }
   call get_environment_variable(name=home, value=var, &
        length=len, status=stat)
 end program getenv_1

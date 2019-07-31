@@ -7,7 +7,7 @@ subroutine check_int (j)
   logical :: l(6)
   integer(8) :: jb(5,4)
 
-  if (sizeof (jb) /= 2*sizeof (ib)) STOP 1
+  if (sizeof (jb) /= 2*sizeof (ib)) STOP 1 ! { dg-warning "GNU Extension" }
 
   if (sizeof(j) == 4) then
      if (sizeof (j) /= sizeof (i)) STOP 2

@@ -15,7 +15,7 @@ program test_stuff
   subroutine poly_sizeof(arg1,arg2)
     class(*), intent(in) :: arg1(:,:)
     integer, intent(out) :: arg2
-    arg2 = sizeof(arg1(1,1))
+    arg2 = sizeof(arg1(1,1)) ! { dg-warning " GNU Extension" }
   end subroutine
 
 end program test_stuff

@@ -17,13 +17,13 @@ real(dp) :: rdp
 
 if (abs(gamma(1.0_sp)  - 1.0_sp) > tiny(1.0_sp)) STOP 1
 if (abs(gamma(1.0_dp)  - 1.0_dp) > tiny(1.0_dp)) STOP 2
-if (abs(dgamma(1.0_dp) - 1.0_dp) > tiny(1.0_dp)) STOP 3
+if (abs(dgamma(1.0_dp) - 1.0_dp) > tiny(1.0_dp)) STOP 3 ! { dg-warning "GNU Extension" }
 
 if (abs(lgamma(1.0_sp)) > tiny(1.0_sp)) STOP 4
 if (abs(lgamma(1.0_dp)) > tiny(1.0_dp)) STOP 5
 if (abs(log_gamma(1.0_sp)) > tiny(1.0_sp)) STOP 6
 if (abs(log_gamma(1.0_dp)) > tiny(1.0_dp)) STOP 7
-if (abs(algama(1.0_sp)) > tiny(1.0_sp)) STOP 8
-if (abs(dlgama(1.0_dp)) > tiny(1.0_dp)) STOP 9
+if (abs(algama(1.0_sp)) > tiny(1.0_sp)) STOP 8 ! { dg-warning "GNU Extension" }
+if (abs(dlgama(1.0_dp)) > tiny(1.0_dp)) STOP 9 ! { dg-warning "GNU Extension" }
 end program gamma_test
 

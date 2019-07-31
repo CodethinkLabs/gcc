@@ -8,7 +8,7 @@
   real :: x
   x = -1.0
   x = sqrt(x)
-  if (.not. isnan(x)) STOP 1
+  if (.not. isnan(x)) STOP 1 ! { dg-warning " GNU Extension" }
   x = 0.0
   x = x / x
   if (.not. isnan(x)) STOP 2

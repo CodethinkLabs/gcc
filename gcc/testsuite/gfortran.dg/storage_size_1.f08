@@ -19,7 +19,7 @@ class(t), allocatable :: cp
 
 allocate(t2::cp)
 
-if (sizeof(a)        /=  8) STOP 1
+if (sizeof(a)        /=  8) STOP 1 ! { dg-warning "GNU Extension" }
 if (storage_size(a)  /= 64) STOP 2
 
 if (sizeof(b)        /= 24) STOP 3

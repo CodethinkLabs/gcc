@@ -21,7 +21,7 @@ program cdesc_test
   use cdesc
   implicit none
   integer :: a0, a1(10), a2(10,10), a3(10,10,10)
-  if (cdesc_f08(a0, LOC(a0)) .ne. 1) stop 1
+  if (cdesc_f08(a0, LOC(a0)) .ne. 1) stop 1 ! { dg-warning "GNU Extension" }
   if (cdesc_f08(a1, LOC(a1(1))) .ne. 1) stop 2
   if (cdesc_f08(a2, LOC(a2(1,1))) .ne. 1) stop 3
   if (cdesc_f08(a3, LOC(a3(1,1,1))) .ne. 1) stop 4

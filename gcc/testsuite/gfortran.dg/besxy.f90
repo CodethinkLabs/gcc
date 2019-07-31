@@ -6,13 +6,13 @@
 PROGRAM test_erf
   REAL :: r = 0.0, ra(2) = (/ 0.0, 1.0 /)
 
-  r  = BESJ0(r)
-  r  = BESJ1(r)
-  r  = BESJN(0, r)
+  r  = BESJ0(r)    ! { dg-warning "GNU Extension" }
+  r  = BESJ1(r)    ! { dg-warning "GNU Extension" }
+  r  = BESJN(0, r) ! { dg-warning "GNU Extension" }
 
-  r  = BESY0(r)
-  r  = BESY1(r)
-  r  = BESYN(0, r)
+  r  = BESY0(r)    ! { dg-warning "GNU Extension" }
+  r  = BESY1(r)    ! { dg-warning "GNU Extension" }
+  r  = BESYN(0, r) ! { dg-warning "GNU Extension" }
 
   ra = BESJ0(ra)
   ra = BESJ1(ra)

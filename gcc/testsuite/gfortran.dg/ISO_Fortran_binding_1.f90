@@ -160,9 +160,9 @@ end subroutine test_CFI_address
     if (c_establish(case2) .ne. 0) stop 14
     if (ubound(case2, 1) .ne. 9) stop 15
     if (.not.associated(case2)) stop 16
-    if (sizeof(case2) .ne. 240) stop 17
+    if (sizeof(case2) .ne. 240) stop 17 ! { dg-warning "GNU Extension" }
     if (int (sum (case2%x)) .ne. 55) stop 18
-    if (int (sum (imag (case2%y))) .ne. 110) stop 19
+    if (int (sum (imag (case2%y))) .ne. 110) stop 19 ! { dg-warning "GNU Extension" }
     deallocate (case2)
   end subroutine test_CFI_establish
 

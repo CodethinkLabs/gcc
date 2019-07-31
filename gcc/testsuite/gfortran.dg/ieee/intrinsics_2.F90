@@ -26,7 +26,7 @@ program test
   call check_negative_zero(set_exponent(x,42))
 
   x = inf
-  if (.not. isnan(fraction(x))) STOP 5
+  if (.not. isnan(fraction(x))) STOP 5 ! { dg-warning "GNU Extension" }
   if (exponent(x) /= huge(0)) STOP 6
   if (.not. isnan(spacing(x))) STOP 7
   if (.not. isnan(rrspacing(x))) STOP 8

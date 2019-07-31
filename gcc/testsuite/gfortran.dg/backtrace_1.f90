@@ -5,6 +5,6 @@
 ! normally.
 !
 program test
-  call backtrace
+  call backtrace ! { dg-warning "GNU Extension" }
   stop
 end program test

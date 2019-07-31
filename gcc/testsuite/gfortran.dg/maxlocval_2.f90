@@ -16,7 +16,7 @@
   allocate (c(3))
   a(:) = nan
   if (maxloc (a, dim = 1).ne.1) STOP 1
-  if (.not.isnan(maxval (a, dim = 1))) STOP 2
+  if (.not.isnan(maxval (a, dim = 1))) STOP 2 ! { dg-warning " GNU Extension" }
   a(:) = minf
   if (maxloc (a, dim = 1).ne.1) STOP 3
   if (maxval (a, dim = 1).ne.minf) STOP 4

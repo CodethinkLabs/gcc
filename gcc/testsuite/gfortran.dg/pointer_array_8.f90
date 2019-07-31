@@ -24,7 +24,7 @@
   cptr => tgt%i
   if (lbound (cptr, 1) .ne. 1)  STOP 1! Not a whole array target!
 
-  s1 = loc(cptr)
+  s1 = loc(cptr) ! { dg-warning "GNU Extension" }
   call foo (cptr, s2)                          ! Check bounds not changed...
   if (s1 .ne. s2) STOP 2! ...and that the descriptor is passed.
 

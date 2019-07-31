@@ -1552,8 +1552,8 @@ specific_sym (gfc_symbol *sym)
       || sym->attr.proc == PROC_MODULE
       || sym->attr.proc == PROC_INTERNAL
       || sym->attr.proc == PROC_ST_FUNCTION
-      || (sym->attr.intrinsic && gfc_specific_intrinsic (sym->name))
-      || sym->attr.external)
+      || (sym->attr.intrinsic && gfc_specific_intrinsic (sym->name)))
+//      || sym->attr.external)
     return 1;
 
   if (was_declared (sym) || sym->ns->parent == NULL)
@@ -1819,7 +1819,9 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
   sym->attr.elemental = isym->elemental;
 
   /* Check it is actually available in the standard settings.  */
-  if (!gfc_check_intrinsic_standard (isym, &symstd, false, sym->declared_at))
+  if (!sym->attr.intrinsic && !sym->attr.external
+      && !gfc_check_intrinsic_standard (isym, &symstd, false,
+      sym->declared_at))
     {
       gfc_error ("The intrinsic %qs declared INTRINSIC at %L is not "
 		 "available in the current standard settings but %s. Use "
@@ -1960,8 +1962,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 
 	  /* If a procedure is not already determined to be something else
 	     check if it is intrinsic.  */
-	  if (gfc_is_intrinsic (sym, sym->attr.subroutine, e->where))
-	    sym->attr.intrinsic = 1;
+	  gfc_is_intrinsic (sym, sym->attr.subroutine, e->where);
 
 	  if (sym->attr.proc == PROC_ST_FUNCTION)
 	    {
@@ -2899,7 +2900,6 @@ resolve_unknown_f (gfc_expr *expr)
     }
 
   /* See if we have an intrinsic function reference.  */
-
   if (gfc_is_intrinsic (sym, 0, expr->where))
     {
       if (gfc_intrinsic_func_interface (expr, 1) == MATCH_YES)

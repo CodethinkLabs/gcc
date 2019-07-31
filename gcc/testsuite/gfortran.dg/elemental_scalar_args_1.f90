@@ -30,7 +30,7 @@ contains
     b = v%l*exp (i*v%th*pi)
     c = a/b
     o%l = abs (c)
-    o%th = atan2 (imag (c), real (c))/pi
+    o%th = atan2 (imag (c), real (c))/pi  ! { dg-warning "GNU Extension" }
   end function div_pp
   elemental function ne_pp(u,v) result(o)
     type(polar_t), intent(in) :: u, v

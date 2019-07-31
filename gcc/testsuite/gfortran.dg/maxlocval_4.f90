@@ -24,7 +24,7 @@
   if (maxval (a).ne.pinf) STOP 1
   if (any (maxloc (a).ne.(/ 2, 3 /))) STOP 2
   b = maxval (a, dim = 1)
-  if (.not.isnan(b(1))) STOP 3
+  if (.not.isnan(b(1))) STOP 3 ! { dg-warning " GNU Extension" }
   b(1) = 0.0
   if (any (b.ne.(/ 0.0, minf, pinf /))) STOP 4
   if (any (maxloc (a, dim = 1).ne.(/ 1, 1, 2 /))) STOP 5

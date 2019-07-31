@@ -5,8 +5,8 @@
   implicit none
   real(kind=8), parameter :: r = kind(0) + 0.2
   complex(kind=8), parameter :: c = (r, -9.3)
-  integer, parameter :: k = nint(dreal(c))
-  integer, parameter :: l = nint(realpart(c))
+  integer, parameter :: k = nint(dreal(c)) ! { dg-warning "GNU Extension" }
+  integer, parameter :: l = nint(realpart(c)) ! { dg-warning "GNU Extension" }
   integer(kind=k) :: i
   integer(kind=l) :: j
   i = 42

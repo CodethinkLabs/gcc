@@ -13,7 +13,7 @@ program foo
 !   print *, y
    y = int(1e6*y)
 
-   if (any(x == y)) call abort
+   if (any(x == y)) call abort ! { dg-warning " GNU Extension" }
 
    call random_init(.true., .false.)
    call random_number(x)

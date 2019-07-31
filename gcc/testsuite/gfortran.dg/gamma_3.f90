@@ -12,13 +12,13 @@ intrinsic :: gamma, lgamma
 real :: x
 
 x = gamma(cmplx(1.0,0.0))            ! { dg-error "is not consistent with a specific intrinsic interface" }
-x = dgamma(cmplx(1.0,0.0,kind(0d0))) ! { dg-error "must be REAL" }
+x = dgamma(cmplx(1.0,0.0,kind(0d0))) ! { dg-error "must be REAL|Intrinsic" }
 x = gamma(int(1))                    ! { dg-error "is not consistent with a specific intrinsic interface" }
 x = dgamma(int(1))                   ! { dg-error "must be REAL" }
 
 x = lgamma(cmplx(1.0,0.0))           ! { dg-error "must be REAL" }
-x = algama(cmplx(1.0,0.0))           ! { dg-error "must be REAL" }
-x = dlgama(cmplx(1.0,0.0,kind(0d0))) ! { dg-error "must be REAL" }
+x = algama(cmplx(1.0,0.0))           ! { dg-error "must be REAL|Intrinsic" }
+x = dlgama(cmplx(1.0,0.0,kind(0d0))) ! { dg-error "must be REAL|Intrinsic" }
 
 x = lgamma(int(1))                   ! { dg-error "must be REAL" }
 x = algama(int(1))                   ! { dg-error "must be REAL" }

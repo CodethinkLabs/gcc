@@ -12,6 +12,6 @@ CONTAINS
 ! The next line would cause:
 ! Error: The upper bound in the last dimension must appear in the
 ! reference to the assumed size array 'x' at (1)
-      address=LOC(x)
+      address=LOC(x) ! { dg-warning "GNU Extension" }
    END SUBROUTINE f
 END PROGRAM loc_1

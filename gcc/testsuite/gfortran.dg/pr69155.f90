@@ -3,7 +3,7 @@
 
 function pr69155 (a, b)
   complex(kind=8), value :: a, b
-  if (dimag (a) .lt. 10) then
+  if (dimag (a) .lt. 10) then ! { dg-warning "GNU Extension" }
   1 continue
     if (dble (a) .lt. 10) then
       b = b - 1 / a

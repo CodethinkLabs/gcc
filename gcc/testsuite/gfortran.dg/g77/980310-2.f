@@ -35,7 +35,7 @@ C RND - Return a random integer mod n
 C
       INTEGER FUNCTION RND (N)
       IMPLICIT INTEGER (A-Z)
-      REAL RAND
+      REAL RAND ! { dg-warning "GNU Extension" }
       COMMON /SEED/ RNSEED
 
       RND = RAND(RNSEED)*FLOAT(N)

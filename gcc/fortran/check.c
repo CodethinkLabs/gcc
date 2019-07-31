@@ -2373,10 +2373,17 @@ gfc_check_float (gfc_expr *a)
   if (!type_check (a, 0, BT_INTEGER))
     return false;
 
-  if ((a->ts.kind != gfc_default_integer_kind)
-      && !gfc_notify_std (GFC_STD_GNU, "non-default INTEGER "
-			  "kind argument to %s intrinsic at %L",
-			  gfc_current_intrinsic, &a->where))
+  int kind = gfc_default_integer_kind;
+
+  if (strncmp(gfc_current_intrinsic, "floati", 6) == 0)
+    kind = 2;
+  else if (strncmp(gfc_current_intrinsic, "floatk", 6) == 0)
+    kind = 8;
+
+  if ((a->ts.kind != kind)
+      && !gfc_notify_std (GFC_STD_GNU, "argument to %s intrinsic at %L "
+			  "should be INTEGER(%d)",
+			  gfc_current_intrinsic, &a->where, kind))
     return false;
 
   return true;

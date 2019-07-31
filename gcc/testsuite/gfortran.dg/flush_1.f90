@@ -23,6 +23,6 @@ program flush_1
 20 STOP 2
 30 continue
 
-   call flush(10)
+   call flush(10) ! { dg-warning "GNU Extension" }
 
 end program flush_1

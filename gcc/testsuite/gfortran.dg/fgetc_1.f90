@@ -7,14 +7,14 @@
   open(10,status="scratch")
   write(10,"(A)") "abcde"
   rewind(10)
-  call fgetc(10,s,st)
+  call fgetc(10,s,st)  ! { dg-warning "GNU Extension" }
   if ((st /= 0) .or. (s /= "a    ")) STOP 1
   call fgetc(10,s,st)
   close(10)
 
   open(10,status="scratch")
   s = "12345"
-  call fputc(10,s,st)
+  call fputc(10,s,st)  ! { dg-warning "GNU Extension" }
   if (st /= 0) STOP 2
   call fputc(10,"2",st)
   if (st /= 0) STOP 3

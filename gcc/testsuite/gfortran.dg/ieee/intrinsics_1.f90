@@ -11,7 +11,7 @@ program test
 
   call check_positive_zero(fraction(0.))
   call check_negative_zero(fraction(-0.))
-  if (.not. isnan(fraction(inf))) STOP 1
+  if (.not. isnan(fraction(inf))) STOP 1 ! { dg-warning "GNU Extension" }
   if (.not. isnan(fraction(-inf))) STOP 2
   if (.not. isnan(fraction(nan))) STOP 3
 

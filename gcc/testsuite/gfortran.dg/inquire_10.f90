@@ -2,7 +2,7 @@
   character(len=800) :: cwd
   integer :: unit
 
-  call getcwd(cwd)
+  call getcwd(cwd) ! { dg-warning " GNU Extension" }
 
   open(file='cseq', unit=23)
   inquire(file='cseq',number=unit)
