@@ -4390,11 +4390,12 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
       if (!gfc_compare_types (&ts, &actual->expr->ts))
 	{
 	  if (error_flag)
-	    gfc_error ("Type of argument %qs in call to %qs at %L should "
-		       "be %s, not %s", gfc_current_intrinsic_arg[i]->name,
-		       gfc_current_intrinsic, &actual->expr->where,
-		       gfc_typename (&formal->ts),
-		       gfc_typename (&actual->expr->ts));
+	    gfc_error ("In call to %qs at %L, type mismatch in argument "
+		       "%qs; pass %qs to %qs", gfc_current_intrinsic,
+		       &actual->expr->where,
+		       gfc_current_intrinsic_arg[i]->name,
+		       gfc_typename (actual->expr),
+		       gfc_dummy_typename (&formal->ts));
 	  return false;
 	}
 
@@ -5103,6 +5104,8 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   gfc_expr *new_expr;
   int rank;
   mpz_t *shape;
+  bool is_char_constant = (expr->expr_type == EXPR_CONSTANT)
+			  && (expr->ts.type == BT_CHARACTER);
 
   from_ts = expr->ts;		/* expr->ts gets clobbered */
 
@@ -5144,7 +5147,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   if ((gfc_option.warn_std & sym->standard) != 0)
     {
       gfc_warning_now (0, "Extension: Conversion from %s to %s at %L",
-		       gfc_typename (&from_ts), gfc_typename (ts),
+		       gfc_typename (&from_ts), gfc_dummy_typename (ts),
 		       &expr->where);
     }
   else if (wflag)
@@ -5206,7 +5209,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	  /* If HOLLERITH is involved, all bets are off.  */
 	  if (warn_conversion)
 	    gfc_warning_now (OPT_Wconversion, "Conversion from %s to %s at %L",
-			     gfc_typename (&from_ts), gfc_typename (ts),
+			     gfc_typename (&from_ts), gfc_dummy_typename (ts),
 			     &expr->where);
 	}
       else if ((flag_dec_char_conversions || flag_dec_comparisons)
@@ -5267,15 +5270,17 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   return true;
 
 bad:
+  const char *type_name = is_char_constant ? gfc_typename (expr)
+					   : gfc_typename (&from_ts);
   if (eflag == 1)
     {
-      gfc_error ("Cannot convert %s to %s at %L",
-		 gfc_typename (&from_ts), gfc_typename (ts), &expr->where);
+      gfc_error ("Cannot convert %s to %s at %L", type_name, gfc_typename (ts),
+		 &expr->where);
       return false;
     }
 
-  gfc_internal_error ("Cannot convert %qs to %qs at %L",
-		      gfc_typename (&from_ts), gfc_typename (ts),
+  gfc_internal_error ("Cannot convert %qs to %qs at %L", type_name,
+		      gfc_typename (ts),
 		      &expr->where);
   /* Not reached */
 }
