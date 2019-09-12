@@ -1821,7 +1821,7 @@ gfc_set_constant_character_len (gfc_charlen_t len, gfc_expr *expr,
 	gfc_warning_now (OPT_Wcharacter_truncation,
 			 "CHARACTER expression at %L is being truncated "
 			 "(%ld/%ld)", &expr->where,
-			 (long) slen, (long) len);
+			 (long) len, (long) slen);
 
       /* Apply the standard by 'hand' otherwise it gets cleared for
 	 initializers.  */
