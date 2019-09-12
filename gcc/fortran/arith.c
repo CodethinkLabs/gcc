@@ -2660,7 +2660,7 @@ gfc_hollerith2character (gfc_expr *src, int kind)
   result->ts.kind = kind;
   result->ts.u.pad = 0;
 
-  result->value.character.length = result->representation.length;
+  result->value.character.length = result->representation.length - src->ts.u.pad;
   result->value.character.string
     = gfc_char_to_widechar (result->representation.string);
 
