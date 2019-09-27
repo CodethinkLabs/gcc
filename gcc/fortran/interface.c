@@ -3150,7 +3150,6 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       else
 	actual_size = get_expr_storage_size (a->expr);
       formal_size = get_sym_storage_size (f->sym);
-printf("actual %d, formal %d\n", actual_size, formal_size);
       if (actual_size != 0 && actual_size < formal_size
 	  && a->expr->ts.type != BT_PROCEDURE
 	  && f->sym->attr.flavor != FL_PROCEDURE)
