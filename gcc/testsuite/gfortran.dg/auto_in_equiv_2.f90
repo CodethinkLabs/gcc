@@ -9,6 +9,6 @@
 ! recursive function contains an equivalence that has a variable with
 ! the automatic attribute and one without.
 !
-include "automatics_in_equivalence_1.f90"
+include "auto_in_equiv_1.f90"
 
 ! { dg-warning "Flag '-fno-automatic' overwrites '-frecursive'" "warning" { target *-*-* } 0 } 
