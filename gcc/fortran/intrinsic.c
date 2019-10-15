@@ -5216,10 +5216,11 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	       && from_ts.type == BT_CHARACTER
 	       && (gfc_numeric_ts (ts) || ts->type == BT_LOGICAL))
 	{
+	  const char *type_name = is_char_constant ? gfc_typename (expr)
+						   : gfc_typename (&from_ts);
 	  if (warn_conversion)
 	    gfc_warning_now (OPT_Wconversion, "Conversion from %s to %s at %L",
-			     gfc_typename (&from_ts), gfc_typename (ts),
-			     &expr->where);
+			     type_name, gfc_typename (ts), &expr->where);
 	}
       else
 	gcc_unreachable ();
