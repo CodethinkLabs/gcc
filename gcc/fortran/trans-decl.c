@@ -745,6 +745,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       && !sym->attr.automatic
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))
       && !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
+      && flag_max_stack_var_size != 0
 	 /* Put variable length auto array pointers always into stack.  */
       && (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
 	  || sym->attr.dimension == 0
