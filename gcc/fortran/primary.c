@@ -3120,14 +3120,15 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	      dest[c] = '\0';
 	      free (actual->expr->value.character.string);
 
-	      actual->expr->value.character.length = c;
-	      actual->expr->value.character.string = dest;
-
 	      if (warn_line_truncation && c < e1)
 		gfc_warning_now (OPT_Wcharacter_truncation,
-				 "CHARACTER expression will be truncated "
-				 "in constructor (%ld/%ld) at %L", (long int) c,
-				 (long int) e1, &actual->expr->where);
+				 "%s truncated to %s in constructor at %L",
+				 gfc_typename (actual->expr),
+				 gfc_typename (&this_comp->ts), 
+				 &actual->expr->where);
+
+	      actual->expr->value.character.length = c;
+	      actual->expr->value.character.string = dest;
 	    }
 	}
 

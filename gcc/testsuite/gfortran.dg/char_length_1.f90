@@ -11,9 +11,9 @@ program test
   character(10) :: a(3)
   character(10) :: b(3)= &
        (/ 'Takata ', 'Tanaka', 'Hayashi' /) ! { dg-error "Different CHARACTER" }
-  character(4) :: c = "abcde"  ! { dg-warning "being truncated" }
+  character(4) :: c = "abcde"  ! { dg-warning "CHARACTER\\(5\\) truncated to CHARACTER\\(4\\)" }
   a =  (/ 'Takata', 'Tanaka ', 'Hayashi' /) ! { dg-error "Different CHARACTER" }
   a =  (/ 'Takata ', 'Tanaka ', 'Hayashi' /)
   b = "abc" ! { dg-error "no IMPLICIT" }
-  c = "abcdefg"   ! { dg-warning "will be truncated" }
+  c = "abcdefg"   ! { dg-warning " CHARACTER\\(7\\) truncated to CHARACTER\\(4\\)" }
 end program test

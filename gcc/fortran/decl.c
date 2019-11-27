@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <string>
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1754,17 +1755,12 @@ gfc_set_constant_character_len (gfc_charlen_t len, gfc_expr *expr,
   slen = expr->value.character.length;
   if (len != slen)
     {
+      std::string old_type = gfc_typename(expr);
       s = gfc_get_wide_string (len + 1);
       memcpy (s, expr->value.character.string,
 	      MIN (len, slen) * sizeof (gfc_char_t));
       if (len > slen)
 	gfc_wide_memset (&s[slen], ' ', len - slen);
-
-      if (warn_character_truncation && slen > len)
-	gfc_warning_now (OPT_Wcharacter_truncation,
-			 "CHARACTER expression at %L is being truncated "
-			 "(%ld/%ld)", &expr->where,
-			 (long) slen, (long) len);
 
       /* Apply the standard by 'hand' otherwise it gets cleared for
 	 initializers.  */
@@ -1787,6 +1783,13 @@ gfc_set_constant_character_len (gfc_charlen_t len, gfc_expr *expr,
 	  free (expr->representation.string);
 	  expr->representation.string = NULL;
 	}
+
+      if (warn_character_truncation && slen > len)
+	gfc_warning_now (OPT_Wcharacter_truncation,
+			 "%s truncated to %s in declaration at %L",
+			 old_type.c_str(), gfc_typename(expr),
+			 &expr->where);
+
     }
 }
 

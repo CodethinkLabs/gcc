@@ -10,6 +10,6 @@ subroutine where_ice (i,j)
   integer       :: j
 
   character(12) :: txt(5)
-  if (.true.) where (txt(1:3) /= ''   )  y(1:3,i,j) = txt(1:3) ! { dg-warning "CHARACTER expression will be truncated" }
+  if (.true.) where (txt(1:3) /= ''   )  y(1:3,i,j) = txt(1:3) ! { dg-warning "CHARACTER\\(12\\) truncated to CHARACTER\\(8\\)" }
 
 end subroutine where_ice
